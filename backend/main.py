@@ -31,15 +31,15 @@ def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/teams")
+@app.get("/team")
 def team_info():
     return {
         "team": "cloud-team-XX",
         "members": [
             # TODO: Isi dengan data tim Anda
-            {"name": "Nama 1", "nim": "NIM1", "role": "Lead Backend"},
-            {"name": "Nama 2", "nim": "NIM2", "role": "Lead Frontend"},
-            {"name": "Nama 3", "nim": "NIM3", "role": "Lead DevOps"},
-            {"name": "Nama 4", "nim": "NIM4", "role": "Lead QA & Docs"},
+            {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
+            {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
+            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
+            {"name": "Verina Rahmadinah", "nim": "10231090", "role": "Lead QA & Docs"},
         ]
     }
