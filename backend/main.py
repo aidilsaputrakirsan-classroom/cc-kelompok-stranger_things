@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
-    title="Cloud App API",
+    title="Cloud App AaPI",
     description="API untuk mata kuliah Komputasi Awan",
     version="0.1.0"
 )
@@ -34,7 +34,7 @@ def health_check():
 @app.get("/team")
 def team_info():
     return {
-        "team": "cloud-team-XX",
+        "team": "Stringer_things",
         "members": [
             # TODO: Isi dengan data tim Anda
             {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
