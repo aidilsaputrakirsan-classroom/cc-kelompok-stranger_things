@@ -48,6 +48,7 @@ uvicorn main:app --reload --port 8000
 
 ### Frontend
 App.jsx 
+
         import { useState, useEffect } from "react";
 
         function App() {
@@ -128,6 +129,7 @@ App.jsx
 Penjelasan : kode tersebut merupakan komponen utama react yang mengambil data dari backend menggunakan fetch saat pertama kali dijalankan. Data yang diambil meliputi informasi API dan data tim, lalu ditampilkan secara dinamis menggunakan state dan conditional rendering. Jika data masih dimuat akan muncul loading, jika berhadil akan ditampilkan dalam bentuk card, dan jika gagal akan muncul pesan error.
 
 App.css
+
         #root {
         max-width: 1280px;
         margin: 0 auto;
@@ -174,6 +176,7 @@ App.css
 penjelasan : bagian #root mengatur lebar maksimum halaman, posisi di tengah, padding, dan teks rata tengah. Class logo mengatur ukuran logo serta efek transisi, dan saat di hover akan muncul efek bayangan cahaya (drop-shadow). Animasi @keyframes logo-spin digunakan untuk membuat logo berputar, yang aktif jika preferensi perangkat tidak membatasi animasi. Class .card mengatur jarak dalam element card, sedangkan .read-the-docs memberi warna teks abu abu.
 
 index.css
+
         body {
         font-family: Arial, sans-serif;
         background-color: #121212; 
@@ -290,6 +293,7 @@ index.css
 penjelasan : Kode CSS tersebut mengatur tampilan aplikasi dengan tema dark mode, mulai dari warna latar, teks, hingga layout utama menggunakan flexbox. Terdapat styling untuk card dengan efek hover, animasi spinner untuk loading, serta efek interaktif pada daftar anggota tim. Selain itu, warna khusus diberikan pada teks penting, error, dan footer agar tampilan menarik.
 
 main.jsx
+
         import { StrictMode } from 'react'
         import { createRoot } from 'react-dom/client'
         import './index.css'
@@ -319,7 +323,7 @@ http://localhost:5173
 
 Berikut ini merupakan tampilan yang sudah berhasil dijalankan 
 
-<img src="../frontend/image/WhatsApp Image 2026-02-25 at 08.02.06.jpeg" alt="Halaman Login Admin" width="280" style="border-radius: 8px;" />
+<img src="../frontend/image/WhatsApp Image 2026-02-25 at 08.02.06.jpeg" alt="Halaman Login Admin" />
 
 
 
