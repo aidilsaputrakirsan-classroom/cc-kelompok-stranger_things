@@ -39,7 +39,61 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 - Node.js 18+
 - Git
 
-### Backend
+## PENJELSAN PERSYARAT:
+
+### 1. Python 3.10+
+
+Python digunakan untuk menjalankan backend yang dibangun menggunakan FastAPI.
+
+- Versi minimal 3.10+ diperlukan karena kompatibel dengan dependensi modern FastAPI.
+- Digunakan untuk:
+  - Menjalankan server API dengan `uvicorn`
+  - Mengelola dependensi menggunakan `pip`
+  - Menjalankan logika backend aplikasi
+
+Tanpa Python, backend tidak dapat dijalankan.
+
+---
+
+### 2. Node.js 18+
+
+Node.js digunakan untuk menjalankan frontend berbasis React.
+
+- Versi minimal 18+ direkomendasikan karena mendukung fitur JavaScript modern dan kompatibel dengan Vite.
+- Digunakan untuk:
+  - Menginstall dependencies dengan `npm install`
+  - Menjalankan development server dengan `npm run dev`
+  - Mengelola package frontend
+
+Tanpa Node.js, frontend tidak dapat dijalankan.
+
+---
+
+### 3. Git
+
+Git digunakan sebagai sistem version control dalam pengembangan proyek.
+
+- Berfungsi untuk:
+  - Meng-clone repository
+  - Mengelola perubahan kode
+  - Mendukung kolaborasi tim
+  - Integrasi dengan GitHub dan CI/CD
+
+Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Git sangat penting dalam proses pengembangan dan deployment.
+
+---
+
+## Kesimpulan
+
+Prasyarat ini memastikan lingkungan pengembangan telah siap sebelum sistem dijalankan:
+
+- Python → Backend  
+- Node.js → Frontend  
+- Git → Version Control dan Kolaborasi  
+
+Memastikan semua prasyarat telah terpasang akan meminimalisir error saat instalasi dan menjalankan aplikasi.
+
+### Backend     
 ```bash
 cd backend
 pip install -r requirements.txt
