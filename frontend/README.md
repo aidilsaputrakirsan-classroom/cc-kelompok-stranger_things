@@ -27,7 +27,11 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 ## 🏗️ Architecture
 
 ```
-[React Frontend] <--HTTP--> [FastAPI Backend] <--SQL--> [PostgreSQL]
+Frontend (React)
+        ↓ HTTP Request
+Backend (FastAPI - Python)
+        ↓ SQL Query
+Database (PostgreSQL)
 ```
 
 *(Diagram ini akan berkembang setiap minggu)*
@@ -63,11 +67,110 @@ Git digunakan sebagai sistem version control dalam pengembangan proyek. Berfungs
 Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Git sangat penting dalam proses pengembangan dan deployment.
 
 ### Backend     
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
+Backend pada aplikasi Perisai Anak / Bye Bye Virus akan dibangun menggunakan FastAPI, yaitu framework Python modern yang dirancang untuk membangun REST API .
+
+Beirkut adalah Rencana logika backend yang digunakan
+
+1. Sistem Autentikasi (JWT + bcrypt + Role-Based Access)
+
+    Bye Bye Virus menggunakan:
+
+- JWT (JSON Web Token)
+
+- Password hashing dengan bcrypt
+
+- Role-based access (parent / health_worker)
+
+2. Data Schema
+ 
+    Untuk mengatasi masalah orang tua yang sering terlewat jadwal imunisasi, berikut adalah rencana skema data yang akan dikelola oleh :
+
+- Users Table: Menyimpan data akun orang tua.
+
+- Children Table: Menyimpan profil anak (nama, tanggal lahir, jenis kelamin).
+
+- Vaccine Schedule Table: Master data jadwal imunisasi berdasarkan umur anak (misal: BCG pada usia 1 bulan).
+
+- Immunization Logs: Catatan status imunisasi anak
+
+3. Backend Logic Flow
+   
+    Alur kerja backend dirancang untuk memastikan data terjaga integritas:
+
+- Request Handling: FastAPI menerima request dari React Frontend melalui HTTP.
+
+- Validation:  melakukan validasi tipe data sebelum masuk ke logika utama.
+
+- Automation: Backend akan menghitung dynamic schedule (jadwal dinamis) berdasarkan usia anak saat ini menggunakan pustaka
+
+Setelah menentukan rencana logika back end berikut adalah modul serta fitur yang akan dibuat ;
+
+
+## 1️⃣ Modul Autentikasi
+
+| No | Fitur             | Endpoint           | Method | Keterangan                                                |
+| -- | ----------------- | ------------------ | ------ | --------------------------------------------------------- |
+| 1  | Registrasi Akun   | `/register`        | POST   | Mendaftarkan akun orang tua                               |
+| 2  | Login             | `/login`           | POST   | Autentikasi dan mendapatkan JWT token                     |
+| 3  | Get Current User  | `/me`              | GET    | Mengambil data user yang sedang login                     |
+| 4  | Role-Based Access | Protected Endpoint | -      | Membatasi akses berdasarkan role (parent / health_worker) |
+
+---
+
+## 2️⃣ Modul Data Anak
+
+| No | Fitur              | Method | Deskripsi                                 |
+|----|--------------------|--------|--------------------------------------------|
+| 1  | Tambah Data Anak   | POST   | Menambahkan data anak baru                |
+| 2  | Lihat Semua Anak   | GET    | Menampilkan daftar anak dalam 1 akun      |
+| 3  | Detail Anak        | GET    | Menampilkan detail data anak              |
+| 4  | Update Data Anak   | POST    | Memperbarui data anak                     |
+| 5  | Hapus Data Anak    | DELETE | Menghapus data anak                       |
+
+---
+
+## 3️⃣ Modul ImuniTrack (Imunisasi)
+
+| No | Fitur                   | Method | Deskripsi                       |
+|----|--------------------------|--------|----------------------------------|
+| 1  | Tambah Jadwal Imunisasi | POST   | Menambahkan jadwal imunisasi    |
+| 2  | Lihat Jadwal            | GET    | Menampilkan jadwal imunisasi    |
+| 3  | Detail Jadwal           | GET    | Melihat detail imunisasi        |
+| 4  | Update Status           | POST    | Mengubah status menjadi selesai |
+| 5  | Hapus Jadwal            | DELETE | Menghapus jadwal imunisasi      |
+
+---
+
+## 4️⃣ Modul Kembang Diary 
+
+| No | Fitur                   | Method | Deskripsi                            |
+|----|--------------------------|--------|---------------------------------------|
+| 1  | Tambah Data Pertumbuhan | POST   | Menambahkan data berat/tinggi badan  |
+| 2  | Lihat Riwayat           | GET    | Menampilkan riwayat pertumbuhan anak |
+| 3  | Update Data             | POST    | Memperbarui data pertumbuhan         |
+| 4  | Hapus Data              | DELETE | Menghapus data pertumbuhan           |
+
+---
+
+## 5️⃣ Modul Smart Reminder
+
+| No | Fitur                    | Method | Deskripsi                                   |
+|----|---------------------------|--------|----------------------------------------------|
+| 1  | Notifikasi H-1           | -      | Mengirim pengingat sebelum jadwal imunisasi |
+| 2  | Aktivasi Reminder        | POST    | Mengaktifkan atau menonaktifkan notifikasi  |
+| 3  | Lihat Riwayat Notifikasi | GET    | Menampilkan riwayat reminder                |
+
+---
+
+## 6️⃣ Modul Faskes Map
+
+| No | Fitur               | Method | Deskripsi                                  |
+|----|----------------------|--------|---------------------------------------------|
+| 1  | Lihat Daftar Faskes | GET    | Menampilkan daftar fasilitas kesehatan     |
+| 2  | Detail Faskes       | GET    | Menampilkan detail lokasi dan jadwal       |
+| 3  | Tambah Faskes       | POST   | (Admin/Health Worker) Menambahkan data faskes |
+
+
 
 ### Frontend
 
@@ -348,6 +451,122 @@ http://localhost:5173
 Berikut ini merupakan tampilan yang sudah berhasil dijalankan 
 
 <img src="../frontend/image/WhatsApp Image 2026-02-25 at 09.02.06.jpeg" alt="Halaman Login Admin" />
+
+Berikut adalah tambahan bagian **Rencana Pengembangan Frontend** yang bisa langsung kamu masukkan ke laporan MD setelah bagian Backend.
+
+---
+
+# FRONTEND Bye Bye Virus
+
+Frontend aplikasi **Bye Bye Virus**  bertugas sebagai antarmuka pengguna (UI/UX) yang berinteraksi langsung dengan backend melalui REST API.
+
+
+---
+
+
+
+Halaman Front End tiap modul ;
+
+## 1️⃣ Modul Autentikasi
+
+| No | Halaman  | Fungsi                  |
+| -- | -------- | ----------------------- |
+| 1  | Login    | Form login + simpan JWT |
+| 2  | Register | Form pendaftaran akun   |
+| 3  | Logout   | Hapus token & redirect  |
+
+
+
+---
+
+## 2️⃣ Dashboard
+
+| No | Fitur           | Deskripsi                 |
+| -- | --------------- | ------------------------- |
+| 1  | Ringkasan Anak  | Menampilkan jumlah anak   |
+| 2  | Jadwal Terdekat | Menampilkan imunisasi H-1 |
+| 3  | Reminder Aktif  | Status notifikasi         |
+| 4  | Artikel Edukasi | Artikel terbaru           |
+
+---
+
+## 3️⃣ Modul Data Anak
+
+| No | Fitur       | Deskripsi               |
+| -- | ----------- | ----------------------- |
+| 1  | List Anak   | Menampilkan semua anak  |
+| 2  | Tambah Anak | Form input data anak    |
+| 3  | Edit Anak   | Update data             |
+| 4  | Detail Anak | Menampilkan profil anak |
+
+---
+
+## 4️⃣ Modul ImuniTrack
+
+| No | Fitur         | Deskripsi         |
+| -- | ------------- | ----------------- |
+| 1  | List Jadwal   | Daftar imunisasi  |
+| 2  | Tambah Jadwal | Form penjadwalan  |
+| 3  | Update Status | Tandai selesai    |
+| 4  | Detail Jadwal | Informasi lengkap |
+
+---
+
+## 5️⃣ Modul Kembang Diary
+
+| No | Fitur              | Deskripsi            |
+| -- | ------------------ | -------------------- |
+| 1  | Input Data         | Berat & tinggi badan |
+| 2  | Grafik Pertumbuhan | Visualisasi chart    |
+| 3  | Riwayat Data       | Daftar perkembangan  |
+
+
+
+## 6️⃣ Modul Faskes Map
+
+| No | Fitur           | Deskripsi                       |
+| -- | --------------- | ------------------------------- |
+| 1  | Daftar Faskes   | List fasilitas kesehatan        |
+| 2  | Detail Faskes   | Jadwal & alamat                 |
+| 3  | Peta Interaktif | Integrasi Google Maps / Leaflet |
+
+---
+
+
+
+# 🔐 Manajemen State
+
+Frontend :
+
+* React Context API (untuk Auth)
+* LocalStorage (menyimpan JWT)
+* Protected Route (mencegah akses tanpa login)
+
+---
+
+# 🔄 Alur Integrasi Frontend ke Backend
+
+```
+User Action (Form Submit)
+        ↓
+Axios / Fetch API
+        ↓
+FastAPI Backend
+        ↓
+Response JSON
+        ↓
+Update State React
+        ↓
+UI Re-render
+```
+
+
+
+
+
+#
+
+
 
 ## 📅 Roadmap
 
