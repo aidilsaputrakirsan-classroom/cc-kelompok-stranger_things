@@ -15,14 +15,14 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 
 ## 🛠️ Tech Stack
 
-| Teknologi | Fungsi |
-|-----------|--------|
-| FastAPI   | Backend REST API |
-| React     | Frontend SPA |
-| PostgreSQL | Database |
-| Docker    | Containerization |
-| GitHub Actions | CI/CD |
-| Railway/Render | Cloud Deployment |
+| Teknologi | Fungsi | Keterangan |
+|-----------|--------| ---------- |
+| FastAPI   | Backend REST API | Membangun layanan backend berbasis REST API yang menangani logika aplikasi, pengolahan data, dan komunikasi dengan database |
+| React     | Frontend SPA | Membangun antarmuka pengguna berbasis Single Page Application yang interaktif, responsif, dan mampu berkomunikasi dengan backend melalui API |
+| PostgreSQL | Database | Menyimpan data aplikasi secara terstruktur |
+| Docker    | Containerization | Mengemas aplikasi dan seluruh dependensinya ke dalam container sehingga aplikasi bisa berjalan konsisten di lingkungan manapun |
+| GitHub Actions | CI/CD | Mengotomatiskan proses pengujian, build, dan deployment aplikasi |
+| Railway/Render | Cloud Deployment | Melakukan deployment aplikasi ke cloud agar backend dan frontend dapat berjalan dan diakses secara online |
 
 ## 🏗️ Architecture
 
@@ -35,63 +35,32 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 ## 🚀 Getting Started
 
 ### Prasyarat
-- Python 3.10+
-- Node.js 18+
-- Git
-
-## PENJELSAN PERSYARAT:
-
-### 1. Python 3.10+
-
-Python digunakan untuk menjalankan backend yang dibangun menggunakan FastAPI.
-
-- Versi minimal 3.10+ diperlukan karena kompatibel dengan dependensi modern FastAPI.
-- Digunakan untuk:
+#### 1. Python 3.10+
+Python digunakan untuk menjalankan backend yang dibangun menggunakan FastAPI. Versi minimal 3.10+ diperlukan karena kompatibel dengan dependensi modern FastAPI.
+Digunakan untuk:
   - Menjalankan server API dengan `uvicorn`
   - Mengelola dependensi menggunakan `pip`
   - Menjalankan logika backend aplikasi
 
 Tanpa Python, backend tidak dapat dijalankan.
 
----
-
-### 2. Node.js 18+
-
-Node.js digunakan untuk menjalankan frontend berbasis React.
-
-- Versi minimal 18+ direkomendasikan karena mendukung fitur JavaScript modern dan kompatibel dengan Vite.
-- Digunakan untuk:
+#### 2. Node.js 18+
+Node.js digunakan untuk menjalankan frontend berbasis React. Versi minimal 18+ direkomendasikan karena mendukung fitur JavaScript modern dan kompatibel dengan Vite.
+Digunakan untuk:
   - Menginstall dependencies dengan `npm install`
   - Menjalankan development server dengan `npm run dev`
   - Mengelola package frontend
 
 Tanpa Node.js, frontend tidak dapat dijalankan.
 
----
-
-### 3. Git
-
-Git digunakan sebagai sistem version control dalam pengembangan proyek.
-
-- Berfungsi untuk:
+#### 3. Git
+Git digunakan sebagai sistem version control dalam pengembangan proyek. Berfungsi untuk:
   - Meng-clone repository
   - Mengelola perubahan kode
   - Mendukung kolaborasi tim
   - Integrasi dengan GitHub dan CI/CD
 
 Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Git sangat penting dalam proses pengembangan dan deployment.
-
----
-
-## Kesimpulan
-
-Prasyarat ini memastikan lingkungan pengembangan telah siap sebelum sistem dijalankan:
-
-- Python → Backend  
-- Node.js → Frontend  
-- Git → Version Control dan Kolaborasi  
-
-Memastikan semua prasyarat telah terpasang akan meminimalisir error saat instalasi dan menjalankan aplikasi.
 
 ### Backend     
 ```bash
@@ -379,6 +348,20 @@ http://localhost:5173
 Berikut ini merupakan tampilan yang sudah berhasil dijalankan 
 
 <img src="../frontend/image/WhatsApp Image 2026-02-25 at 09.02.06.jpeg" alt="Halaman Login Admin" />
+
+## 📅 Roadmap
+
+| Minggu | Target | Status |
+|--------|--------|--------|
+| 1 | Setup & Hello World | ✅ |
+| 2 | REST API + Database | ⬜ |
+| 3 | React Frontend | ⬜ |
+| 4 | Full-Stack Integration | ⬜ |
+| 5-7 | Docker & Compose | ⬜ |
+| 8 | UTS Demo | ⬜ |
+| 9-11 | CI/CD Pipeline | ⬜ |
+| 12-14 | Microservices | ⬜ |
+| 15-16 | Final & UAS | ⬜ |
 
 
 
