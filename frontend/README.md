@@ -69,7 +69,7 @@ Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Gi
 ### Backend     
 Backend pada aplikasi Perisai Anak / Bye Bye Virus akan dibangun menggunakan FastAPI, yaitu framework Python modern yang dirancang untuk membangun REST API .
 
-Beirkut adalah Rencana logika backend yang digunakan
+Berikut adalah Rencana logika backend yang digunakan
 
 1. Sistem Autentikasi (JWT + bcrypt + Role-Based Access)
 
@@ -560,13 +560,7 @@ Update State React
 UI Re-render
 ```
 
-
-
-
-
 #
-
-
 
 ## 📅 Roadmap
 
