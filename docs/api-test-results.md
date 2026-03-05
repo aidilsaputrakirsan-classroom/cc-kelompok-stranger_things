@@ -23,7 +23,9 @@ Halaman dokumentasi Swagger UI menampilkan daftar endpoint REST API untuk manaje
 
 <img src="../frontend/image/update items.jpeg" />
 
-Proses menghapus data item dari sistem berdasarkan item_id. Operasi ini berhasil ditandai dengan kode respon 204 No Content, yang berarti data telah terhapus tanpa ada konten yang dikembalikan.
+
+- Proses menghapus data item dari sistem berdasarkan item_id. Operasi ini berhasil ditandai dengan kode respon 204 No Content, yang berarti data telah terhapus tanpa ada konten yang dikembalikan.
+
 <img src="../frontend/image/delete items.jpeg" />
 
 
