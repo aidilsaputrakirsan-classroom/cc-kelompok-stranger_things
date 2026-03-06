@@ -567,7 +567,7 @@ UI Re-render
 | Minggu | Target | Status |
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
-| 2 | REST API + Database | ⬜ |
+| 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ⬜ |
 | 4 | Full-Stack Integration | ⬜ |
 | 5-7 | Docker & Compose | ⬜ |
@@ -576,8 +576,378 @@ UI Re-render
 | 12-14 | Microservices | ⬜ |
 | 15-16 | Final & UAS | ⬜ |
 
+#
 
-## API Endpoints
+## 🛠️ Membangun REST API
+### 1. Membuat Setup PostgreSQL & Database
+Melakukan persiapan basis data PostgreSQL sebagai penyimpanan utama aplikasi. Proses diawali dengan masuk ke PostgreSQL melalui terminal menggunakan perintah `psql -U postgres`, kemudian dibuat database baru bernama cloudapp.
+
+Selanjutnya, dibuat file `.env` pada direktori backend/ untuk menyimpan konfigurasi sensitif berupa `DATABASE_URL` sebagai string koneksi ke database. File ini tidak disertakan dalam commit karena berisi informasi penting seperti username dan password. Sebagai alternatif, disediakan file `.env.example` yang berisi template konfigurasi tanpa data rahasia dan dapat di-commit sebagai acuan bagi seluruh anggota tim. Pada tahap ini juga dipastikan bahwa `.env `telah tercantum dalam `.gitignore` sehingga tidak ikut terunggah ke repository.
+
+Tahap berikutnya adalah instalasi dependensi yang diperlukan untuk mengintegrasikan FastAPI dengan PostgreSQL. Pada tahap ini, file `backend/requirements.txt` diperbarui dengan menambahkan beberapa pustaka utama, yaitu SQLAlchemy sebagai ORM untuk pengelolaan database, psycopg2-binary sebagai driver PostgreSQL, serta python-dotenv untuk memuat variabel konfigurasi dari file `.env.` Setelah pembaruan selesai, seluruh dependensi diinstal menggunakan perintah `pip install -r requirements`.txt agar lingkungan pengembangan siap digunakan.
+
+### 2. Membuat `database.py`
+```py
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+# Load environment variables dari .env
+load_dotenv()
+
+# Ambil DATABASE_URL dari environment
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL tidak ditemukan di .env!")
+
+# Buat engine (koneksi ke database)
+engine = create_engine(DATABASE_URL)
+
+# Buat session factory
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class untuk models
+Base = declarative_base()
+
+
+# Dependency: dapatkan database session
+def get_db():
+    """
+    Dependency injection untuk FastAPI.
+    Membuka session saat request masuk, menutup saat selesai.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+```
+➤ Penjelasan : Kode ini digunakan sebagai modul konfigurasi database pada aplikasi REST API. Modul ini memuat variabel lingkungan dari file `.env` untuk memperoleh `DATABASE_URL` sebagai parameter koneksi, kemudian membangun engine SQLAlchemy sebagai penghubung ke basis data. Selanjutnya, SessionLocal digunakan untuk menghasilkan sesi database yang digunakan dalam proses operasi CRUD. Selain itu, fungsi `get_db()` sebagai mekanisme dependency injection pada FastAPI agar setiap permintaan (request) memperoleh sesi database secara terkontrol dan sesi tersebut ditutup otomatis setelah proses selesai.
+
+### 3. Membuat `models.py`
+```py
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text
+from sqlalchemy.sql import func
+from database import Base
+
+
+class Item(Base):
+    """
+    Model untuk tabel 'items' di database.
+    Setiap atribut = satu kolom di tabel.
+    """
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(100), nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    price = Column(Float, nullable=False)
+    quantity = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<Item(id={self.id}, name='{self.name}', price={self.price})>"
+```
+➤ Penjelasan : Kode ini digunakan untuk mendefinisikan struktur tabel pada database menggunakan SQLAlchemy ORM. Pada file ini dibuat kelas `Item` yang merepresentasikan tabel `items`, di mana setiap atribut pada kelas menjadi kolom pada tabel, yaitu `id` sebagai primary key dengan nilai otomatis (auto-increment), `name` sebagai nama item yang wajib diisi dengan batas maksimal 100 karakter, `description` sebagai deskripsi opsional, `price` sebagai harga yang wajib diisi, serta `quantity` sebagai jumlah stok dengan nilai default 0. Selain itu, terdapat kolom `created_at` yang terisi otomatis saat data dibuat dan `updated_at` yang diperbarui otomatis saat data mengalami perubahan.
+
+### 4. Membuat `schemas.py`
+Schema perlu dipisahkan dari model karena fungsi keduanya berbeda: model (SQLAlchemy) dipakai untuk merepresentasikan struktur tabel dan operasi ke database, sedangkan schema (Pydantic) dipakai untuk mengatur validasi dan format data yang boleh masuk/keluar melalui API.
+
+```py
+from pydantic import BaseModel, Field
+from typing import Optional
+from datetime import datetime
+
+
+# === BASE SCHEMA ===
+class ItemBase(BaseModel):
+    """Base schema — field yang dipakai untuk create & update."""
+    name: str = Field(..., min_length=1, max_length=100, examples=["Laptop"])
+    description: Optional[str] = Field(None, examples=["Laptop untuk cloud computing"])
+    price: float = Field(..., gt=0, examples=[15000000])
+    quantity: int = Field(0, ge=0, examples=[10])
+
+
+# === CREATE SCHEMA (untuk POST request) ===
+class ItemCreate(ItemBase):
+    """Schema untuk membuat item baru. Mewarisi semua field dari ItemBase."""
+    pass
+
+
+# === UPDATE SCHEMA (untuk PUT request) ===
+class ItemUpdate(BaseModel):
+    """
+    Schema untuk update item. Semua field optional 
+    karena user mungkin hanya ingin update sebagian field.
+    """
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = None
+    price: Optional[float] = Field(None, gt=0)
+    quantity: Optional[int] = Field(None, ge=0)
+
+
+# === RESPONSE SCHEMA (untuk output) ===
+class ItemResponse(ItemBase):
+    """Schema untuk response. Termasuk id dan timestamp dari database."""
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True  # Agar bisa convert dari SQLAlchemy model
+
+
+# === LIST RESPONSE (dengan metadata) ===
+class ItemListResponse(BaseModel):
+    """Schema untuk response list items dengan total count."""
+    total: int
+    items: list[ItemResponse]
+```
+➤ Penjelasan : Kode ini digunakan untuk membuat schema Pydantic sebagai acuan format data pada REST API. Schema ini membantu memastikan data yang masuk dari client sudah valid dan data yang keluar dari server memiliki struktur yang konsisten. ItemCreate digunakan untuk input saat menambah data, ItemUpdate untuk memperbarui data (field bersifat opsional agar bisa update sebagian), sedangkan ItemResponse untuk format output yang menyertakan id dan timestamp dari database. Selain itu, ItemListResponse dipakai untuk menampilkan daftar item beserta total data.
+
+Field Validation: 
+- `Field(..., min_length=1)` : field wajib diisi dengan panjang minimal 1 karakter 
+- `Field(..., gt=0)` : field wajib diisi dan harus lebih besar dari 0
+- `Field(0, ge=0)` : default adalah 0 dan tidak boleh bernilai negatif 
+- `Optional[str] = None` : field bersifat opsional dan akan bernilai None jika tidak diisi
+
+### 5. Membuat `crud.py`
+```py
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from models import Item
+from schemas import ItemCreate, ItemUpdate
+
+
+def create_item(db: Session, item_data: ItemCreate) -> Item:
+    """Buat item baru di database."""
+    db_item = Item(**item_data.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None):
+    """
+    Ambil daftar items dengan pagination & search.
+    - skip: jumlah data yang di-skip (untuk pagination)
+    - limit: jumlah data per halaman
+    - search: cari berdasarkan nama atau deskripsi
+    """
+    query = db.query(Item)
+    
+    if search:
+        query = query.filter(
+            or_(
+                Item.name.ilike(f"%{search}%"),
+                Item.description.ilike(f"%{search}%")
+            )
+        )
+    
+    total = query.count()
+    items = query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
+    
+    return {"total": total, "items": items}
+
+
+def get_item(db: Session, item_id: int) -> Item | None:
+    """Ambil satu item berdasarkan ID."""
+    return db.query(Item).filter(Item.id == item_id).first()
+
+
+def update_item(db: Session, item_id: int, item_data: ItemUpdate) -> Item | None:
+    """
+    Update item berdasarkan ID.
+    Hanya update field yang dikirim (bukan None).
+    """
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    
+    if not db_item:
+        return None
+    
+    # Hanya update field yang dikirim (exclude_unset=True)
+    update_data = item_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_item, field, value)
+    
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+def delete_item(db: Session, item_id: int) -> bool:
+    """Hapus item berdasarkan ID. Return True jika berhasil."""
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    
+    if not db_item:
+        return False
+    
+    db.delete(db_item)
+    db.commit()
+    return True
+```
+➤ Penjelasan : Kode ini digunakan untuk menjalankan fungsi-fungsi CRUD (Create, Read, Update, Delete) yang berinteraksi langsung dengan database melalui SQLAlchemy Session. Fungsi `create_item` digunakan untuk menambahkan data item baru, sedangkan `get_items` mengambil daftar item dengan dukungan pagination (skip dan limit) serta fitur pencarian berdasarkan nama atau deskripsi. Fungsi `get_item` digunakan untuk mengambil satu data item berdasarkan `id`. Selanjutnya, `update_item` digunakan untuk memperbarui data item tertentu dan hanya mengubah field yang dikirim oleh client. Terakhir, `delete_item` digunakan untuk menghapus data item berdasarkan `id` dan mengembalikan status keberhasilan operasi.
+
+### 6. Update `main.py`
+Tahap selanjutnya adalah mengganti isi dari file `main.py` yang sebelumnya dengan kode berikut
+```py
+from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
+from database import engine, get_db
+from models import Base
+from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse
+import crud
+
+# Buat semua tabel di database (jika belum ada)
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="Cloud App API",
+    description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
+    version="0.2.0",
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ==================== HEALTH CHECK ====================
+
+@app.get("/health")
+def health_check():
+    """Endpoint untuk mengecek apakah API berjalan."""
+    return {"status": "healthy", "version": "0.2.0"}
+
+
+# ==================== CRUD ENDPOINTS ====================
+
+@app.post("/items", response_model=ItemResponse, status_code=201)
+def create_item(item: ItemCreate, db: Session = Depends(get_db)):
+    """
+    Buat item baru.
+    
+    - **name**: Nama item (wajib, 1-100 karakter)
+    - **price**: Harga (wajib, > 0)
+    - **description**: Deskripsi (opsional)
+    - **quantity**: Jumlah stok (default: 0)
+    """
+    return crud.create_item(db=db, item_data=item)
+
+
+@app.get("/items", response_model=ItemListResponse)
+def list_items(
+    skip: int = Query(0, ge=0, description="Jumlah data yang di-skip"),
+    limit: int = Query(20, ge=1, le=100, description="Jumlah data per halaman"),
+    search: str = Query(None, description="Cari berdasarkan nama/deskripsi"),
+    db: Session = Depends(get_db),
+):
+    """
+    Ambil daftar items dengan pagination dan search.
+    
+    - **skip**: Offset untuk pagination (default: 0)
+    - **limit**: Jumlah item per halaman (default: 20, max: 100)
+    - **search**: Kata kunci pencarian (opsional)
+    """
+    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
+
+
+@app.get("/items/{item_id}", response_model=ItemResponse)
+def get_item(item_id: int, db: Session = Depends(get_db)):
+    """Ambil satu item berdasarkan ID."""
+    item = crud.get_item(db=db, item_id=item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+    return item
+
+
+@app.put("/items/{item_id}", response_model=ItemResponse)
+def update_item(item_id: int, item: ItemUpdate, db: Session = Depends(get_db)):
+    """
+    Update item berdasarkan ID.
+    Hanya field yang dikirim yang akan di-update (partial update).
+    """
+    updated = crud.update_item(db=db, item_id=item_id, item_data=item)
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+    return updated
+
+
+@app.delete("/items/{item_id}", status_code=204)
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    """Hapus item berdasarkan ID."""
+    success = crud.delete_item(db=db, item_id=item_id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+    return None
+
+@app.get("/items/stats")
+def items_stats(db: Session = Depends(get_db)):
+    """Statistik inventory."""
+    items = db.query(Item).all()
+    if not items:
+        return {"total_items": 0, "total_value": 0, "most_expensive": None, "cheapest": None}
+    
+    return {
+        "total_items": len(items),
+        "total_value": sum(i.price * i.quantity for i in items),
+        "most_expensive": {"name": max(items, key=lambda x: x.price).name, 
+                          "price": max(items, key=lambda x: x.price).price},
+        "cheapest": {"name": min(items, key=lambda x: x.price).name,
+                    "price": min(items, key=lambda x: x.price).price},
+    }
+
+
+# ==================== TEAM INFO ====================
+
+@app.get("/team")
+def team_info():
+    return {
+        "team": "Stranger_things",
+        "members": [
+            # TODO: Isi dengan data tim Anda
+            {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
+            {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
+            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
+            {"name": "Verina Rahmadinah", "nim": "10231090", "role": "Lead QA & Docs"},
+        ]
+    }
+```
+➤ Penjelasan : Kode pada file ini digunakan untuk sebagai file utama untuk menjalankan aplikasi FastAPI dan mendefinisikan seluruh endpoint REST API. Pada bagian awal dilakukan inisialisasi koneksi database serta pembuatan tabel jika belum tersedia, kemudian ditambahkan konfigurasi CORS agar API dapat diakses dari aplikasi frontend. Endpoint yang dibuat meliputi health check (`GET /health`) untuk memastikan layanan berjalan, serta endpoint CRUD untuk resource items, yaitu `POST/items` (menambah data), `GET /items` yang digunakan untuk menampilkan daftar data dengan pagination dan pencarian, `GET /items/{item_id}` untuk mengambil satu data berdasarkan ID, `PUT /items/{item_id}` digunakan untuk memperbarui data, dan `DELETE /items/{item_id}` untukmenghapus data. Selain itu, ditambahkan endpoint `GET /team` yang menampilkan informasi anggota tim.
+
+## 🔍 Testing via Swagger UI
+copy api test result
+
+## 🔗 API Endpoints
+
+### Endpoint `/health`
+```py
+@app.get("/health")
+def health_check():
+    """Endpoint untuk mengecek apakah API berjalan."""
+    return {"status": "healthy", "version": "0.2.0"}
+```
+**Method:** `GET`
+
+**URL:** `/health`
+
+**Deskripsi:** Melakukan health check guna memastikan API berjalan dengan baik dan mengembalikan informasi status layanan serta versi aplikasi.
+
+**Request Body**: GET /health
+
+**Response Example:**
 
 ### Endpoint `/items`
 ```py
@@ -599,9 +969,28 @@ def create_item(item: ItemCreate, db: Session = Depends(get_db)):
 
 **Deskripsi:** Menambahkan item baru ke database
 
-**Request Body**
+**Request Body**:
+```sql
+{
+  "name": "Mouse Wireless",
+  "price": 250000,
+  "description": "Mouse bluetooth",
+  "quantity": 20
+}
+```
 
-**Response Example:**
+**Response Example:** 201 CREATED
+```sql
+{
+  "name": "Mouse Wireless",
+  "description": "Mouse bluetooth",
+  "price": 250000,
+  "quantity": 20,
+  "id": 5,
+  "created_at": "2026-03-05T09:05:10.561093+08:00",
+  "updated_at": null
+}
+```
 
 ### Endpoint `/items`
 ```py
@@ -627,9 +1016,28 @@ def list_items(
 
 **Deskripsi:** Mengambil daftar item dengan fitur pagination dan search
 
-**Request Body**
+**Request Body:**
+```sql
+http://localhost:8000/items?skip=0&limit=20&search=mouse
+```
 
-**Response Example:**
+**Response Example:** 200 OK
+```sql
+{
+  "total": 2,
+  "items": [
+    {
+      "name": "Mouse Wireless",
+      "description": "Mouse bluetooth",
+      "price": 250000,
+      "quantity": 20,
+      "id": 5,
+      "created_at": "2026-03-05T09:05:10.561093+08:00",
+      "updated_at": null
+    }
+  ]
+}
+```
 
 ### Endpoint `/items/{item_id}`
 ```py
@@ -694,3 +1102,5 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 **Request Body**
 
 **Response Example:**
+
+### Endpoint `/items/stats`
