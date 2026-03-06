@@ -930,6 +930,8 @@ def team_info():
 ## 🔍 Testing via Swagger UI
 copy api test result
 
+Terdapat pada docs di file “api-test-result.md”
+
 ## 🔗 API Endpoints
 
 ### Endpoint `/health`
@@ -1080,8 +1082,21 @@ def update_item(item_id: int, item: ItemUpdate, db: Session = Depends(get_db)):
 **Deskripsi:** Memperbarui data item berdasarkan ID. Hanya field yang dikirim yang akan diubah.
 
 **Request Body**
-
-**Response Example:**
+```sql
+http://localhost:8000/itemes/3
+```
+**Response Example: 200 OK**
+```py
+{
+  "name": "string",
+  "description": "string",
+  "price": 1,
+  "quantity": 100,
+  "id": 1,
+  "created_at": "2026-03-03T08:33:27.786495+08:00",
+  "updated_at": "2026-03-05T09:07:21.964971+08:00"
+}
+```
 
 ### Endpoint `/items/{item_id}`
 ```py
@@ -1100,7 +1115,133 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 **Deskripsi:** Menghapus item berdasarkan ID.
 
 **Request Body**
-
+```sql
+http://localhost:8000/itemes/2
+```
 **Response Example:**
+```py
+access-control-allow-credentials: true
+access-control-allow-origin: *
+content-type: application/json
+date: Thu, 05 Mar 2026 01:08:23 GMT
+server: uvicorn
+```
 
 ### Endpoint `/items/stats`
+```py
+@app.get("/items/stats")
+def items_stats(db: Session = Depends(get_db)):
+    """Statistik inventory."""
+    items = db.query(Item).all()
+    if not items:
+        return {"total_items": 0, "total_value": 0, "most_expensive": None, "cheapest": None}
+    
+    return {
+        "total_items": len(items),
+        "total_value": sum(i.price * i.quantity for i in items),
+        "most_expensive": {"name": max(items, key=lambda x: x.price).name, 
+                          "price": max(items, key=lambda x: x.price).price},
+        "cheapest": {"name": min(items, key=lambda x: x.price).name,
+                    "price": min(items, key=lambda x: x.price).price},
+    }
+```
+**Method:** `GET`
+
+**URL:** `/items/{item_id}`
+
+**Deskripsi:** Statistik Data Persediaan Barang
+
+**Request Body**
+```sql
+http://localhost:8000/items/stats
+```
+**Response Example: 200 OK**
+```py
+Response body
+
+{
+  "total_items": 3,
+  "total_value": 14600100,
+  "most_expensive": {
+    "name": "Keyboard Mechanical",
+    "price": 12000000
+  },
+  "cheapest": {
+    "name": "string",
+    "price": 1
+  }
+}
+```
+```PY
+Response headers
+
+content-length: 149
+content-type: application/json
+date: Thu, 05 Mar 2026 01:13:49 GMT
+server: uvicorn
+```
+
+### Endpoint `/items/stats`
+```py
+@app.get("/team")
+def team_info():
+    return {
+        "team": "Stranger_things",
+        "members": [
+            # TODO: Isi dengan data tim Anda
+            {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
+            {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
+            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
+            {"name": "Verina Rahmadinah", "nim": "10231090", "role": "Lead QA & Docs"},
+        ]
+    }
+```
+**Method:** `GET`
+
+**URL:** `/items/{item_id}`
+
+**Deskripsi:** Informasi anggota tim beserta maisng - masing role
+
+**Request Body**
+```sql
+http://localhost:8000/team
+```
+**Response Example: 200 OK**
+```py
+Response body
+
+{
+  "team": "Stranger_things",
+  "members": [
+    {
+      "name": "Ahmad Daffa Alfattah",
+      "nim": "10231008",
+      "role": "Lead Backend"
+    },
+    {
+      "name": "Nazwa Amelia Zahra",
+      "nim": "10231068",
+      "role": "Lead Frontend"
+    },
+    {
+      "name": "Cintya Widhi Astuti",
+      "nim": "10231026",
+      "role": "Lead DevOps"
+    },
+    {
+      "name": "Verina Rahmadinah",
+      "nim": "10231090",
+      "role": "Lead QA & Docs"
+    }
+  ]
+}
+```
+```py
+Response headers
+
+content-length: 318
+content-type: application/json
+date: Thu, 05 Mar 2026 01:08:05 GMT
+server: uvicorn
+```
+ 
