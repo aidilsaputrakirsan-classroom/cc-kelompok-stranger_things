@@ -928,9 +928,7 @@ def team_info():
 ➤ Penjelasan : Kode pada file ini digunakan untuk sebagai file utama untuk menjalankan aplikasi FastAPI dan mendefinisikan seluruh endpoint REST API. Pada bagian awal dilakukan inisialisasi koneksi database serta pembuatan tabel jika belum tersedia, kemudian ditambahkan konfigurasi CORS agar API dapat diakses dari aplikasi frontend. Endpoint yang dibuat meliputi health check (`GET /health`) untuk memastikan layanan berjalan, serta endpoint CRUD untuk resource items, yaitu `POST/items` (menambah data), `GET /items` yang digunakan untuk menampilkan daftar data dengan pagination dan pencarian, `GET /items/{item_id}` untuk mengambil satu data berdasarkan ID, `PUT /items/{item_id}` digunakan untuk memperbarui data, dan `DELETE /items/{item_id}` untukmenghapus data. Selain itu, ditambahkan endpoint `GET /team` yang menampilkan informasi anggota tim.
 
 ## 🔍 Testing via Swagger UI
-copy api test result
-
-Terdapat pada docs di file “api-test-result.md”
+Terdapat pada docs di file `api-test-result.md`
 
 ## 🔗 API Endpoints
 
@@ -1018,7 +1016,7 @@ def list_items(
 
 **Deskripsi:** Mengambil daftar item dengan fitur pagination dan search
 
-**Request Body:**
+**Request:**
 ```sql
 http://localhost:8000/items?skip=0&limit=20&search=mouse
 ```
@@ -1054,13 +1052,27 @@ def get_item(item_id: int, db: Session = Depends(get_db)):
 
 **Method:** `GET`
 
-**URL:** `/items/{item_id}`
+**URL:** `/items/3`
 
 **Deskripsi:** Mengambil satu item berdasarkan ID
 
-**Request Body**
+**Request:** 
+```sql
+http://localhost:8000/items/3
+```
 
-**Response Example:**
+**Response Example:** 200 OK
+```sql
+{
+  "name": "Mouse Wireless",
+  "description": "Mouse bluetooth",
+  "price": 250000,
+  "quantity": 20,
+  "id": 3,
+  "created_at": "2026-03-03T08:33:22.780495+08:00",
+  "updated_at": null
+}
+```
 
 ### Endpoint `/items/{item_id}`
 ```py
@@ -1077,23 +1089,28 @@ def update_item(item_id: int, item: ItemUpdate, db: Session = Depends(get_db)):
 ```
 **Method:** `PUT`
 
-**URL:** `/items/{item_id}`
+**URL:** `/items/3`
 
 **Deskripsi:** Memperbarui data item berdasarkan ID. Hanya field yang dikirim yang akan diubah.
 
 **Request Body**
 ```sql
-http://localhost:8000/itemes/3
+{
+  "name": "string",
+  "description": "string",
+  "price": 1,
+  "quantity": 100
+}
 ```
 **Response Example: 200 OK**
-```py
+```sql
 {
   "name": "string",
   "description": "string",
   "price": 1,
   "quantity": 100,
-  "id": 1,
-  "created_at": "2026-03-03T08:33:27.786495+08:00",
+  "id": 3,
+  "created_at": "2026-03-03T08:33:22.780495+08:00",
   "updated_at": "2026-03-05T09:07:21.964971+08:00"
 }
 ```
@@ -1110,21 +1127,17 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 ```
 **Method:** `DELETE`
 
-**URL:** `/items/{item_id}`
+**URL:** `/items/2`
 
 **Deskripsi:** Menghapus item berdasarkan ID.
 
-**Request Body**
+**Request:**
 ```sql
-http://localhost:8000/itemes/2
+http://localhost:8000/items/2
 ```
-**Response Example:**
+**Response Example:** 204 No Content
 ```py
-access-control-allow-credentials: true
-access-control-allow-origin: *
-content-type: application/json
-date: Thu, 05 Mar 2026 01:08:23 GMT
-server: uvicorn
+Berhasil menghapus item, tanpa response body
 ```
 
 ### Endpoint `/items/stats`
@@ -1147,18 +1160,16 @@ def items_stats(db: Session = Depends(get_db)):
 ```
 **Method:** `GET`
 
-**URL:** `/items/{item_id}`
+**URL:** `/items/stats`
 
 **Deskripsi:** Statistik Data Persediaan Barang
 
-**Request Body**
+**Request:**
 ```sql
 http://localhost:8000/items/stats
 ```
 **Response Example: 200 OK**
-```py
-Response body
-
+```sql
 {
   "total_items": 3,
   "total_value": 14600100,
@@ -1172,16 +1183,8 @@ Response body
   }
 }
 ```
-```PY
-Response headers
 
-content-length: 149
-content-type: application/json
-date: Thu, 05 Mar 2026 01:13:49 GMT
-server: uvicorn
-```
-
-### Endpoint `/items/stats`
+### Endpoint `/team`
 ```py
 @app.get("/team")
 def team_info():
@@ -1198,11 +1201,11 @@ def team_info():
 ```
 **Method:** `GET`
 
-**URL:** `/items/{item_id}`
+**URL:** `/team`
 
 **Deskripsi:** Informasi anggota tim beserta maisng - masing role
 
-**Request Body**
+**Request Body:**
 ```sql
 http://localhost:8000/team
 ```
@@ -1235,13 +1238,5 @@ Response body
     }
   ]
 }
-```
-```py
-Response headers
-
-content-length: 318
-content-type: application/json
-date: Thu, 05 Mar 2026 01:08:05 GMT
-server: uvicorn
 ```
  
