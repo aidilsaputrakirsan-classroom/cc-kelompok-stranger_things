@@ -123,6 +123,6 @@ def team_info():
             {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
             {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
             {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
-            {"name": "Verina Rahmadinah", "nim": "10231090", "role": "Lead QA & Docs"},
+            {"name": "Verina Rahma Dinah", "nim": "10231090", "role": "Lead QA & Docs"},
         ]
     }

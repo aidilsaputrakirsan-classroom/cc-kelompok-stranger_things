@@ -945,9 +945,18 @@ def health_check():
 
 **Deskripsi:** Melakukan health check guna memastikan API berjalan dengan baik dan mengembalikan informasi status layanan serta versi aplikasi.
 
-**Request Body**: GET /health
+**Request Body**: 
+```sql
+http://localhost:8000/health
+```
 
 **Response Example:**
+```py
+{
+  "status": "healthy",
+  "version": "0.2.0"
+}
+```
 
 ### Endpoint `/items`
 ```py
@@ -1232,7 +1241,7 @@ Response body
       "role": "Lead DevOps"
     },
     {
-      "name": "Verina Rahmadinah",
+      "name": "Verina Rahma Dinah",
       "nim": "10231090",
       "role": "Lead QA & Docs"
     }
