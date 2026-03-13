@@ -2,20 +2,38 @@ const API_URL = "http://localhost:8000"
 
 // ==================== GET ====================
 
-export async function fetchItems(search = "", skip = 0, limit = 20) {
+export async function fetchItems(
+  search = "",
+  skip = 0,
+  limit = 20,
+  sortBy = "created_at",
+  sortDir = "desc"
+) {
   const params = new URLSearchParams()
+
   if (search) params.append("search", search)
+
   params.append("skip", skip)
   params.append("limit", limit)
+  params.append("sort_by", sortBy)
+  params.append("sort_dir", sortDir)
 
   const response = await fetch(`${API_URL}/items?${params}`)
-  if (!response.ok) throw new Error("Gagal mengambil data items")
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data items")
+  }
+
   return response.json()
 }
 
 export async function fetchItem(id) {
   const response = await fetch(`${API_URL}/items/${id}`)
-  if (!response.ok) throw new Error(`Item ${id} tidak ditemukan`)
+
+  if (!response.ok) {
+    throw new Error(`Item ${id} tidak ditemukan`)
+  }
+
   return response.json()
 }
 
@@ -27,10 +45,12 @@ export async function createItem(itemData) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
   })
+
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.detail || "Gagal membuat item")
   }
+
   return response.json()
 }
 
@@ -42,16 +62,20 @@ export async function updateItem(id, itemData) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
   })
+
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.detail || "Gagal mengupdate item")
   }
+
   return response.json()
 }
 
+// ==================== DELETE ====================
+
 export async function deleteItem(id) {
   const response = await fetch(`${API_URL}/items/${id}`, {
-    method: "DELETE",   
+    method: "DELETE",
   })
 
   if (!response.ok) {
