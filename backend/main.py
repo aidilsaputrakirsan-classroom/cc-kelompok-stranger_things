@@ -54,16 +54,18 @@ def list_items(
     skip: int = Query(0, ge=0, description="Jumlah data yang di-skip"),
     limit: int = Query(20, ge=1, le=100, description="Jumlah data per halaman"),
     search: str = Query(None, description="Cari berdasarkan nama/deskripsi"),
+    sort_by: str = Query("created_at", regex="^(name|price|created_at)$", description="Field untuk sorting"),
+    sort_dir: str = Query("desc", regex="^(asc|desc)$", description="Arah sorting (asc atau desc)"),
     db: Session = Depends(get_db),
 ):
     """
-    Ambil daftar items dengan pagination dan search.
+    Ambil daftar items dengan pagination, search, dan sorting.
     
     - **skip**: Offset untuk pagination (default: 0)
     - **limit**: Jumlah item per halaman (default: 20, max: 100)
     - **search**: Kata kunci pencarian (opsional)
     """
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
+    return crud.get_items(db=db, skip=skip, limit=limit, search=search, sort_by=sort_by, sort_dir=sort_dir)
 
 
 @app.get("/items/stats")
