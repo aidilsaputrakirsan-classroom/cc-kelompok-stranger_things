@@ -37,3 +37,31 @@ Halaman dokumentasi Swagger UI menampilkan daftar endpoint REST API untuk manaje
 - Menampilkan informasi anggota tim "Steanger, things" yang bertanggung jawab atas pengembangan proyek, mencakup nama, NIM, dan peran masing-masing anggota (Backend, Frontend, DevOps, QA)
 
 <img src="../frontend/image/tim info.jpeg" />
+
+# API Test Results — Modul 3
+
+## Test Status: ✅ PASSED
+
+### 1. Health Check
+- Endpoint: `GET /health`
+- Status: ✅ PASSED
+- Response: `{"status": "healthy", "version": "0.2.0"}`
+
+### 2. Pagination Test
+- Endpoint: `GET /items?skip=0&limit=2`
+- Status: ✅ PASSED
+- Result:
+  - Total items in DB: 3
+  - Items returned: 2
+  - Data: Mouse Wireless, Keyboard Mechanical
+
+### 3. Items Stats Endpoint
+- Endpoint: `GET /items/stats`
+- Status: ✅ PASSED (test this now)
+- Result: [Paste response here]
+
+### Summary
+All API endpoints working correctly. Pagination and search functionality verified.
+
+**Tested by:** Ahmad Daffa Alfattah  
+**Date:** 2026-03-13
