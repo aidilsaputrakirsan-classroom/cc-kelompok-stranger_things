@@ -58,10 +58,6 @@ Halaman dokumentasi Swagger UI menampilkan daftar endpoint REST API untuk manaje
 ### 3. Items Stats Endpoint
 - Endpoint: `GET /items/stats`
 - Status: ✅ PASSED (test this now)
-- Result: [Paste response here]
+- Result:
+   {"total_items":3,"total_value":14600100.0,"most_expensive":{"name":"Keyboard Mechanical","price":1200000.0},"cheapest":{"name":"string","price":1.0}}
 
-### Summary
-All API endpoints working correctly. Pagination and search functionality verified.
-
-**Tested by:** Ahmad Daffa Alfattah  
-**Date:** 2026-03-13
