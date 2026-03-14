@@ -928,7 +928,7 @@ def team_info():
 ➤ Penjelasan : Kode pada file ini digunakan untuk sebagai file utama untuk menjalankan aplikasi FastAPI dan mendefinisikan seluruh endpoint REST API. Pada bagian awal dilakukan inisialisasi koneksi database serta pembuatan tabel jika belum tersedia, kemudian ditambahkan konfigurasi CORS agar API dapat diakses dari aplikasi frontend. Endpoint yang dibuat meliputi health check (`GET /health`) untuk memastikan layanan berjalan, serta endpoint CRUD untuk resource items, yaitu `POST/items` (menambah data), `GET /items` yang digunakan untuk menampilkan daftar data dengan pagination dan pencarian, `GET /items/{item_id}` untuk mengambil satu data berdasarkan ID, `PUT /items/{item_id}` digunakan untuk memperbarui data, dan `DELETE /items/{item_id}` untukmenghapus data. Selain itu, ditambahkan endpoint `GET /team` yang menampilkan informasi anggota tim.
 
 ## 🔍 Testing via Swagger UI
-Terdapat pada docs di file `api-test-result.md`
+Terdapat pada docs di file [api-test-result.md](docs/api-test-results.md)
 
 ## 🔗 API Endpoints
 
@@ -1248,4 +1248,38 @@ Response body
   ]
 }
 ```
- 
+## 🎨 Frontend REACT — UI & API Integration
+Langkah yang dilakukan yaitu:
+### 1. Membuat Struktur Folder Bagian Frontend
+Pada langkah ini dilakukan pembuatan struktur folder pada bagian frontend untuk merapikan pengelompokan kode. Setelah masuk ke direktori frontend/src, dibuat dua folder utama yaitu components dan services. Folder components digunakan untuk menyimpan komponen antarmuka (UI) yang dapat digunakan kembali, sedangkan folder services digunakan untuk menampung logika layanan seperti pemanggilan API. Struktur ini membantu pengembangan menjadi lebih terorganisir dan memudahkan pemeliharaan kode.
+
+### 2. Membuat API Service
+Pada langkah ini dibuat modul API Service pada file frontend/src/services/api.js sebagai penghubung antara aplikasi frontend dan REST API yang berjalan pada backend. File ini berisi kumpulan fungsi untuk melakukan komunikasi HTTP menggunakan fetch, mencakup operasi GET (mengambil daftar item dengan parameter pencarian dan pagination, serta mengambil detail item berdasarkan ID), POST (menambahkan item baru), PUT (memperbarui data item), dan DELETE (menghapus item).
+
+### 3. Membuat Komponen Header & SearchBar
+Pada tahap ini dikembangkan dua komponen antarmuka pada frontend, yaitu Header dan SearchBar, untuk mendukung tampilan aplikasi serta interaksi pencarian data. Komponen Header berfungsi menampilkan identitas aplikasi (judul dan subtitle), jumlah total item (totalItems), serta indikator status koneksi API (isConnected) yang ditampilkan secara visual melalui label “API Connected/Disconnected”. Sementara itu, komponen SearchBar digunakan untuk melakukan pencarian item berdasarkan nama atau deskripsi, dengan memanfaatkan state lokal query untuk menampung input pengguna.
+
+### 4. Membuat Komponen ItemForm
+Komponen ItemForm digunakan sebagai form untuk menambah dan mengedit item. Data input disimpan pada state formData, sedangkan pesan kesalahan ditangani melalui state error. Saat editingItem aktif, form otomatis terisi data item yang dipilih, dan akan kembali kosong ketika mode edit dibatalkan. Sebelum dikirim, form melakukan validasi sederhana (nama wajib diisi dan harga > 0), lalu data diproses dan dikirim melalui onSubmit. Setelah berhasil, form direset dan tombol Batal Edit muncul khusus pada mode edit.
+
+### 5. Membuat Komponen ItemCard dan ItemList
+Pada tahap ini dibuat komponen ItemCard dan ItemList untuk menampilkan data item pada antarmuka aplikasi. ItemCard berfungsi menampilkan satu item dalam bentuk kartu, mencakup nama item, harga (diformat ke Rupiah), deskripsi (jika ada), jumlah stok, serta waktu pembuatan, dan menyediakan tombol aksi Edit dan Hapus yang memanggil fungsi callback dari parent. Sementara itu, ItemList berperan sebagai container yang menampilkan kumpulan ItemCard dalam layout grid, serta menangani kondisi loading (menampilkan pesan memuat data) dan kondisi data kosong (menampilkan informasi bahwa belum ada item).
+
+### 5. Pembaruan Root Component — App.jsx
+Pada tahap ini dilakukan pembaruan root component App.jsx sebagai pusat pengelolaan alur aplikasi frontend. App bertanggung jawab mengatur state utama seperti daftar item, total item, status loading, status koneksi API, mode edit, dan kata kunci pencarian. Saat aplikasi pertama kali dijalankan, useEffect digunakan untuk melakukan pengecekan koneksi melalui endpoint /health serta memuat data item dari backend. Aksi tambah, ubah, hapus, dan pencarian ditangani melalui fungsi handler yang memanggil API service, kemudian me-reload data agar tampilan selalu sesuai dengan kondisi terbaru. Komponen Header, ItemForm, SearchBar, dan ItemList disusun di dalam App untuk membentuk tampilan halaman utama.
+
+## 🔍 Testing Result
+Testing dilakukan dengan melalui 10 Test Case. Berikut 10 Test Case pengujiannya:
+1. Memverifikasi koneksi API dengan mengakses endpoint /health dan memastikan status menunjukkan Connected.
+2. Memastikan data item awal dari modul sebelumnya berhasil dimuat dan tampil pada daftar item.
+3. Melakukan penambahan item baru melalui form input dengan mengisi data yang valid lalu menekan tombol Tambah Item.
+4. Memastikan item yang ditambahkan berhasil tersimpan dan muncul pada daftar item.
+5. Menguji fitur edit dengan menekan tombol Edit pada salah satu item di daftar.
+6. Memastikan form terisi data lama, kemudian mengubah nilai harga dan menekan tombol Update, lalu memastikan perubahan tersimpan.
+7. Menguji fitur pencarian dengan memasukkan kata kunci pada SearchBar dan memastikan hasil yang ditampilkan sesuai.
+8. Menguji fitur hapus item dengan menekan tombol Hapus dan memastikan dialog konfirmasi muncul sebelum penghapusan dilakukan.
+9. Memastikan item terhapus dengan memeriksa bahwa item tersebut tidak lagi tampil pada daftar.
+10. Menguji kondisi empty state dengan menghapus seluruh item dan memastikan tampilan “Belum ada item” muncul.
+
+Hasil testing terdapat pada docs di file 
+[ui-test-result.md](docs/ui-test-results.md)
