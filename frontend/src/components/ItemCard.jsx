@@ -1,4 +1,5 @@
 function ItemCard({ item, onEdit, onDelete }) {
+
   const formatRupiah = (num) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -19,7 +20,17 @@ function ItemCard({ item, onEdit, onDelete }) {
   }
 
   return (
-    <div style={styles.card}>
+    <div
+      style={styles.card}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-6px)"
+        e.currentTarget.style.boxShadow = "0 18px 40px rgba(0,0,0,0.15)"
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0px)"
+        e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.08)"
+      }}
+    >
       <div style={styles.cardHeader}>
         <h3 style={styles.name}>{item.name}</h3>
         <span style={styles.price}>{formatRupiah(item.price)}</span>
@@ -47,73 +58,94 @@ function ItemCard({ item, onEdit, onDelete }) {
 }
 
 const styles = {
+
   card: {
-    backgroundColor: "white",
-    padding: "1.25rem",
-    borderRadius: "10px",
-    border: "1px solid #e0e0e0",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-    transition: "box-shadow 0.2s",
+    background: "linear-gradient(180deg,#ffffff,#f8fafc)",
+    padding: 20,
+    borderRadius: 18,
+    border: "1px solid #e5e7eb",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+    transition: "all 0.25s ease",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    minHeight: 170,
   },
+
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: "0.5rem",
+    marginBottom: 8,
   },
+
   name: {
     margin: 0,
-    fontSize: "1.1rem",
-    color: "#1F4E79",
+    fontSize: 18,
+    color: "#1e293b",
+    fontWeight: 600,
+    letterSpacing: 0.2,
   },
+
   price: {
     fontWeight: "bold",
-    color: "#548235",
-    fontSize: "1rem",
+    color: "#16a34a",
+    fontSize: 16,
     whiteSpace: "nowrap",
   },
+
   description: {
-    color: "#666",
-    fontSize: "0.9rem",
-    margin: "0.25rem 0 0.75rem 0",
+    color: "#64748b",
+    fontSize: 14,
+    margin: "4px 0 12px 0",
+    lineHeight: 1.5,
   },
+
   meta: {
     display: "flex",
-    gap: "1rem",
-    fontSize: "0.8rem",
-    color: "#888",
-    marginBottom: "0.75rem",
+    gap: 16,
+    fontSize: 12,
+    color: "#94a3b8",
+    marginBottom: 12,
   },
+
   quantity: {},
   date: {},
+
   actions: {
     display: "flex",
-    gap: "0.5rem",
-    borderTop: "1px solid #f0f0f0",
-    paddingTop: "0.75rem",
+    gap: 8,
+    borderTop: "1px solid #f1f5f9",
+    paddingTop: 12,
   },
+
   btnEdit: {
     flex: 1,
-    padding: "0.5rem",
-    backgroundColor: "#DEEBF7",
-    color: "#1F4E79",
+    padding: "8px 10px",
+    background: "#dbeafe",
+    color: "#1d4ed8",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: 10,
     cursor: "pointer",
-    fontSize: "0.85rem",
-    fontWeight: "bold",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "0.2s",
   },
+
   btnDelete: {
     flex: 1,
-    padding: "0.5rem",
-    backgroundColor: "#FBE5D6",
-    color: "#C00000",
+    padding: "8px 10px",
+    background: "#fee2e2",
+    color: "#dc2626",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: 10,
     cursor: "pointer",
-    fontSize: "0.85rem",
-    fontWeight: "bold",
+    fontSize: 13,
+    fontWeight: 600,
+    transition: "0.2s",
   },
+
 }
 
 export default ItemCard
+

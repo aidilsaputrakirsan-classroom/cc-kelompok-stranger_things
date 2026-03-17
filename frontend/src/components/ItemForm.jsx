@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react"
 
 function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     quantity: "0",
   })
-  const [error, setError] = useState("")
 
-  // Jika editingItem berubah, isi form dengan datanya
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [focused, setFocused] = useState("")
+
   useEffect(() => {
     if (editingItem) {
       setFormData({
@@ -33,11 +36,11 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
     e.preventDefault()
     setError("")
 
-    // Validasi
     if (!formData.name.trim()) {
       setError("Nama item wajib diisi")
       return
     }
+
     if (!formData.price || parseFloat(formData.price) <= 0) {
       setError("Harga harus lebih dari 0")
       return
@@ -50,103 +53,132 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
       quantity: parseInt(formData.quantity) || 0,
     }
 
+    setLoading(true)
+
     try {
       await onSubmit(itemData, editingItem?.id)
-      // Reset form setelah berhasil
       setFormData({ name: "", description: "", price: "", quantity: "0" })
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
+  const inputStyle = (name) => ({
+    ...styles.input,
+    ...(focused === name ? styles.inputFocused : {}),
+  })
+
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>
-        {editingItem ? "✏️ Edit Item" : "➕ Tambah Item Baru"}
-      </h2>
+    <>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-spinner {
+          width: 14px; height: 14px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+          flex-shrink: 0;
+        }
+      `}</style>
 
-      {error && <div style={styles.error}>{error}</div>}
+      <div style={styles.container}>
+        <h2 style={styles.title}>
+          {editingItem ? "✏️ Edit Item" : "➕ Tambah Item Baru"}
+        </h2>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Nama Item *</label>
+        {error && <div style={styles.error}>⚠️ {error}</div>}
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.row}>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Contoh: Laptop"
-              style={styles.input}
+              placeholder="📦 Nama Item"
+              style={inputStyle("name")}
+              onFocus={() => setFocused("name")}
+              onBlur={() => setFocused("")}
             />
-          </div>
-          <div style={styles.field}>
-            <label style={styles.label}>Harga (Rp) *</label>
             <input
               type="number"
               name="price"
               value={formData.price}
               onChange={handleChange}
-              placeholder="Contoh: 15000000"
-              min="0"
-              step="any"
-              style={styles.input}
+              placeholder="💰 Harga"
+              style={inputStyle("price")}
+              onFocus={() => setFocused("price")}
+              onBlur={() => setFocused("")}
             />
           </div>
-        </div>
 
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Deskripsi</label>
+          <div style={styles.row}>
             <input
               type="text"
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Opsional"
-              style={styles.input}
+              placeholder="📝 Deskripsi"
+              style={inputStyle("description")}
+              onFocus={() => setFocused("description")}
+              onBlur={() => setFocused("")}
             />
-          </div>
-          <div style={{ ...styles.field, maxWidth: "150px" }}>
-            <label style={styles.label}>Jumlah Stok</label>
             <input
               type="number"
               name="quantity"
               value={formData.quantity}
               onChange={handleChange}
-              min="0"
-              style={styles.input}
+              placeholder="📊 Stok"
+              style={inputStyle("quantity")}
+              onFocus={() => setFocused("quantity")}
+              onBlur={() => setFocused("")}
             />
           </div>
-        </div>
 
-        <div style={styles.actions}>
-          <button type="submit" style={styles.btnSubmit}>
-            {editingItem ? "💾 Update Item" : "➕ Tambah Item"}
-          </button>
-          {editingItem && (
-            <button type="button" onClick={onCancelEdit} style={styles.btnCancel}>
-              ✕ Batal Edit
+          <div style={styles.actions}>
+            <button type="submit" disabled={loading} style={styles.btnSubmit}>
+              {loading ? (
+                <>
+                  <span className="btn-spinner" />
+                  Menyimpan...
+                </>
+              ) : editingItem ? (
+                "💾 Update Item"
+              ) : (
+                "➕ Tambah Item"
+              )}
             </button>
-          )}
-        </div>
-      </form>
-    </div>
+
+            {editingItem && (
+              <button type="button" onClick={onCancelEdit} style={styles.btnCancel}>
+                ❌ Batal
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+    </>
   )
 }
 
 const styles = {
   container: {
-    backgroundColor: "#f8f9fa",
-    padding: "1.5rem",
-    borderRadius: "12px",
-    border: "2px solid #e0e0e0",
+    background: "#ffffff",
+    padding: "1.75rem",
+    borderRadius: "16px",
+    border: "1.5px solid #e2e8f0",
     marginBottom: "1.5rem",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
   },
   title: {
-    margin: "0 0 1rem 0",
-    color: "#1F4E79",
-    fontSize: "1.2rem",
+    marginBottom: "1.1rem",
+    color: "#0f172a",
+    fontWeight: "700",
+    fontSize: "1rem",
+    letterSpacing: "-0.1px",
   },
   form: {
     display: "flex",
@@ -155,57 +187,64 @@ const styles = {
   },
   row: {
     display: "flex",
-    gap: "1rem",
-  },
-  field: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.25rem",
-  },
-  label: {
-    fontSize: "0.85rem",
-    fontWeight: "bold",
-    color: "#555",
+    gap: "0.75rem",
   },
   input: {
-    padding: "0.6rem 0.8rem",
-    border: "2px solid #ddd",
-    borderRadius: "6px",
-    fontSize: "0.95rem",
+    flex: 1,
+    padding: "0.72rem 0.9rem",
+    borderRadius: "10px",
+    border: "1.5px solid #e2e8f0",
     outline: "none",
+    fontSize: "0.9rem",
+    color: "#1e293b",
+    background: "#f8fafc",
+    transition: "border-color 0.18s, box-shadow 0.18s",
+  },
+  inputFocused: {
+    border: "1.5px solid #1F4E79",
+    background: "#ffffff",
+    boxShadow: "0 0 0 3px rgba(31,78,121,0.1)",
   },
   actions: {
     display: "flex",
-    gap: "0.75rem",
-    marginTop: "0.5rem",
+    gap: "0.65rem",
+    marginTop: "0.35rem",
   },
   btnSubmit: {
-    padding: "0.7rem 1.5rem",
-    backgroundColor: "#548235",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    background: "linear-gradient(135deg, #1F4E79, #163d61)",
     color: "white",
     border: "none",
-    borderRadius: "8px",
+    padding: "0.72rem 1.25rem",
+    borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "0.95rem",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "0.88rem",
+    boxShadow: "0 4px 14px rgba(31,78,121,0.3)",
+    transition: "opacity 0.18s",
   },
   btnCancel: {
-    padding: "0.7rem 1.5rem",
-    backgroundColor: "#e0e0e0",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
+    background: "#f1f5f9",
+    border: "1.5px solid #e2e8f0",
+    padding: "0.72rem 1.25rem",
+    borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "0.95rem",
+    fontWeight: "600",
+    fontSize: "0.88rem",
+    color: "#64748b",
+    transition: "background 0.18s",
   },
   error: {
-    backgroundColor: "#FBE5D6",
-    color: "#C00000",
-    padding: "0.6rem 1rem",
-    borderRadius: "6px",
-    marginBottom: "0.75rem",
-    fontSize: "0.9rem",
+    background: "#fff1f0",
+    color: "#c0392b",
+    padding: "0.65rem 0.9rem",
+    borderRadius: "10px",
+    marginBottom: "0.5rem",
+    fontWeight: "500",
+    fontSize: "0.875rem",
+    border: "1.5px solid #fecaca",
   },
 }
 

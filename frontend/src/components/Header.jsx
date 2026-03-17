@@ -34,25 +34,55 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "1.5rem 2rem",
-    backgroundColor: "#1F4E79",
+    padding: "1.25rem 2rem",
+    background: "linear-gradient(135deg, #1F4E79, #163d61)",
     color: "white",
-    borderRadius: "12px",
+    borderRadius: "16px",
     marginBottom: "1.5rem",
+    boxShadow: "0 4px 24px rgba(31,78,121,0.35), inset 0 1px 0 rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.08)",
   },
-  title: { margin: 0, fontSize: "1.8rem" },
-  subtitle: { margin: "0.25rem 0 0 0", fontSize: "0.9rem", opacity: 0.8 },
-  right: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" },
-  stats: { display: "flex", gap: "0.5rem", alignItems: "center" },
+  title: { 
+    margin: 0, 
+    fontSize: "1.8rem" 
+  },
+  subtitle: { 
+    margin: "0.25rem 0 0 0", 
+    fontSize: "0.9rem", 
+    opacity: 0.8 
+  },
+  right: { 
+    display: "flex", 
+    flexDirection: "column", 
+    alignItems: "flex-end", 
+    gap: "0.5rem" 
+  },
+  stats: { 
+    display: "flex", 
+    gap: "0.5rem", 
+    alignItems: "center" 
+  },
   badge: {
     backgroundColor: "rgba(255,255,255,0.2)",
     padding: "0.3rem 0.7rem",
     borderRadius: "20px",
     fontSize: "0.8rem",
   },
-  status: { padding: "0.3rem 0.7rem", borderRadius: "20px", fontSize: "0.75rem", fontWeight: "bold" },
-  user: { display: "flex", gap: "0.5rem", alignItems: "center" },
-  userName: { fontSize: "0.85rem", opacity: 0.9 },
+  status: { 
+    padding: "0.3rem 0.7rem", 
+    borderRadius: "20px", 
+    fontSize: "0.75rem", 
+    fontWeight: "bold" 
+  },
+  user: { 
+    display: "flex", 
+    gap: "0.5rem", 
+    alignItems: "center" 
+  },
+  userName: { 
+    fontSize: "0.85rem", 
+    opacity: 0.9 
+  },
   btnLogout: {
     padding: "0.3rem 0.8rem",
     backgroundColor: "rgba(255,255,255,0.2)",
@@ -64,4 +94,4 @@ const styles = {
   },
 }
 
-export default Header
+export default Header;
