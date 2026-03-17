@@ -1,4 +1,4 @@
-# 🛠️ Setup Guide — Full-Stack Cloud App
+# Setup Guide — Full-Stack Cloud App
 
 Dokumen ini merupakan panduan lengkap untuk menjalankan project dari awal (clone repository) hingga aplikasi dapat berjalan dengan baik (backend & frontend). Panduan ini disusun berdasarkan pengembangan Modul 1–4, namun telah dirapikan agar dapat diikuti oleh pengguna baru.
 
@@ -91,7 +91,7 @@ CREATE DATABASE bye_virus;
 **Buat file `.env` di folder backend:**
 
 ```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/nama_database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/bye_virus
 SECRET_KEY=isi-random-string
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
