@@ -1,25 +1,36 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, Item
-from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse
+from models import Base, User
+from schemas import (
+    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
+    UserCreate, UserResponse, LoginRequest, TokenResponse,
+)
+from auth import create_access_token, get_current_user
 import crud
 
-# Buat semua tabel di database (jika belum ada)
+load_dotenv()
+
+# Buat semua tabel
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Cloud App API",
     description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.2.0",
+    version="0.4.0",
 )
 
-# CORS
+# ==================== CORS (FIXED) ====================
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,89 +41,107 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
-    """Endpoint untuk mengecek apakah API berjalan."""
-    return {"status": "healthy", "version": "0.2.0"}
+    return {"status": "healthy", "version": "0.4.0"}
 
 
-# ==================== CRUD ENDPOINTS ====================
+# ==================== AUTH ENDPOINTS (PUBLIC) ====================
+
+@app.post("/auth/register", response_model=UserResponse, status_code=201)
+def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """
+    Registrasi user baru.
+    
+    - **email**: Email unik (akan digunakan untuk login)
+    - **name**: Nama lengkap
+    - **password**: Minimal 8 karakter
+    """
+    user = crud.create_user(db=db, user_data=user_data)
+    if not user:
+        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
+    return user
+
+
+@app.post("/auth/login", response_model=TokenResponse)
+def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Email atau password salah")
+
+    token = create_access_token(data={"sub": str(user.id)})  # ← Tambah str()
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user,
+    }
+
+
+@app.get("/auth/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    """Ambil profil user yang sedang login."""
+    return current_user
+
+
+# ==================== ITEM ENDPOINTS (PROTECTED) ====================
 
 @app.post("/items", response_model=ItemResponse, status_code=201)
-def create_item(item: ItemCreate, db: Session = Depends(get_db)):
-    """
-    Buat item baru.
-    
-    - **name**: Nama item (wajib, 1-100 karakter)
-    - **price**: Harga (wajib, > 0)
-    - **description**: Deskripsi (opsional)
-    - **quantity**: Jumlah stok (default: 0)
-    """
+def create_item(
+    item: ItemCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Buat item baru. **Membutuhkan autentikasi.**"""
     return crud.create_item(db=db, item_data=item)
 
 
 @app.get("/items", response_model=ItemListResponse)
 def list_items(
-    skip: int = Query(0, ge=0, description="Jumlah data yang di-skip"),
-    limit: int = Query(20, ge=1, le=100, description="Jumlah data per halaman"),
-    search: str = Query(None, description="Cari berdasarkan nama/deskripsi"),
-    sort_by: str = Query("created_at", regex="^(name|price|created_at)$", description="Field untuk sorting"),
-    sort_dir: str = Query("desc", regex="^(asc|desc)$", description="Arah sorting (asc atau desc)"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    search: str = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """
-    Ambil daftar items dengan pagination, search, dan sorting.
-    
-    - **skip**: Offset untuk pagination (default: 0)
-    - **limit**: Jumlah item per halaman (default: 20, max: 100)
-    - **search**: Kata kunci pencarian (opsional)
-    """
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search, sort_by=sort_by, sort_dir=sort_dir)
-
-
-@app.get("/items/stats")
-def items_stats(db: Session = Depends(get_db)):
-    """Statistik inventory."""
-    items = db.query(Item).all()
-    if not items:
-        return {"total_items": 0, "total_value": 0, "most_expensive": None, "cheapest": None}
-    
-    most_expensive = max(items, key=lambda x: x.price)
-    cheapest = min(items, key=lambda x: x.price)
-    
-    return {
-        "total_items": len(items),
-        "total_value": sum(i.price * i.quantity for i in items),
-        "most_expensive": {"name": most_expensive.name, "price": most_expensive.price},
-        "cheapest": {"name": cheapest.name, "price": cheapest.price},
-    }
+    """Ambil daftar items. **Membutuhkan autentikasi.**"""
+    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
 
 
 @app.get("/items/{item_id}", response_model=ItemResponse)
-def get_item(item_id: int, db: Session = Depends(get_db)):
-    """Ambil satu item berdasarkan ID."""
+def get_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil satu item. **Membutuhkan autentikasi.**"""
     item = crud.get_item(db=db, item_id=item_id)
     if not item:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
     return item
 
 
 @app.put("/items/{item_id}", response_model=ItemResponse)
-def update_item(item_id: int, item: ItemUpdate, db: Session = Depends(get_db)):
-    """
-    Update item berdasarkan ID.
-    Hanya field yang dikirim yang akan di-update (partial update).
-    """
+def update_item(
+    item_id: int,
+    item: ItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update item. **Membutuhkan autentikasi.**"""
     updated = crud.update_item(db=db, item_id=item_id, item_data=item)
     if not updated:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
     return updated
 
 
 @app.delete("/items/{item_id}", status_code=204)
-def delete_item(item_id: int, db: Session = Depends(get_db)):
-    """Hapus item berdasarkan ID."""
+def delete_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Hapus item. **Membutuhkan autentikasi.**"""
     success = crud.delete_item(db=db, item_id=item_id)
     if not success:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
+        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
     return None
 
 
@@ -121,12 +150,11 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 @app.get("/team")
 def team_info():
     return {
-        "team": "Stranger_things",
+        "team": "cloud-team-XX",
         "members": [
-            # TODO: Isi dengan data tim Anda
-            {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
-            {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
-            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
-            {"name": "Verina Rahma Dinah", "nim": "10231090", "role": "Lead QA & Docs"},
-        ]
+            {"name": "Nama 1", "nim": "NIM1", "role": "Lead Backend"},
+            {"name": "Nama 2", "nim": "NIM2", "role": "Lead Frontend"},
+            {"name": "Nama 3", "nim": "NIM3", "role": "Lead DevOps"},
+            {"name": "Nama 4", "nim": "NIM4", "role": "Lead QA & Docs"},
+        ],
     }

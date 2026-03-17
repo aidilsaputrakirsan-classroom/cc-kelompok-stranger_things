@@ -46,3 +46,35 @@ class ItemListResponse(BaseModel):
     """Schema untuk response list items dengan total count."""
     total: int
     items: list[ItemResponse]
+    
+# === USER SCHEMAS ===
+class UserCreate(BaseModel):
+    """Schema untuk register user baru."""
+    email: str
+    name: str
+    password: str = Field(..., min_length=8)
+
+
+class UserResponse(BaseModel):
+    """Schema untuk response user (tanpa password)."""
+    id: int
+    email: str
+    name: str
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    """Schema untuk login request."""
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    """Schema untuk login response dengan JWT token."""
+    access_token: str
+    token_type: str
+    user: UserResponse
