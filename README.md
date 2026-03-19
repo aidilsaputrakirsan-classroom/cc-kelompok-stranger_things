@@ -568,8 +568,8 @@ UI Re-render
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
 | 2 | REST API + Database | ✅ |
-| 3 | React Frontend | ⬜ |
-| 4 | Full-Stack Integration | ⬜ |
+| 3 | React Frontend | ✅ |
+| 4 | Full-Stack Integration | ✅ |
 | 5-7 | Docker & Compose | ⬜ |
 | 8 | UTS Demo | ⬜ |
 | 9-11 | CI/CD Pipeline | ⬜ |
@@ -578,357 +578,36 @@ UI Re-render
 
 #
 
-## 🛠️ Membangun REST API
-### 1. Membuat Setup PostgreSQL & Database
-Melakukan persiapan basis data PostgreSQL sebagai penyimpanan utama aplikasi. Proses diawali dengan masuk ke PostgreSQL melalui terminal menggunakan perintah `psql -U postgres`, kemudian dibuat database baru bernama cloudapp.
-
-Selanjutnya, dibuat file `.env` pada direktori backend/ untuk menyimpan konfigurasi sensitif berupa `DATABASE_URL` sebagai string koneksi ke database. File ini tidak disertakan dalam commit karena berisi informasi penting seperti username dan password. Sebagai alternatif, disediakan file `.env.example` yang berisi template konfigurasi tanpa data rahasia dan dapat di-commit sebagai acuan bagi seluruh anggota tim. Pada tahap ini juga dipastikan bahwa `.env `telah tercantum dalam `.gitignore` sehingga tidak ikut terunggah ke repository.
-
-Tahap berikutnya adalah instalasi dependensi yang diperlukan untuk mengintegrasikan FastAPI dengan PostgreSQL. Pada tahap ini, file `backend/requirements.txt` diperbarui dengan menambahkan beberapa pustaka utama, yaitu SQLAlchemy sebagai ORM untuk pengelolaan database, psycopg2-binary sebagai driver PostgreSQL, serta python-dotenv untuk memuat variabel konfigurasi dari file `.env.` Setelah pembaruan selesai, seluruh dependensi diinstal menggunakan perintah `pip install -r requirements`.txt agar lingkungan pengembangan siap digunakan.
-
-### 2. Membuat `database.py`
-```py
-import os
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-# Load environment variables dari .env
-load_dotenv()
-
-# Ambil DATABASE_URL dari environment
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL tidak ditemukan di .env!")
-
-# Buat engine (koneksi ke database)
-engine = create_engine(DATABASE_URL)
-
-# Buat session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base class untuk models
-Base = declarative_base()
-
-
-# Dependency: dapatkan database session
-def get_db():
-    """
-    Dependency injection untuk FastAPI.
-    Membuka session saat request masuk, menutup saat selesai.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+## 📁 Struktur File
 ```
-➤ Penjelasan : Kode ini digunakan sebagai modul konfigurasi database pada aplikasi REST API. Modul ini memuat variabel lingkungan dari file `.env` untuk memperoleh `DATABASE_URL` sebagai parameter koneksi, kemudian membangun engine SQLAlchemy sebagai penghubung ke basis data. Selanjutnya, SessionLocal digunakan untuk menghasilkan sesi database yang digunakan dalam proses operasi CRUD. Selain itu, fungsi `get_db()` sebagai mekanisme dependency injection pada FastAPI agar setiap permintaan (request) memperoleh sesi database secara terkontrol dan sesi tersebut ditutup otomatis setelah proses selesai.
-
-### 3. Membuat `models.py`
-```py
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text
-from sqlalchemy.sql import func
-from database import Base
-
-
-class Item(Base):
-    """
-    Model untuk tabel 'items' di database.
-    Setiap atribut = satu kolom di tabel.
-    """
-    __tablename__ = "items"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String(100), nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    price = Column(Float, nullable=False)
-    quantity = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    def __repr__(self):
-        return f"<Item(id={self.id}, name='{self.name}', price={self.price})>"
+cloud-team-stranger_things/
+├── backend/
+│   ├── main.py              ← Updated (auth endpoints, CORS fix)
+│   ├── auth.py              ← BARU (JWT utilities)
+│   ├── database.py
+│   ├── models.py            ← Updated (+ User model)
+│   ├── schemas.py           ← Updated (+ auth schemas)
+│   ├── crud.py              ← Updated (+ user CRUD)
+│   ├── requirements.txt     ← Updated (+ jose, passlib, bcrypt)
+│   ├── .env                 ← Updated (+ JWT & CORS config)
+│   └── .env.example         ← Updated
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx              ← Updated (auth integration)
+│   │   ├── components/
+│   │   │   ├── Header.jsx       ← Updated (+ user info, logout)
+│   │   │   ├── LoginPage.jsx    ← BARU
+│   │   │   ├── SearchBar.jsx
+│   │   │   ├── ItemForm.jsx
+│   │   │   ├── ItemList.jsx
+│   │   │   └── ItemCard.jsx
+│   │   └── services/
+│   │       └── api.js           ← Updated (+ auth, token mgmt)
+│   ├── .env
+│   └── .env.example
+├── .gitignore
+└── README.md
 ```
-➤ Penjelasan : Kode ini digunakan untuk mendefinisikan struktur tabel pada database menggunakan SQLAlchemy ORM. Pada file ini dibuat kelas `Item` yang merepresentasikan tabel `items`, di mana setiap atribut pada kelas menjadi kolom pada tabel, yaitu `id` sebagai primary key dengan nilai otomatis (auto-increment), `name` sebagai nama item yang wajib diisi dengan batas maksimal 100 karakter, `description` sebagai deskripsi opsional, `price` sebagai harga yang wajib diisi, serta `quantity` sebagai jumlah stok dengan nilai default 0. Selain itu, terdapat kolom `created_at` yang terisi otomatis saat data dibuat dan `updated_at` yang diperbarui otomatis saat data mengalami perubahan.
-
-### 4. Membuat `schemas.py`
-Schema perlu dipisahkan dari model karena fungsi keduanya berbeda: model (SQLAlchemy) dipakai untuk merepresentasikan struktur tabel dan operasi ke database, sedangkan schema (Pydantic) dipakai untuk mengatur validasi dan format data yang boleh masuk/keluar melalui API.
-
-```py
-from pydantic import BaseModel, Field
-from typing import Optional
-from datetime import datetime
-
-
-# === BASE SCHEMA ===
-class ItemBase(BaseModel):
-    """Base schema — field yang dipakai untuk create & update."""
-    name: str = Field(..., min_length=1, max_length=100, examples=["Laptop"])
-    description: Optional[str] = Field(None, examples=["Laptop untuk cloud computing"])
-    price: float = Field(..., gt=0, examples=[15000000])
-    quantity: int = Field(0, ge=0, examples=[10])
-
-
-# === CREATE SCHEMA (untuk POST request) ===
-class ItemCreate(ItemBase):
-    """Schema untuk membuat item baru. Mewarisi semua field dari ItemBase."""
-    pass
-
-
-# === UPDATE SCHEMA (untuk PUT request) ===
-class ItemUpdate(BaseModel):
-    """
-    Schema untuk update item. Semua field optional 
-    karena user mungkin hanya ingin update sebagian field.
-    """
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
-    price: Optional[float] = Field(None, gt=0)
-    quantity: Optional[int] = Field(None, ge=0)
-
-
-# === RESPONSE SCHEMA (untuk output) ===
-class ItemResponse(ItemBase):
-    """Schema untuk response. Termasuk id dan timestamp dari database."""
-    id: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True  # Agar bisa convert dari SQLAlchemy model
-
-
-# === LIST RESPONSE (dengan metadata) ===
-class ItemListResponse(BaseModel):
-    """Schema untuk response list items dengan total count."""
-    total: int
-    items: list[ItemResponse]
-```
-➤ Penjelasan : Kode ini digunakan untuk membuat schema Pydantic sebagai acuan format data pada REST API. Schema ini membantu memastikan data yang masuk dari client sudah valid dan data yang keluar dari server memiliki struktur yang konsisten. ItemCreate digunakan untuk input saat menambah data, ItemUpdate untuk memperbarui data (field bersifat opsional agar bisa update sebagian), sedangkan ItemResponse untuk format output yang menyertakan id dan timestamp dari database. Selain itu, ItemListResponse dipakai untuk menampilkan daftar item beserta total data.
-
-Field Validation: 
-- `Field(..., min_length=1)` : field wajib diisi dengan panjang minimal 1 karakter 
-- `Field(..., gt=0)` : field wajib diisi dan harus lebih besar dari 0
-- `Field(0, ge=0)` : default adalah 0 dan tidak boleh bernilai negatif 
-- `Optional[str] = None` : field bersifat opsional dan akan bernilai None jika tidak diisi
-
-### 5. Membuat `crud.py`
-```py
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from models import Item
-from schemas import ItemCreate, ItemUpdate
-
-
-def create_item(db: Session, item_data: ItemCreate) -> Item:
-    """Buat item baru di database."""
-    db_item = Item(**item_data.model_dump())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-
-def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None):
-    """
-    Ambil daftar items dengan pagination & search.
-    - skip: jumlah data yang di-skip (untuk pagination)
-    - limit: jumlah data per halaman
-    - search: cari berdasarkan nama atau deskripsi
-    """
-    query = db.query(Item)
-    
-    if search:
-        query = query.filter(
-            or_(
-                Item.name.ilike(f"%{search}%"),
-                Item.description.ilike(f"%{search}%")
-            )
-        )
-    
-    total = query.count()
-    items = query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
-    
-    return {"total": total, "items": items}
-
-
-def get_item(db: Session, item_id: int) -> Item | None:
-    """Ambil satu item berdasarkan ID."""
-    return db.query(Item).filter(Item.id == item_id).first()
-
-
-def update_item(db: Session, item_id: int, item_data: ItemUpdate) -> Item | None:
-    """
-    Update item berdasarkan ID.
-    Hanya update field yang dikirim (bukan None).
-    """
-    db_item = db.query(Item).filter(Item.id == item_id).first()
-    
-    if not db_item:
-        return None
-    
-    # Hanya update field yang dikirim (exclude_unset=True)
-    update_data = item_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_item, field, value)
-    
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-
-def delete_item(db: Session, item_id: int) -> bool:
-    """Hapus item berdasarkan ID. Return True jika berhasil."""
-    db_item = db.query(Item).filter(Item.id == item_id).first()
-    
-    if not db_item:
-        return False
-    
-    db.delete(db_item)
-    db.commit()
-    return True
-```
-➤ Penjelasan : Kode ini digunakan untuk menjalankan fungsi-fungsi CRUD (Create, Read, Update, Delete) yang berinteraksi langsung dengan database melalui SQLAlchemy Session. Fungsi `create_item` digunakan untuk menambahkan data item baru, sedangkan `get_items` mengambil daftar item dengan dukungan pagination (skip dan limit) serta fitur pencarian berdasarkan nama atau deskripsi. Fungsi `get_item` digunakan untuk mengambil satu data item berdasarkan `id`. Selanjutnya, `update_item` digunakan untuk memperbarui data item tertentu dan hanya mengubah field yang dikirim oleh client. Terakhir, `delete_item` digunakan untuk menghapus data item berdasarkan `id` dan mengembalikan status keberhasilan operasi.
-
-### 6. Update `main.py`
-Tahap selanjutnya adalah mengganti isi dari file `main.py` yang sebelumnya dengan kode berikut
-```py
-from fastapi import FastAPI, Depends, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-
-from database import engine, get_db
-from models import Base
-from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse
-import crud
-
-# Buat semua tabel di database (jika belum ada)
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(
-    title="Cloud App API",
-    description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.2.0",
-)
-
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# ==================== HEALTH CHECK ====================
-
-@app.get("/health")
-def health_check():
-    """Endpoint untuk mengecek apakah API berjalan."""
-    return {"status": "healthy", "version": "0.2.0"}
-
-
-# ==================== CRUD ENDPOINTS ====================
-
-@app.post("/items", response_model=ItemResponse, status_code=201)
-def create_item(item: ItemCreate, db: Session = Depends(get_db)):
-    """
-    Buat item baru.
-    
-    - **name**: Nama item (wajib, 1-100 karakter)
-    - **price**: Harga (wajib, > 0)
-    - **description**: Deskripsi (opsional)
-    - **quantity**: Jumlah stok (default: 0)
-    """
-    return crud.create_item(db=db, item_data=item)
-
-
-@app.get("/items", response_model=ItemListResponse)
-def list_items(
-    skip: int = Query(0, ge=0, description="Jumlah data yang di-skip"),
-    limit: int = Query(20, ge=1, le=100, description="Jumlah data per halaman"),
-    search: str = Query(None, description="Cari berdasarkan nama/deskripsi"),
-    db: Session = Depends(get_db),
-):
-    """
-    Ambil daftar items dengan pagination dan search.
-    
-    - **skip**: Offset untuk pagination (default: 0)
-    - **limit**: Jumlah item per halaman (default: 20, max: 100)
-    - **search**: Kata kunci pencarian (opsional)
-    """
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
-
-
-@app.get("/items/{item_id}", response_model=ItemResponse)
-def get_item(item_id: int, db: Session = Depends(get_db)):
-    """Ambil satu item berdasarkan ID."""
-    item = crud.get_item(db=db, item_id=item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
-    return item
-
-
-@app.put("/items/{item_id}", response_model=ItemResponse)
-def update_item(item_id: int, item: ItemUpdate, db: Session = Depends(get_db)):
-    """
-    Update item berdasarkan ID.
-    Hanya field yang dikirim yang akan di-update (partial update).
-    """
-    updated = crud.update_item(db=db, item_id=item_id, item_data=item)
-    if not updated:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
-    return updated
-
-
-@app.delete("/items/{item_id}", status_code=204)
-def delete_item(item_id: int, db: Session = Depends(get_db)):
-    """Hapus item berdasarkan ID."""
-    success = crud.delete_item(db=db, item_id=item_id)
-    if not success:
-        raise HTTPException(status_code=404, detail=f"Item dengan id={item_id} tidak ditemukan")
-    return None
-
-@app.get("/items/stats")
-def items_stats(db: Session = Depends(get_db)):
-    """Statistik inventory."""
-    items = db.query(Item).all()
-    if not items:
-        return {"total_items": 0, "total_value": 0, "most_expensive": None, "cheapest": None}
-    
-    return {
-        "total_items": len(items),
-        "total_value": sum(i.price * i.quantity for i in items),
-        "most_expensive": {"name": max(items, key=lambda x: x.price).name, 
-                          "price": max(items, key=lambda x: x.price).price},
-        "cheapest": {"name": min(items, key=lambda x: x.price).name,
-                    "price": min(items, key=lambda x: x.price).price},
-    }
-
-
-# ==================== TEAM INFO ====================
-
-@app.get("/team")
-def team_info():
-    return {
-        "team": "Stranger_things",
-        "members": [
-            # TODO: Isi dengan data tim Anda
-            {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead Backend"},
-            {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
-            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
-            {"name": "Verina Rahmadinah", "nim": "10231090", "role": "Lead QA & Docs"},
-        ]
-    }
-```
-➤ Penjelasan : Kode pada file ini digunakan untuk sebagai file utama untuk menjalankan aplikasi FastAPI dan mendefinisikan seluruh endpoint REST API. Pada bagian awal dilakukan inisialisasi koneksi database serta pembuatan tabel jika belum tersedia, kemudian ditambahkan konfigurasi CORS agar API dapat diakses dari aplikasi frontend. Endpoint yang dibuat meliputi health check (`GET /health`) untuk memastikan layanan berjalan, serta endpoint CRUD untuk resource items, yaitu `POST/items` (menambah data), `GET /items` yang digunakan untuk menampilkan daftar data dengan pagination dan pencarian, `GET /items/{item_id}` untuk mengambil satu data berdasarkan ID, `PUT /items/{item_id}` digunakan untuk memperbarui data, dan `DELETE /items/{item_id}` untukmenghapus data. Selain itu, ditambahkan endpoint `GET /team` yang menampilkan informasi anggota tim.
-
-## 🔍 Testing via Swagger UI
-Terdapat pada docs di file [api-test-result.md](docs/api-test-results.md)
 
 ## 🔗 API Endpoints
 
@@ -1248,38 +927,104 @@ Response body
   ]
 }
 ```
-## 🎨 Frontend REACT — UI & API Integration
-Langkah yang dilakukan yaitu:
-### 1. Membuat Struktur Folder Bagian Frontend
-Pada langkah ini dilakukan pembuatan struktur folder pada bagian frontend untuk merapikan pengelompokan kode. Setelah masuk ke direktori frontend/src, dibuat dua folder utama yaitu components dan services. Folder components digunakan untuk menyimpan komponen antarmuka (UI) yang dapat digunakan kembali, sedangkan folder services digunakan untuk menampung logika layanan seperti pemanggilan API. Struktur ini membantu pengembangan menjadi lebih terorganisir dan memudahkan pemeliharaan kode.
+### Hasil Pengujian API
+| No | Method | URL | Request Body | Response Body | HTTP Status Code | Hasil Pengujian |
+|----|--------|-----|---------|--------|----------|-----------|
+| 1 | GET | `/health` | `-` | `{"status":"healthy","version":"0.2.0"}` | `200 OK` | ✅ |
+| 2 | POST | `/items` | `{"name":"Mouse Wireless","price":250000,"description":"Mouse bluetooth","quantity":20}` | `{"name":"Mouse Wireless","description":"Mouse bluetooth","price":250000,"quantity":20,"id":5,"created_at":"2026-03-05T09:05:10.561093+08:00","updated_at":null}` | `201 Created` | ✅ |
+| 3 | GET | `/items` | `-` | `{"total":2,"items":[{"name":"Mouse Wireless","description":"Mouse bluetooth","price":250000,"quantity":20,"id":5,"created_at":"2026-03-05T09:05:10.561093+08:00","updated_at":null}]}` | `200 OK` | ✅ |
+| 4 | GET | `/items/{item_id}` | `-` | `{"name":"Mouse Wireless","description":"Mouse bluetooth","price":250000,"quantity":20,"id":3,"created_at":"2026-03-03T08:33:22.780495+08:00","updated_at":null}` | `200 OK` | ✅ |
+| 5 | PUT | `/items/{item_id}` | `{"name":"string","description":"string","price":1,"quantity":100}` | `{"name":"string","description":"string","price":1,"quantity":100,"id":3,"created_at":"2026-03-03T08:33:22.780495+08:00","updated_at":"2026-03-05T09:07:21.964971+08:00"}` | `200 OK` | ✅ |
+| 6 | DELETE | `/items/{item_id}` | `-` | `Berhasil menghapus item, tanpa response body` | `204 No Content` | ✅ |
+| 7 | GET | `/items/stats` | `-` | `{"total_items":3,"total_value":14600100,"most_expensive":{"name":"Keyboard Mechanical","price":12000000},"cheapest":{"name":"string","price":1}}` | `200 OK` | ✅ |
+| 8 | GET | `/team` | `-` | `{"team":"Stranger_things","members":[{"name":"Ahmad Daffa Alfattah","nim":"10231008","role":"Lead Backend"},{"name":"Nazwa Amelia Zahra","nim":"10231068","role":"Lead Frontend"},{"name":"Cintya Widhi Astuti","nim":"10231026","role":"Lead DevOps"},{"name":"Verina Rahma Dinah","nim":"10231090","role":"Lead QA & Docs"}]}` | `200 OK` | ✅ |
 
-### 2. Membuat API Service
-Pada langkah ini dibuat modul API Service pada file frontend/src/services/api.js sebagai penghubung antara aplikasi frontend dan REST API yang berjalan pada backend. File ini berisi kumpulan fungsi untuk melakukan komunikasi HTTP menggunakan fetch, mencakup operasi GET (mengambil daftar item dengan parameter pencarian dan pagination, serta mengambil detail item berdasarkan ID), POST (menambahkan item baru), PUT (memperbarui data item), dan DELETE (menghapus item).
+## 🎨 FRONTEND REACT — UI & API INTEGRATION
 
-### 3. Membuat Komponen Header & SearchBar
-Pada tahap ini dikembangkan dua komponen antarmuka pada frontend, yaitu Header dan SearchBar, untuk mendukung tampilan aplikasi serta interaksi pencarian data. Komponen Header berfungsi menampilkan identitas aplikasi (judul dan subtitle), jumlah total item (totalItems), serta indikator status koneksi API (isConnected) yang ditampilkan secara visual melalui label “API Connected/Disconnected”. Sementara itu, komponen SearchBar digunakan untuk melakukan pencarian item berdasarkan nama atau deskripsi, dengan memanfaatkan state lokal query untuk menampung input pengguna.
+Langkah yang dilakukan yaitu: 
 
-### 4. Membuat Komponen ItemForm
-Komponen ItemForm digunakan sebagai form untuk menambah dan mengedit item. Data input disimpan pada state formData, sedangkan pesan kesalahan ditangani melalui state error. Saat editingItem aktif, form otomatis terisi data item yang dipilih, dan akan kembali kosong ketika mode edit dibatalkan. Sebelum dikirim, form melakukan validasi sederhana (nama wajib diisi dan harga > 0), lalu data diproses dan dikirim melalui onSubmit. Setelah berhasil, form direset dan tombol Batal Edit muncul khusus pada mode edit.
+### 1. Membuat Struktur Folder Bagian Frontend 
+Pada langkah ini dilakukan pembuatan struktur folder pada bagian frontend untuk merapikan pengelompokan kode. Setelah masuk ke direktori frontend/src, dibuat dua folder utama yaitu components dan services. Folder components digunakan untuk menyimpan komponen antarmuka (UI) yang dapat digunakan kembali, sedangkan folder services digunakan untuk menampung logika layanan seperti pemanggilan API. Struktur ini membantu pengembangan menjadi lebih terorganisir dan memudahkan pemeliharaan kode. 
 
-### 5. Membuat Komponen ItemCard dan ItemList
-Pada tahap ini dibuat komponen ItemCard dan ItemList untuk menampilkan data item pada antarmuka aplikasi. ItemCard berfungsi menampilkan satu item dalam bentuk kartu, mencakup nama item, harga (diformat ke Rupiah), deskripsi (jika ada), jumlah stok, serta waktu pembuatan, dan menyediakan tombol aksi Edit dan Hapus yang memanggil fungsi callback dari parent. Sementara itu, ItemList berperan sebagai container yang menampilkan kumpulan ItemCard dalam layout grid, serta menangani kondisi loading (menampilkan pesan memuat data) dan kondisi data kosong (menampilkan informasi bahwa belum ada item).
+### 2. Membuat API Service 
+Pada langkah ini dibuat modul API Service pada file frontend/src/services/api.js sebagai penghubung antara aplikasi frontend dan REST API yang berjalan pada backend. File ini berisi kumpulan fungsi untuk melakukan komunikasi HTTP menggunakan fetch, mencakup operasi GET (mengambil daftar item dengan parameter pencarian dan pagination, serta mengambil detail item berdasarkan ID), POST (menambahkan item baru), PUT (memperbarui data item), dan DELETE (menghapus item). 
 
-### 5. Pembaruan Root Component — App.jsx
-Pada tahap ini dilakukan pembaruan root component App.jsx sebagai pusat pengelolaan alur aplikasi frontend. App bertanggung jawab mengatur state utama seperti daftar item, total item, status loading, status koneksi API, mode edit, dan kata kunci pencarian. Saat aplikasi pertama kali dijalankan, useEffect digunakan untuk melakukan pengecekan koneksi melalui endpoint /health serta memuat data item dari backend. Aksi tambah, ubah, hapus, dan pencarian ditangani melalui fungsi handler yang memanggil API service, kemudian me-reload data agar tampilan selalu sesuai dengan kondisi terbaru. Komponen Header, ItemForm, SearchBar, dan ItemList disusun di dalam App untuk membentuk tampilan halaman utama.
+### 3. Membuat Komponen Header & SearchBar 
+Pada tahap ini dikembangkan dua komponen antarmuka pada frontend, yaitu Header dan SearchBar, untuk mendukung tampilan aplikasi serta interaksi pencarian data. Komponen Header berfungsi menampilkan identitas aplikasi (judul dan subtitle), jumlah total item (totalItems), serta indikator status koneksi API (isConnected) yang ditampilkan secara visual melalui label “API Connected/Disconnected”. Sementara itu, komponen SearchBar digunakan untuk melakukan pencarian item berdasarkan nama atau deskripsi, dengan memanfaatkan state lokal query untuk menampung input pengguna. 
 
-## 🔍 Testing Result
-Testing dilakukan dengan melalui 10 Test Case. Berikut 10 Test Case pengujiannya:
-1. Memverifikasi koneksi API dengan mengakses endpoint /health dan memastikan status menunjukkan Connected.
-2. Memastikan data item awal dari modul sebelumnya berhasil dimuat dan tampil pada daftar item.
-3. Melakukan penambahan item baru melalui form input dengan mengisi data yang valid lalu menekan tombol Tambah Item.
-4. Memastikan item yang ditambahkan berhasil tersimpan dan muncul pada daftar item.
-5. Menguji fitur edit dengan menekan tombol Edit pada salah satu item di daftar.
-6. Memastikan form terisi data lama, kemudian mengubah nilai harga dan menekan tombol Update, lalu memastikan perubahan tersimpan.
-7. Menguji fitur pencarian dengan memasukkan kata kunci pada SearchBar dan memastikan hasil yang ditampilkan sesuai.
-8. Menguji fitur hapus item dengan menekan tombol Hapus dan memastikan dialog konfirmasi muncul sebelum penghapusan dilakukan.
-9. Memastikan item terhapus dengan memeriksa bahwa item tersebut tidak lagi tampil pada daftar.
-10. Menguji kondisi empty state dengan menghapus seluruh item dan memastikan tampilan “Belum ada item” muncul.
+### 4. Membuat Komponen ItemForm 
+Komponen ItemForm digunakan sebagai form untuk menambah dan mengedit item. Data input disimpan pada state formData, sedangkan pesan kesalahan ditangani melalui state error. Saat editingItem aktif, form otomatis terisi data item yang dipilih, dan akan kembali kosong ketika mode edit dibatalkan. Sebelum dikirim, form melakukan validasi sederhana (nama wajib diisi dan harga > 0), lalu data diproses dan dikirim melalui onSubmit. Setelah berhasil, form direset dan tombol Batal Edit muncul khusus pada mode edit. 
 
-Hasil testing terdapat pada docs di file 
-[ui-test-result.md](docs/ui-test-results.md)
+### 5. Membuat Komponen ItemCard dan ItemList 
+Pada tahap ini dibuat komponen ItemCard dan ItemList untuk menampilkan data item pada antarmuka aplikasi. ItemCard berfungsi menampilkan satu item dalam bentuk kartu, mencakup nama item, harga (diformat ke Rupiah), deskripsi (jika ada), jumlah stok, serta waktu pembuatan, dan menyediakan tombol aksi Edit dan Hapus yang memanggil fungsi callback dari parent. Sementara itu, ItemList berperan sebagai container yang menampilkan kumpulan ItemCard dalam layout grid, serta menangani kondisi loading (menampilkan pesan memuat data) dan kondisi data kosong (menampilkan informasi bahwa belum ada item). 
+
+### 6. Pembaruan Root Component — App.jsx 
+Pada tahap ini dilakukan pembaruan root component App.jsx sebagai pusat pengelolaan alur aplikasi frontend. App bertanggung jawab mengatur state utama seperti daftar item, total item, status loading, status koneksi API, mode edit, dan kata kunci pencarian. Saat aplikasi pertama kali dijalankan, useEffect digunakan untuk melakukan pengecekan koneksi melalui endpoint /health serta memuat data item dari backend. Aksi tambah, ubah, hapus, dan pencarian ditangani melalui fungsi handler yang memanggil API service, kemudian me-reload data agar tampilan selalu sesuai dengan kondisi terbaru. Komponen Header, ItemForm, SearchBar, dan ItemList disusun di dalam App untuk membentuk tampilan halaman utama. 
+
+### 🔍 Hasil Pengujian UI
+| No | Test Case | Langkah Pengujian | Hasil yang Diharapkan | Hasil Pengujian | Status |
+|----|-----------|-------------------|-----------------------|-----------------|--------|
+| 1 | Cek Status API | Menjalankan aplikasi lalu memeriksa indikator koneksi API pada tampilan frontend. | Status API menunjukkan bahwa frontend berhasil terhubung dengan backend. | Frontend berhasil terhubung dengan backend. Hal ini ditandai dengan munculnya status **API Connected** pada tampilan aplikasi. | ✅ Berhasil |
+| 2 | Items dari Modul 2 Muncul di Daftar | Membuka halaman utama aplikasi dan memeriksa daftar item yang sudah dibuat pada modul sebelumnya. | Item dari modul sebelumnya tampil pada daftar item. | Item yang telah dibuat pada modul sebelumnya berhasil ditampilkan pada daftar item. | ✅ Berhasil |
+| 3 | Menambah Item Baru melalui Form | Mengisi form penambahan item dengan data yang valid lalu menekan tombol **Tambah Item**. | Form dapat menerima input dan mengirim data item baru ke sistem. | Form penambahan item dapat digunakan dengan baik untuk memasukkan data baru. | ✅ Berhasil |
+| 4 | Item Baru Muncul di Daftar | Setelah menambahkan item, memeriksa apakah item baru langsung tampil pada daftar item. | Item baru muncul pada daftar tanpa perlu memuat ulang halaman secara manual. | Item yang baru ditambahkan langsung muncul pada daftar item. Hal ini membuktikan bahwa data berhasil disimpan ke database dan frontend mampu memperbarui tampilan secara otomatis. | ✅ Berhasil |
+| 5 | Klik Edit pada Item | Menekan tombol **Edit** pada salah satu item di daftar. | Sistem memilih item yang akan diedit dan menampilkan datanya pada form. | Tombol **Edit** berfungsi dengan baik. Saat tombol diklik, sistem berhasil memilih item yang diinginkan untuk diedit dan menyiapkan data item tersebut ke dalam form. | ✅ Berhasil |
+| 6 | Form Terisi Data Lama, Mengubah Harga Item, dan Klik Update | Menekan tombol **Edit**, memastikan form terisi data lama, mengubah harga item, lalu menekan tombol **Update Item**. | Form menampilkan data lama, perubahan harga dapat disimpan, dan daftar item menampilkan data terbaru. | Form edit berhasil menampilkan data lama dari item yang dipilih. Pengguna dapat mengubah harga item dan menyimpan perubahan dengan menekan tombol **Update Item**. Perubahan harga kemudian tampil sesuai data terbaru pada daftar item. | ✅ Berhasil |
+| 7 | Mencari Item melalui SearchBar | Memasukkan kata kunci tertentu pada **SearchBar** untuk mencari item. | Sistem menampilkan item yang sesuai dengan kata kunci pencarian. | Fitur pencarian bekerja sesuai fungsinya. Item dapat ditemukan berdasarkan kata kunci yang dimasukkan. | ✅ Berhasil |
+| 8 | Menghapus Item dan Terdapat Confirm Dialog | Menekan tombol **Hapus** pada salah satu item di daftar. | Sistem menampilkan dialog konfirmasi sebelum item benar-benar dihapus. | Saat tombol **Hapus** ditekan, sistem menampilkan dialog konfirmasi terlebih dahulu. Hal ini menunjukkan bahwa mekanisme pengamanan sebelum penghapusan data berjalan dengan baik. | ✅ Berhasil |
+| 9 | Item Hilang dari Daftar | Mengonfirmasi proses hapus lalu memeriksa kembali daftar item. | Item yang dihapus tidak lagi tampil pada daftar item. | Setelah penghapusan dikonfirmasi, item yang dipilih berhasil terhapus dan tidak lagi muncul pada daftar. Ini menandakan bahwa proses delete berjalan dengan benar. | ✅ Berhasil |
+| 10 | Menghapus Semua Item dan Muncul Empty State | Menghapus seluruh item yang tersedia lalu memeriksa tampilan aplikasi. | Aplikasi menampilkan kondisi **empty state** ketika tidak ada data item yang tersedia. | Setelah seluruh item dihapus, aplikasi menampilkan kondisi **empty state**. Hal ini membuktikan bahwa sistem mampu menyesuaikan tampilan ketika tidak ada data yang tersedia. | ✅ Berhasil |
+
+##  🔐 Authentication
+Pada pengembangan modul ini, sistem telah dilengkapi dengan mekanisme autentikasi menggunakan **JSON Web Token (JWT)**. Penerapan autentikasi bertujuan untuk memastikan bahwa hanya pengguna yang telah terdaftar dan berhasil login yang dapat mengakses fitur-fitur tertentu pada aplikasi, khususnya endpoint yang bersifat **protected** seperti `/auth/me` dan seluruh endpoint `/items`.
+
+### Alur Authentication
+1. User melakukan registrasi melalui halaman register pada frontend
+2. Frontend mengirim data ke endpoint `POST /auth/register`
+3. Backend menyimpan user baru dengan password yang sudah di-hash
+4. User login melalui halaman login pada frontend
+5. Frontend mengirim email dan password ke endpoint `POST /auth/login`
+6. Backend memverifikasi data login dan mengembalikan JWT token
+7. Frontend menyimpan token dan menggunakannya untuk request berikutnya
+8. Backend memvalidasi token setiap kali user mengakses endpoint protected
+   
+### API Endpoint List
+| No | Method | Endpoint | Access | Deskripsi |
+|----|--------|----------|--------|-----------|
+| 1 | GET | `/health` | Public | Melakukan health check untuk memastikan backend berjalan dengan baik dan menampilkan status layanan serta versi aplikasi |
+| 2 | POST | `/auth/register` | Public | Mendaftarkan user baru ke dalam sistem menggunakan email, nama, dan password |
+| 3 | POST | `/auth/login` | Public | Melakukan login user dan menghasilkan JWT access token |
+| 4 | GET | `/auth/me` | Protected | Mengambil data user yang sedang login berdasarkan token yang dikirim |
+| 5 | POST | `/items` | Protected | Menambahkan item baru ke database |
+| 6 | GET | `/items` | Protected | Mengambil daftar item dengan dukungan pagination dan pencarian |
+| 7 | GET | `/items/{item_id}` | Protected | Mengambil detail satu item berdasarkan ID |
+| 8 | PUT | `/items/{item_id}` | Protected | Memperbarui data item berdasarkan ID |
+| 9 | DELETE | `/items/{item_id}` | Protected | Menghapus item berdasarkan ID |
+| 10 | GET | `/team` | Public | Menampilkan informasi anggota tim pengembang aplikasi |
+
+### Hasil Pengujian Authentication & CRUD
+| No | Test Case | Langkah Pengujian | Hasil yang Diharapkan | Hasil Pengujian | Status |
+|----|-----------|-------------------|-----------------------|-----------------|--------|
+| 1 | Halaman login ditampilkan | Menjalankan frontend lalu membuka aplikasi pada browser | Halaman login tampil sebagai halaman awal aplikasi | Halaman login berhasil ditampilkan saat aplikasi pertama kali dibuka | ✅ Berhasil |
+| 2 | Registrasi user baru | Memilih tab **Register**, mengisi nama, email, dan password yang valid, lalu menekan tombol **Register** | User baru berhasil terdaftar di dalam sistem | Registrasi user baru berhasil dilakukan | ✅ Berhasil |
+| 3 | Login otomatis setelah registrasi | Setelah proses registrasi berhasil, sistem melanjutkan login secara otomatis | User langsung masuk ke aplikasi tanpa perlu login manual kembali | Setelah registrasi selesai, user otomatis masuk ke dalam aplikasi | ✅ Berhasil |
+| 4 | Halaman utama dan daftar item ditampilkan | Setelah login berhasil, memeriksa tampilan halaman utama aplikasi | Halaman utama aplikasi dan daftar item berhasil dimuat | Halaman utama aplikasi tampil dengan baik dan data item berhasil dimuat | ✅ Berhasil |
+| 5 | Nama user tampil pada header | Memeriksa bagian header setelah user berhasil login | Nama user tampil pada header aplikasi | Nama user berhasil ditampilkan pada header | ✅ Berhasil |
+| 6 | Menambahkan item baru | Mengisi form item dengan data yang valid lalu menekan tombol **Tambah Item** | Item baru berhasil ditambahkan ke dalam sistem | Item baru berhasil ditambahkan melalui form input | ✅ Berhasil |
+| 7 | Item baru muncul pada daftar | Setelah item ditambahkan, memeriksa daftar item pada halaman utama | Item baru langsung muncul pada daftar item | Item yang baru ditambahkan berhasil tampil pada daftar | ✅ Berhasil |
+| 8 | Mengubah data item | Menekan tombol **Edit** pada salah satu item, mengubah data, lalu menekan tombol **Update Item** | Data item berhasil diperbarui dan perubahan tampil pada daftar | Fitur edit berjalan dengan baik dan perubahan data berhasil disimpan | ✅ Berhasil |
+| 9 | Mencari item | Memasukkan kata kunci tertentu pada kolom pencarian | Sistem menampilkan item yang sesuai dengan kata kunci pencarian | Fitur pencarian berjalan sesuai fungsi dan item dapat ditemukan dengan baik | ✅ Berhasil |
+| 10 | Mengurutkan produk berdasarkan harga termurah | Memilih opsi urutkan **harga termurah** pada fitur sorting | Daftar produk ditampilkan mulai dari harga paling rendah ke paling tinggi | Produk berhasil diurutkan berdasarkan harga termurah | ✅ Berhasil |
+| 11 | Mengurutkan produk berdasarkan harga termahal | Memilih opsi urutkan **harga termahal** pada fitur sorting | Daftar produk ditampilkan mulai dari harga paling tinggi ke paling rendah | Produk berhasil diurutkan berdasarkan harga termahal | ✅ Berhasil |
+| 12 | Mengurutkan produk berdasarkan data terlama | Memilih opsi urutkan **terlama** pada fitur sorting | Daftar produk ditampilkan berdasarkan waktu input paling lama ke paling baru | Produk berhasil diurutkan berdasarkan data terlama | ✅ Berhasil |
+| 13 | Mengurutkan produk berdasarkan data terbaru | Memilih opsi urutkan **terbaru** pada fitur sorting | Daftar produk ditampilkan berdasarkan waktu input paling baru ke paling lama | Produk berhasil diurutkan berdasarkan data terbaru | ✅ Berhasil |
+| 14 | Mengurutkan produk berdasarkan nama A–Z | Memilih opsi urutkan **A–Z** pada fitur sorting | Daftar produk ditampilkan berdasarkan urutan alfabet dari A ke Z | Produk berhasil diurutkan berdasarkan nama A–Z | ✅ Berhasil |
+| 15 | Mengurutkan produk berdasarkan nama Z–A | Memilih opsi urutkan **Z–A** pada fitur sorting | Daftar produk ditampilkan berdasarkan urutan alfabet dari Z ke A | Produk berhasil diurutkan berdasarkan nama Z–A | ✅ Berhasil |
+| 16 | Menghapus item | Menekan tombol **Hapus** pada salah satu item dan menyetujui dialog konfirmasi | Item berhasil dihapus dari sistem dan tidak lagi muncul pada daftar | Item berhasil dihapus dan tidak lagi tampil pada daftar | ✅ Berhasil |
+| 17 | Logout dari aplikasi | Menekan tombol **Logout** pada header aplikasi | User keluar dari sesi login | Logout berhasil dilakukan | ✅ Berhasil |
+| 18 | Kembali ke halaman login setelah logout | Setelah logout, memeriksa halaman yang ditampilkan sistem | Sistem menampilkan kembali halaman login | Setelah logout, aplikasi kembali ke halaman login | ✅ Berhasil |
+| 19 | Login kembali dengan akun yang sama | Mengisi email dan password user yang telah didaftarkan sebelumnya lalu menekan tombol **Login** | User berhasil login kembali menggunakan akun yang sama | Login ulang dengan akun yang sudah dibuat berhasil dilakukan | ✅ Berhasil |
+| 20 | Data item tetap tersedia setelah login ulang | Setelah login kembali, memeriksa apakah data item yang sebelumnya tersimpan masih tersedia | Data item yang telah tersimpan sebelumnya tetap tersedia | Data item tetap tersedia setelah user login kembali | ✅ Berhasil |
+| 21 | Menampilkan empty state setelah semua item dihapus | Menghapus seluruh item yang tersedia lalu memeriksa tampilan aplikasi | Aplikasi menampilkan kondisi **empty state** saat tidak ada data item | Tampilan **empty state** berhasil muncul ketika seluruh item telah dihapus | ✅ Berhasil |
+
+
