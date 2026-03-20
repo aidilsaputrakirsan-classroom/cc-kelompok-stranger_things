@@ -3,6 +3,7 @@ from sqlalchemy import or_, asc, desc
 from models import Item, User
 from schemas import ItemCreate, ItemUpdate, UserCreate
 from auth import hash_password, verify_password
+from sqlalchemy import func
 
 def create_item(db: Session, item_data: ItemCreate) -> Item:
     """Buat item baru di database."""
@@ -120,3 +121,28 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
     if not verify_password(password, user.hashed_password):
         return None
     return user
+
+
+def get_items_stats(db: Session) -> dict:
+    """Hitung statistik items."""
+    items = db.query(Item).all()
+    
+    if not items:
+        return {
+            "total_items": 0,
+            "avg_price": 0.0,
+            "total_quantity": 0,
+            "total_value": 0.0,
+        }
+    
+    total_items = len(items)
+    avg_price = sum(item.price for item in items) / total_items
+    total_quantity = sum(item.quantity for item in items)
+    total_value = sum(item.price * item.quantity for item in items)
+    
+    return {
+        "total_items": total_items,
+        "avg_price": round(avg_price, 2),
+        "total_quantity": total_quantity,
+        "total_value": round(total_value, 2),
+    }

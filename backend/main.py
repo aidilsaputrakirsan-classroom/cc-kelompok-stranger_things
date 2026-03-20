@@ -48,16 +48,13 @@ def health_check():
 
 @app.post("/auth/register", response_model=UserResponse, status_code=201)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """
-    Registrasi user baru.
-    
-    - **email**: Email unik (akan digunakan untuk login)
-    - **name**: Nama lengkap
-    - **password**: Minimal 8 karakter
-    """
+    """Registrasi user baru dengan validasi email dan password."""
     user = crud.create_user(db=db, user_data=user_data)
     if not user:
-        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
+        raise HTTPException(
+            status_code=400, 
+            detail="Email sudah terdaftar. Gunakan email lain untuk registrasi."
+        )
     return user
 
 
@@ -143,6 +140,22 @@ def delete_item(
     if not success:
         raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
     return None
+
+@app.get("/items/stats")
+def get_items_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Ambil statistik items. **Membutuhkan autentikasi.**
+    
+    Returns:
+    - total_items: Total jumlah item
+    - avg_price: Rata-rata harga item
+    - total_quantity: Total stok semua item
+    - total_value: Total nilai inventori (qty × price)
+    """
+    return crud.get_items_stats(db=db)
 
 
 # ==================== TEAM INFO ====================
