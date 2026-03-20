@@ -30,6 +30,7 @@ function authHeaders() {
 }
 
 // Helper: handle response errors
+// Helper: handle response errors
 async function handleResponse(response) {
   if (response.status === 401) {
     console.error("❌ 401 Unauthorized - clearing token")
@@ -38,7 +39,22 @@ async function handleResponse(response) {
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || `Request gagal (${response.status})`)
+    
+    // ← TAMBAHKAN INI: Handle jika detail adalah array (validation error)
+    let errorMessage = "Request gagal"
+    if (error.detail) {
+      if (Array.isArray(error.detail)) {
+        // Validation error dari Pydantic
+        errorMessage = error.detail
+          .map(e => e.msg || JSON.stringify(e))
+          .join(", ")
+      } else if (typeof error.detail === "string") {
+        // Custom error message
+        errorMessage = error.detail
+      }
+    }
+    
+    throw new Error(errorMessage)
   }
   // 204 No Content
   if (response.status === 204) return null
