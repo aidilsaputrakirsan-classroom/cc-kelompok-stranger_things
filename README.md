@@ -618,7 +618,7 @@ cloud-team-stranger_things/
 └── README.md
 ```
 
-## 🔗 API Endpoints
+## 🔗 API Endpoints (Week 2)
 
 ### Endpoint `/health`
 ```py
