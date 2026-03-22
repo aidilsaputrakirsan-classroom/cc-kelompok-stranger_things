@@ -38,8 +38,7 @@ Hasil pengujian menunjukkan bahwa form input item dapat digunakan dengan baik un
 
 ### 7. Item baru muncul pada daftar ✅
 <img src="../frontend/image/auth-test/berhasil tambah item.png" />
-Hasil pengujian menunjukkan bahwa item yang baru ditambahkan berhasil muncul pada daftar item. Hal ini membuktikan bahwa data berhasil disimpan ke database dan frontend mampu memperbarui tampilan secara otomatis.
-
+Hasil pengujian menunjukkan bahwa item yang baru ditambahkan berhasil muncul pada daftar item. Selain itu, sistem juga menampilkan notifikasi bahwa penambahan item berhasil dilakukan. Hal ini membuktikan bahwa data telah tersimpan dengan baik di database dan frontend mampu memperbarui tampilan secara otomatis.
 ---
 
 ### 8. Mengubah data item ✅
@@ -47,7 +46,7 @@ Hasil pengujian menunjukkan bahwa item yang baru ditambahkan berhasil muncul pad
 Hasil pengujian menunjukkan bahwa fitur edit berjalan dengan baik. Saat tombol edit dipilih, sistem berhasil memuat data item ke dalam form sehingga pengguna dapat melakukan perubahan pada data yang sudah ada.
 
 <img src="../frontend/image/auth-test/berhasil diupdate.png" />
-Hasil pengujian menunjukkan bahwa setelah perubahan disimpan, data item berhasil diperbarui dan hasil update langsung terlihat pada daftar item. Hal ini membuktikan bahwa proses pembaruan data berjalan dengan benar.
+Hasil pengujian menunjukkan bahwa setelah perubahan disimpan, data item berhasil diperbarui dan hasil update langsung terlihat pada daftar item. Selain itu, sistem juga menampilkan notifikasi bahwa pembaruan data item berhasil dilakukan. Hal ini membuktikan bahwa proses pembaruan data berjalan dengan benar.
 
 ---
 
@@ -98,7 +97,7 @@ Hasil pengujian menunjukkan bahwa fitur sorting berdasarkan nama Z–A berjalan 
 Hasil pengujian menunjukkan bahwa saat tombol hapus dipilih, sistem berhasil memproses penghapusan item. Proses ini menunjukkan bahwa fitur delete dapat dijalankan sesuai fungsi.
 
 <img src="../frontend/image/auth-test/berhasil dihapus.png" />
-Hasil pengujian menunjukkan bahwa item yang dihapus tidak lagi tampil pada daftar. Hal ini membuktikan bahwa proses penghapusan data berhasil dilakukan dengan benar.
+Hasil pengujian menunjukkan bahwa item yang dihapus tidak lagi tampil pada daftar. Selain itu, sistem juga menampilkan notifikasi bahwa penghapusan item berhasil dilakukan. Hal ini membuktikan bahwa proses penghapusan data berjalan dengan benar.
 
 ---
 
@@ -130,3 +129,33 @@ Hasil pengujian menunjukkan bahwa setelah pengguna login kembali, data item yang
 ### 21. Menampilkan empty state setelah semua item dihapus ✅
 <img src="../frontend/image/auth-test/empty state.png" />
 Jika seluruh item pada daftar dihapus, aplikasi akan menampilkan kondisi empty state. Hal ini menunjukkan bahwa sistem mampu menyesuaikan tampilan ketika tidak ada data yang tersedia, sehingga antarmuka tetap informatif bagi pengguna.
+
+---
+
+### 22. Menampilkan indikator loading ✅ 
+<img src="../frontend/image/auth-test/loading.png" />
+Hasil pengujian menunjukkan bahwa sistem menampilkan indikator loading saat proses pengambilan atau pemrosesan data berlangsung.
+
+---
+
+### 23. Validasi format email ✅
+<img src="../frontend/image/auth-test/format email ga sesuai.png" />
+Hasil pengujian menunjukkan bahwa sistem mampu mendeteksi format email yang tidak valid. Ketika pengguna memasukkan email yang tidak sesuai dengan format yang benar, sistem menampilkan pesan error sehingga pengguna dapat memperbaiki input sebelum melanjutkan proses.
+
+---
+
+### 24. Validasi panjang password ✅
+<img src="../frontend/image/auth-test/jumlah password harus sesuai.png" />
+Hasil pengujian menunjukkan bahwa sistem melakukan validasi terhadap panjang password. Jika password yang dimasukkan tidak memenuhi ketentuan minimal, sistem akan menampilkan peringatan.
+
+---
+
+### 24. Validasi login (unauthorized) ✅
+<img src="../frontend/image/auth-test/pass ga sesuai.png" />
+asil pengujian menunjukkan bahwa sistem menampilkan pesan error ketika pengguna memasukkan email atau password yang tidak sesuai dengan data yang tersimpan di database.
+
+---
+
+### 24. Validasi input item wajib diisi ✅
+<img src="../frontend/image/auth-test/nama item wajib diisi.png" />
+Hasil pengujian menunjukkan bahwa sistem memberikan peringatan ketika pengguna tidak mengisi field yang wajib, seperti nama item.

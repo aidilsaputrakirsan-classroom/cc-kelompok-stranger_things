@@ -582,27 +582,36 @@ UI Re-render
 ```
 cloud-team-stranger_things/
 ├── backend/
-│   ├── main.py              ← Updated (auth endpoints, CORS fix)
-│   ├── auth.py              ← BARU (JWT utilities)
+│   ├── main.py              
+│   ├── auth.py              
 │   ├── database.py
-│   ├── models.py            ← Updated (+ User model)
-│   ├── schemas.py           ← Updated (+ auth schemas)
-│   ├── crud.py              ← Updated (+ user CRUD)
-│   ├── requirements.txt     ← Updated (+ jose, passlib, bcrypt)
-│   ├── .env                 ← Updated (+ JWT & CORS config)
-│   └── .env.example         ← Updated
+│   ├── models.py            
+│   ├── schemas.py           
+│   ├── crud.py             
+│   ├── requirements.txt    
+│   ├── .env                 
+│   └── .env.example         
+├── docs/
+│   ├── api-test-results.md
+│   ├── auth-test-results.md    
+│   ├── ui-test-results.md    
+│   ├── setup-guide.md                 
+│   ├── member-[cintya].md
+│   ├── member-[daffa].md  
+│   ├── member-[nazwa].md 
+│   ├── member-[verina].md
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx              ← Updated (auth integration)
+│   │   ├── App.jsx              
 │   │   ├── components/
-│   │   │   ├── Header.jsx       ← Updated (+ user info, logout)
-│   │   │   ├── LoginPage.jsx    ← BARU
+│   │   │   ├── Header.jsx       
+│   │   │   ├── LoginPage.jsx    
 │   │   │   ├── SearchBar.jsx
 │   │   │   ├── ItemForm.jsx
 │   │   │   ├── ItemList.jsx
 │   │   │   └── ItemCard.jsx
 │   │   └── services/
-│   │       └── api.js           ← Updated (+ auth, token mgmt)
+│   │       └── api.js           
 │   ├── .env
 │   └── .env.example
 ├── .gitignore
@@ -976,31 +985,26 @@ Pada tahap ini dilakukan pembaruan root component App.jsx sebagai pusat pengelol
 | 10 | Menghapus Semua Item dan Muncul Empty State | Menghapus seluruh item yang tersedia lalu memeriksa tampilan aplikasi. | Aplikasi menampilkan kondisi **empty state** ketika tidak ada data item yang tersedia. | Setelah seluruh item dihapus, aplikasi menampilkan kondisi **empty state**. Hal ini membuktikan bahwa sistem mampu menyesuaikan tampilan ketika tidak ada data yang tersedia. | ✅ Berhasil |
 
 ##  🔐 Authentication
-Pada pengembangan modul ini, sistem telah dilengkapi dengan mekanisme autentikasi menggunakan **JSON Web Token (JWT)**. Penerapan autentikasi bertujuan untuk memastikan bahwa hanya pengguna yang telah terdaftar dan berhasil login yang dapat mengakses fitur-fitur tertentu pada aplikasi, khususnya endpoint yang bersifat **protected** seperti `/auth/me` dan seluruh endpoint `/items`.
+Pada pengembangan modul ini, sistem telah dilengkapi dengan mekanisme autentikasi yang berfungsi untuk mengontrol akses pengguna. Penerapan autentikasi bertujuan untuk memastikan bahwa hanya pengguna yang telah terdaftar dan berhasil melakukan login yang dapat mengakses fitur-fitur tertentu dalam aplikasi.
 
-### Alur Authentication
-1. User melakukan registrasi melalui halaman register pada frontend
-2. Frontend mengirim data ke endpoint `POST /auth/register`
-3. Backend menyimpan user baru dengan password yang sudah di-hash
-4. User login melalui halaman login pada frontend
-5. Frontend mengirim email dan password ke endpoint `POST /auth/login`
-6. Backend memverifikasi data login dan mengembalikan JWT token
-7. Frontend menyimpan token dan menggunakannya untuk request berikutnya
-8. Backend memvalidasi token setiap kali user mengakses endpoint protected
+Hasil pengujian secara lengkap dapat dilihat pada file berikut:
+👉 [Hasil Pengujian Authentication & CRUD](docs/auth-test-result.md)
    
 ### API Endpoint List
-| No | Method | Endpoint | Access | Deskripsi |
-|----|--------|----------|--------|-----------|
-| 1 | GET | `/health` | Public | Melakukan health check untuk memastikan backend berjalan dengan baik dan menampilkan status layanan serta versi aplikasi |
-| 2 | POST | `/auth/register` | Public | Mendaftarkan user baru ke dalam sistem menggunakan email, nama, dan password |
-| 3 | POST | `/auth/login` | Public | Melakukan login user dan menghasilkan JWT access token |
-| 4 | GET | `/auth/me` | Protected | Mengambil data user yang sedang login berdasarkan token yang dikirim |
-| 5 | POST | `/items` | Protected | Menambahkan item baru ke database |
-| 6 | GET | `/items` | Protected | Mengambil daftar item dengan dukungan pagination dan pencarian |
-| 7 | GET | `/items/{item_id}` | Protected | Mengambil detail satu item berdasarkan ID |
-| 8 | PUT | `/items/{item_id}` | Protected | Memperbarui data item berdasarkan ID |
-| 9 | DELETE | `/items/{item_id}` | Protected | Menghapus item berdasarkan ID |
-| 10 | GET | `/team` | Public | Menampilkan informasi anggota tim pengembang aplikasi |
+| No | Method | Endpoint           | Access    | Deskripsi                                                                                                                |
+| -- | ------ | ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1  | GET    | `/health`          | Public    | Melakukan health check untuk memastikan backend berjalan dengan baik serta menampilkan status layanan dan versi aplikasi |
+| 2  | POST   | `/auth/register`   | Public    | Mendaftarkan user baru ke dalam sistem menggunakan email, nama, dan password                                             |
+| 3  | POST   | `/auth/login`      | Public    | Melakukan login user                                                                    |
+| 4  | GET    | `/auth/me`         | Protected | Mengambil data user yang sedang login                                        |
+| 5  | POST   | `/items`           | Protected | Menambahkan item baru ke dalam database                                                                                  |
+| 6  | GET    | `/items`           | Protected | Mengambil daftar item dengan dukungan pagination dan pencarian                                                           |
+| 7  | GET    | `/items/{item_id}` | Protected | Mengambil detail satu item berdasarkan ID                                                                                |
+| 8  | PUT    | `/items/{item_id}` | Protected | Memperbarui data item berdasarkan ID                                                                                     |
+| 9  | DELETE | `/items/{item_id}` | Protected | Menghapus item berdasarkan ID                                                                                            |
+| 10 | GET    | `/items/stats`     | Protected | Mengambil statistik item seperti total item, rata-rata harga, total stok, dan total nilai inventori                      |
+| 11 | GET    | `/team`            | Public    | Menampilkan informasi anggota tim pengembang aplikasi                                                                    |
+
 
 ### Hasil Pengujian Authentication & CRUD
 | No | Test Case | Langkah Pengujian | Hasil yang Diharapkan | Hasil Pengujian | Status |
