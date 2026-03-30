@@ -167,7 +167,7 @@ def team_info():
         "members": [
             {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead BackEnd"},
             {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
-            {"name": "Verina Rahma Dinah", "nim": "1023109", "role": "Lead DevOps"},
-            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead QA & Docs"},
+            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
+            {"name": "Verina Rahma Dinah", "nim": "10231090", "role": "Lead QA & Docs"},
         ],
     }
