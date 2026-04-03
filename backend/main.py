@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -372,7 +372,7 @@ def get_all_healthcare_facilities(db: Session = Depends(get_db)):
 
 @app.get("/healthcare-facilities/type/{facility_type}")
 def get_facilities_by_type(
-    facility_type: str = Query(..., description="Tipe fasilitas: puskesmas, klinik, rumah_sakit"),
+    facility_type: str = Path(..., description="Tipe fasilitas: puskesmas, klinik, rumah_sakit"),
     db: Session = Depends(get_db),
 ):
     """Ambil fasilitas kesehatan berdasarkan tipe."""
