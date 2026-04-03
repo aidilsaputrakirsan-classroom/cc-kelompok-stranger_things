@@ -107,3 +107,149 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+# ============================================
+# Child Schemas
+# ============================================
+
+class ChildCreate(BaseModel):
+    """Schema untuk membuat data anak baru."""
+    name: str = Field(..., min_length=1, max_length=100)
+    birth_date: str  # Format: YYYY-MM-DD
+    gender: str  # 'male' atau 'female'
+    blood_type: Optional[str] = None
+    height_at_birth: Optional[float] = None
+    weight_at_birth: Optional[float] = None
+    notes: Optional[str] = None
+
+
+class ChildResponse(BaseModel):
+    """Schema untuk response data anak."""
+    id: int
+    parent_id: int
+    name: str
+    birth_date: str
+    gender: str
+    blood_type: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================
+# Vaccine Type Schemas
+# ============================================
+
+class VaccineTypeResponse(BaseModel):
+    """Schema untuk response vaksin."""
+    id: int
+    name: str
+    description: Optional[str] = None
+    age_month_min: Optional[int] = None
+    age_month_max: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================
+# Vaccine Schedule Schemas
+# ============================================
+
+class VaccineScheduleResponse(BaseModel):
+    """Schema untuk response jadwal imunisasi."""
+    id: int
+    vaccine_id: int
+    age_month: int
+    dose_number: Optional[int] = None
+    description: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================
+# Immunization Log Schemas
+# ============================================
+
+class ImmunizationLogCreate(BaseModel):
+    """Schema untuk membuat catatan imunisasi."""
+    child_id: int
+    vaccine_id: int
+    scheduled_date: str  # Format: YYYY-MM-DD
+    facility_id: Optional[int] = None
+    completion_date: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class ImmunizationLogUpdate(BaseModel):
+    """Schema untuk update status imunisasi."""
+    status: Optional[str] = None  # 'pending', 'completed', 'delayed', 'skipped'
+    completion_date: Optional[str] = None
+
+
+class ImmunizationLogResponse(BaseModel):
+    """Schema untuk response catatan imunisasi."""
+    id: int
+    child_id: int
+    vaccine_id: int
+    status: str
+    scheduled_date: str
+    completion_date: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================
+# Growth Record Schemas
+# ============================================
+
+class GrowthRecordCreate(BaseModel):
+    """Schema untuk membuat data pertumbuhan."""
+    child_id: int
+    age_month: int
+    weight: float
+    height: float
+    head_circumference: Optional[float] = None
+    recorded_date: str  # Format: YYYY-MM-DD
+    notes: Optional[str] = None
+
+
+class GrowthRecordResponse(BaseModel):
+    """Schema untuk response data pertumbuhan."""
+    id: int
+    child_id: int
+    age_month: int
+    weight: float
+    height: float
+    head_circumference: Optional[float] = None
+    recorded_date: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================
+# Healthcare Facility Schemas
+# ============================================
+
+class HealthcareFacilityResponse(BaseModel):
+    """Schema untuk response fasilitas kesehatan."""
+    id: int
+    name: str
+    type: str
+    address: str
+    phone: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    operating_hours: Optional[str] = None
+
+    class Config:
+        from_attributes = True
