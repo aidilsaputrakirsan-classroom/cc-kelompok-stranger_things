@@ -1117,3 +1117,21 @@ Pada pengembangan modul ini, sistem telah dilengkapi dengan mekanisme autentikas
 | 19  | Login kembali dengan akun yang sama                | Mengisi email dan password user yang telah didaftarkan sebelumnya lalu menekan tombol **Login**          | User berhasil login kembali menggunakan akun yang sama                       | Login ulang dengan akun yang sudah dibuat berhasil dilakukan                | ✅ Berhasil |
 | 20  | Data item tetap tersedia setelah login ulang       | Setelah login kembali, memeriksa apakah data item yang sebelumnya tersimpan masih tersedia               | Data item yang telah tersimpan sebelumnya tetap tersedia                     | Data item tetap tersedia setelah user login kembali                         | ✅ Berhasil |
 | 21  | Menampilkan empty state setelah semua item dihapus | Menghapus seluruh item yang tersedia lalu memeriksa tampilan aplikasi                                    | Aplikasi menampilkan kondisi **empty state** saat tidak ada data item        | Tampilan **empty state** berhasil muncul ketika seluruh item telah dihapus  | ✅ Berhasil |
+
+### Mockup Sistem
+
+- Splash Screen
+
+<img src="./frontend//image//SplashScreen.png" alt="Halaman sebelum daftar" />
+
+- Daftar Akun
+
+<img src="./frontend/image/DaftarAkun.png" alt="Halaman Daftar Akun" />
+
+- Masuk Akun
+
+<img src="./frontend/image/MasukAkun.png" alt="Halaman Masuk Akun" />
+
+- Beranda
+
+<img src="./frontend/image/Home.png" alt="Halaman Beranda" />
