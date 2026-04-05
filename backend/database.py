@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL tidak ditemukan di .env!")
 
-# Buat engine (koneksi ke database)
+# Buat engine (koneksi ke database) 
 engine = create_engine(DATABASE_URL)
 
 # Buat session factory

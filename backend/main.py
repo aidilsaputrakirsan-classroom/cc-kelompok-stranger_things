@@ -141,21 +141,7 @@ def delete_item(
         raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
     return None
 
-@app.get("/items/stats")
-def get_items_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Ambil statistik items. **Membutuhkan autentikasi.**
-    
-    Returns:
-    - total_items: Total jumlah item
-    - avg_price: Rata-rata harga item
-    - total_quantity: Total stok semua item
-    - total_value: Total nilai inventori (qty × price)
-    """
-    return crud.get_items_stats(db=db)
+
 
 
 # ==================== CHILD ENDPOINTS ====================
@@ -465,7 +451,7 @@ def team_info():
         "members": [
             {"name": "Ahmad Daffa Alfattah", "nim": "10231008", "role": "Lead BackEnd"},
             {"name": "Nazwa Amelia Zahra", "nim": "10231068", "role": "Lead Frontend"},
-            {"name": "Cintya Widhi Astuti", "nim": "10231026", "role": "Lead DevOps"},
+            {"name": "Cintya ", "nim": "10231026", "role": "Lead Devops"},
             {"name": "Verina Rahma Dinah", "nim": "10231090", "role": "Lead QA & Docs"},
         ],
     }

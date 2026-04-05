@@ -109,3 +109,4 @@ def get_current_user(
 
     print(f" [SUCCESS] User authenticated: {user.email}")
     return user
+
