@@ -19,6 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 5. Copy seluruh kode aplikasi
 #    Layer ini rebuild setiap kali kode berubah
 COPY . .
+# Tambahan
+RUN useradd -m appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 # 6. Dokumentasikan port yang digunakan
 EXPOSE 8000
