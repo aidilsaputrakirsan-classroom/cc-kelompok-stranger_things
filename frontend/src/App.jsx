@@ -4,6 +4,7 @@ import SearchBar from "./components/SearchBar"
 import ItemForm from "./components/ItemForm"
 import ItemList from "./components/ItemList"
 import LoginPage from "./components/LoginPage"
+import SplashPage from "./components/SplashPage"
 import {
   fetchItems,
   createItem,
@@ -20,6 +21,7 @@ function App() {
   // AUTH
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
 
   // DATA
   const [items, setItems] = useState([])
@@ -82,6 +84,7 @@ function App() {
     setTotalItems(0)
     setEditingItem(null)
     setSearchQuery("")
+    setShowSplash(true)
   }
 
   // ITEM
@@ -136,8 +139,17 @@ function App() {
     }
   })
 
+  // Belum login — tampilkan splash dulu, lalu login
   if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} />
+    if (showSplash) {
+      return (
+        <SplashPage
+          onSignIn={() => setShowSplash(false)}
+          onSignUp={() => setShowSplash(false)}
+        />
+      )
+    }
+    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} onBack={() => setShowSplash(true)} />
   }
 
   return (
