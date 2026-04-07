@@ -55,17 +55,16 @@ import re
 class UserCreate(BaseModel):
     """Schema untuk register user baru."""
     email: str
-    name: str
     password: str = Field(..., min_length=8)
     
     @field_validator('email')
     @classmethod
     def validate_email(cls, v):
-        """Validasi format email menggunakan regex."""
+        """Validasi format email."""
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, v):
-            raise ValueError('Email format tidak valid. Gunakan format: user@example.com')
-        return v.lower()  # Normalize ke lowercase
+            raise ValueError('Email tidak valid. Format: user@example.com')
+        return v.lower()
     
     @field_validator('password')
     @classmethod
@@ -88,7 +87,6 @@ class UserResponse(BaseModel):
     """Schema untuk response user (tanpa password)."""
     id: int
     email: str
-    name: str
     is_active: bool
     created_at: datetime
 

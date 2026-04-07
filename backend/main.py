@@ -4,8 +4,8 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from database import engine, get_db
-from models import Base, User
+from database import engine, get_db, SessionLocal
+from models import Base, User, Role
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
@@ -17,6 +17,32 @@ load_dotenv()
 
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
+
+# Initialize default roles
+def init_default_roles():
+    """Inisialisasi role default jika belum ada."""
+    db = SessionLocal()
+    try:
+        # Cek apakah role sudah ada
+        user_role = db.query(Role).filter(Role.name == "user").first()
+        if not user_role:
+            user_role = Role(name="user", description="Regular user")
+            db.add(user_role)
+        
+        admin_role = db.query(Role).filter(Role.name == "admin").first()
+        if not admin_role:
+            admin_role = Role(name="admin", description="Administrator")
+            db.add(admin_role)
+        
+        db.commit()
+        print("[OK] Default roles initialized")
+    except Exception as e:
+        print(f"[ERROR] Error initializing roles: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+init_default_roles()
 
 app = FastAPI(
     title="Cloud App API",

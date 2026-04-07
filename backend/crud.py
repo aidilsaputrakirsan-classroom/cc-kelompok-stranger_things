@@ -104,8 +104,8 @@ def create_user(db: Session, user_data: UserCreate) -> User:
 
     db_user = User(
         email=user_data.email,
-        name=user_data.name,
         hashed_password=hash_password(user_data.password),
+        role_id=1,  # Assign default role (user role)
     )
     db.add(db_user)
     db.commit()

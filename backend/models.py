@@ -23,11 +23,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=True)
-    address = Column(Text, nullable=True)
     hashed_password = Column(String(255), nullable=False)
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False, index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True, index=True, default=1)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
