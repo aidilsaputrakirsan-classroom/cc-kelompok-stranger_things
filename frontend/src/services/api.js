@@ -65,10 +65,16 @@ async function handleResponse(response) {
 
 export async function register(userData) {
   console.log("📝 Registering user:", userData.email)
+  // Backend hanya menerima name, email dan password
+  const registerData = {
+    name: userData.fullName,
+    email: userData.email,
+    password: userData.password,
+  }
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(userData),
+    body: JSON.stringify(registerData),
   })
   return handleResponse(response)
 }

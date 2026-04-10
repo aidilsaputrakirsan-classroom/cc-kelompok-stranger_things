@@ -6,7 +6,7 @@ function LoginPage({ onLogin, onRegister, onBack }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   })
@@ -29,13 +29,39 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           setLoading(false)
           return
         }
-        if (!formData.username.trim()) {
-          setError("Nama pengguna wajib diisi")
+        if (!formData.email.trim()) {
+          setError("Email wajib diisi")
+          setLoading(false)
+          return
+        }
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+        if (!emailRegex.test(formData.email)) {
+          setError("Format email tidak valid (contoh: user@example.com)")
           setLoading(false)
           return
         }
         if (formData.password.length < 8) {
           setError("Password minimal 8 karakter")
+          setLoading(false)
+          return
+        }
+        if (!/[A-Z]/.test(formData.password)) {
+          setError("Password harus mengandung minimal 1 huruf besar")
+          setLoading(false)
+          return
+        }
+        if (!/[a-z]/.test(formData.password)) {
+          setError("Password harus mengandung minimal 1 huruf kecil")
+          setLoading(false)
+          return
+        }
+        if (!/[0-9]/.test(formData.password)) {
+          setError("Password harus mengandung minimal 1 angka")
+          setLoading(false)
+          return
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+          setError("Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)")
           setLoading(false)
           return
         }
@@ -46,12 +72,12 @@ function LoginPage({ onLogin, onRegister, onBack }) {
         }
         await onRegister?.(formData)
       } else {
-        if (!formData.username.trim()) {
-          setError("Nama pengguna wajib diisi")
+        if (!formData.email.trim()) {
+          setError("Email wajib diisi")
           setLoading(false)
           return
         }
-        await onLogin?.(formData.username, formData.password)
+        await onLogin?.(formData.email, formData.password)
       }
     } catch (err) {
       setError(err.message)
@@ -121,16 +147,16 @@ function LoginPage({ onLogin, onRegister, onBack }) {
             </div>
           )}
 
-          {/* Username */}
+          {/* Email */}
           <div style={styles.field}>
-            <label style={styles.label}>Nama Pengguna</label>
+            <label style={styles.label}>Email</label>
             <div style={styles.inputWrapper}>
               <input
-                type="text"
-                name="username"
-                value={formData.username}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Masukkan Nama Pengguna"
+                placeholder="Masukkan Email (user@example.com)"
                 style={styles.input}
               />
               <span style={styles.icon}>
@@ -211,7 +237,7 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           )}
 
           <button type="submit" style={styles.btnSubmit} disabled={loading}>
-            {loading ? "⏳ Loading..." : "Daftar Sekarang"}
+            {loading ? "⏳ Loading..." : (isRegister ? "Daftar Sekarang" : "Masuk")}
           </button>
         </form>
       </div>
