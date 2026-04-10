@@ -31,16 +31,16 @@ const eduArticles = [
     tag: "Panduan",
     tagColor: "#e91e8c",
     title: "Panduan Lengkap Jadwal Imunisasi Anak Sesuai Usia",
-    bgColor: "#bbdefb",
-    emoji: "👶",
-  },
+    bgColor : "#fff9c4",
+    url: "https://www.halodoc.com/artikel/ini-jadwal-imunisasi-dasar-lengkap-anak-rekomendasi-idai-berdasarkan-usia-dan-jenis",
+     },
   {
     id: 2,
     tag: "Tips",
     tagColor: "#ff9800",
     title: "Tips Agar Anak Tidak Takut Saat Imunisasi",
     bgColor: "#fff9c4",
-    emoji: "😢",
+    url: "https://hellosehat.com/parenting/anak-1-sampai-5-tahun/perkembangan-balita/tips-untuk-anak-takut-disuntik/",
   },
   {
     id: 3,
@@ -48,7 +48,7 @@ const eduArticles = [
     tagColor: "#4caf50",
     title: "Mengapa Imunisasi Penting untuk Kesehatan Anak",
     bgColor: "#c8e6c9",
-    emoji: "💉",
+    url: "https://ayosehat.kemkes.go.id/pentingnya-melakukan-imunisasi-pada-anak",
   },
 ];
 
@@ -224,7 +224,13 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
         <div style={homeStyles.right}>
           <h3 style={homeStyles.eduTitle}>EduHealth</h3>
           {eduArticles.map((article) => (
-            <div key={article.id} style={homeStyles.eduCard}>
+            <a
+              key={article.id}
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...homeStyles.eduCard, textDecoration: "none" }}
+            >
               <div
                 style={{ ...homeStyles.eduImgBox, background: article.bgColor }}
               >
@@ -237,8 +243,9 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
               </div>
               <div style={homeStyles.eduBody}>
                 <p style={homeStyles.eduBodyText}>{article.title}</p>
+                <p style={homeStyles.eduReadMore}>Baca selengkapnya →</p>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -251,7 +258,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
-  const [activePage, setActivePage] = useState("home"); // ← DIPINDAH KE SINI
+  const [activePage, setActivePage] = useState("home");
 
   const [items, setItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -309,7 +316,7 @@ function App() {
     setTotalItems(0);
     setEditingItem(null);
     setSearchQuery("");
-    setActivePage("home"); // reset halaman saat logout
+    setActivePage("home");
     setShowSplash(true);
   };
 
@@ -417,7 +424,6 @@ function App() {
             fontFamily: "'Segoe UI', Arial, sans-serif",
           }}
         >
-          {/* Navbar sama supaya bisa navigasi balik */}
           <nav
             style={{
               background: "white",
@@ -734,6 +740,8 @@ const homeStyles = {
     marginBottom: "0.75rem",
     cursor: "pointer",
     border: "0.5px solid #f0d0da",
+    display: "block",
+    transition: "box-shadow 0.2s, transform 0.2s",
   },
   eduImgBox: {
     width: "100%",
@@ -765,6 +773,13 @@ const homeStyles = {
     color: "#1a1a2e",
     lineHeight: "1.4",
     margin: 0,
+  },
+  eduReadMore: {
+    fontSize: "11px",
+    color: "#e91e8c",
+    marginTop: "6px",
+    marginBottom: 0,
+    fontWeight: "500",
   },
 };
 
