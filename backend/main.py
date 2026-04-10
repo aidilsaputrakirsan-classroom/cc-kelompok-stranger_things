@@ -24,7 +24,7 @@ def init_default_roles():
     db = SessionLocal()
     try:
         # Cek apakah role sudah ada
-        user_role = db.query(Role).filter(Role.name == "user").first()
+        user_role = db.query(Role).filter(Role.name == "email").first()
         if not user_role:
             user_role = Role(name="user", description="Regular user")
             db.add(user_role)

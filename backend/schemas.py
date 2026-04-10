@@ -54,6 +54,7 @@ import re
 
 class UserCreate(BaseModel):
     """Schema untuk register user baru."""
+    name: str = Field(..., min_length=1, max_length=100)
     email: str
     password: str = Field(..., min_length=8)
     
@@ -86,6 +87,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     """Schema untuk response user (tanpa password)."""
     id: int
+    name: str
     email: str
     is_active: bool
     created_at: datetime

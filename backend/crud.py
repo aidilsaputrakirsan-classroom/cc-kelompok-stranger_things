@@ -103,9 +103,9 @@ def create_user(db: Session, user_data: UserCreate) -> User:
         return None  # Email sudah dipakai
 
     db_user = User(
+        name=user_data.name,
         email=user_data.email,
         hashed_password=hash_password(user_data.password),
-        role_id=1,  # Assign default role (user role)
     )
     db.add(db_user)
     db.commit()
