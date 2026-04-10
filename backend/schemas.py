@@ -87,8 +87,8 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     """Schema untuk response user (tanpa password)."""
     id: int
-    name: str
     email: str
+    name: str
     is_active: bool
     created_at: datetime
 

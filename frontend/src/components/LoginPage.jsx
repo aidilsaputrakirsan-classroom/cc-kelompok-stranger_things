@@ -1,90 +1,92 @@
-import { useState } from "react"
+import { useState } from "react";
 
 function LoginPage({ onLogin, onRegister, onBack }) {
-  const [isRegister, setIsRegister] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isRegister, setIsRegister] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-  })
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
       if (isRegister) {
         if (!formData.fullName.trim()) {
-          setError("Nama lengkap wajib diisi")
-          setLoading(false)
-          return
+          setError("Nama lengkap wajib diisi");
+          setLoading(false);
+          return;
         }
         if (!formData.email.trim()) {
-          setError("Email wajib diisi")
-          setLoading(false)
-          return
+          setError("Email wajib diisi");
+          setLoading(false);
+          return;
         }
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(formData.email)) {
-          setError("Format email tidak valid (contoh: user@example.com)")
-          setLoading(false)
-          return
+          setError("Format email tidak valid (contoh: user@example.com)");
+          setLoading(false);
+          return;
         }
         if (formData.password.length < 8) {
-          setError("Password minimal 8 karakter")
-          setLoading(false)
-          return
+          setError("Password minimal 8 karakter");
+          setLoading(false);
+          return;
         }
         if (!/[A-Z]/.test(formData.password)) {
-          setError("Password harus mengandung minimal 1 huruf besar")
-          setLoading(false)
-          return
+          setError("Password harus mengandung minimal 1 huruf besar");
+          setLoading(false);
+          return;
         }
         if (!/[a-z]/.test(formData.password)) {
-          setError("Password harus mengandung minimal 1 huruf kecil")
-          setLoading(false)
-          return
+          setError("Password harus mengandung minimal 1 huruf kecil");
+          setLoading(false);
+          return;
         }
         if (!/[0-9]/.test(formData.password)) {
-          setError("Password harus mengandung minimal 1 angka")
-          setLoading(false)
-          return
+          setError("Password harus mengandung minimal 1 angka");
+          setLoading(false);
+          return;
         }
         if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-          setError("Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)")
-          setLoading(false)
-          return
+          setError(
+            "Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)",
+          );
+          setLoading(false);
+          return;
         }
         if (formData.password !== formData.confirmPassword) {
-          setError("Konfirmasi password tidak cocok")
-          setLoading(false)
-          return
+          setError("Konfirmasi password tidak cocok");
+          setLoading(false);
+          return;
         }
-        await onRegister?.(formData)
+        await onRegister?.(formData);
       } else {
         if (!formData.email.trim()) {
-          setError("Email wajib diisi")
-          setLoading(false)
-          return
+          setError("Email wajib diisi");
+          setLoading(false);
+          return;
         }
-        await onLogin?.(formData.email, formData.password)
+        await onLogin?.(formData.email, formData.password);
       }
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div style={styles.wrapper}>
@@ -96,26 +98,32 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           </button>
         )}
         {/* Title */}
-        <h1 style={styles.title}>{isRegister ? "Daftar Akun" : "Masuk Akun"}</h1>
+        <h1 style={styles.title}>
+          {isRegister ? "Daftar Akun" : "Masuk Akun"}
+        </h1>
         <p style={styles.subtitle}>
           {isRegister
             ? "Buat akun sekarang dan mulai jelajahi Bye Bye Virus"
             : "Masuk akun sekarang dan mulai jelajahi Bye Bye Virus"}
         </p>
 
-        
-
         {/* Tab Switch */}
         <div style={styles.tabs}>
           <button
             style={{ ...styles.tab, ...(isRegister ? {} : styles.tabActive) }}
-            onClick={() => { setIsRegister(false); setError("") }}
+            onClick={() => {
+              setIsRegister(false);
+              setError("");
+            }}
           >
             Login
           </button>
           <button
             style={{ ...styles.tab, ...(isRegister ? styles.tabActive : {}) }}
-            onClick={() => { setIsRegister(true); setError("") }}
+            onClick={() => {
+              setIsRegister(true);
+              setError("");
+            }}
           >
             Register
           </button>
@@ -138,9 +146,18 @@ function LoginPage({ onLogin, onRegister, onBack }) {
                   style={styles.input}
                 />
                 <span style={styles.icon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e879a0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#e879a0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                   </svg>
                 </span>
               </div>
@@ -160,9 +177,18 @@ function LoginPage({ onLogin, onRegister, onBack }) {
                 style={styles.input}
               />
               <span style={styles.icon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e879a0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2"/>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#e879a0"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
               </span>
             </div>
@@ -186,15 +212,33 @@ function LoginPage({ onLogin, onRegister, onBack }) {
                 style={styles.iconBtn}
               >
                 {showPassword ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#888"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#888"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
                   </svg>
                 )}
               </button>
@@ -220,15 +264,33 @@ function LoginPage({ onLogin, onRegister, onBack }) {
                   style={styles.iconBtn}
                 >
                   {showConfirmPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#888"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#888"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
@@ -237,18 +299,22 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           )}
 
           <button type="submit" style={styles.btnSubmit} disabled={loading}>
-            {loading ? "⏳ Loading..." : (isRegister ? "Daftar Sekarang" : "Masuk")}
+            {loading
+              ? "⏳ Loading..."
+              : isRegister
+                ? "Daftar Sekarang"
+                : "Masuk"}
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-const PINK = "#e879a0"
-const PINK_DARK = "#d4588a"
-const PINK_LIGHT = "#f9a8d4"
-const PINK_BG = "#fce7f3"
+const PINK = "#e879a0";
+const PINK_DARK = "#d4588a";
+const PINK_LIGHT = "#f9a8d4";
+const PINK_BG = "#fce7f3";
 
 const styles = {
   wrapper: {
@@ -386,15 +452,15 @@ const styles = {
   },
 
   btnBack: {
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  color: "#e879a0",
-  fontSize: "0.9rem",
-  fontWeight: "600",
-  padding: "0 0 1rem 0",
-  display: "block",
-},
-}
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#e879a0",
+    fontSize: "0.9rem",
+    fontWeight: "600",
+    padding: "0 0 1rem 0",
+    display: "block",
+  },
+};
 
-export default LoginPage
+export default LoginPage;

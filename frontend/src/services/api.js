@@ -65,7 +65,7 @@ async function handleResponse(response) {
 
 export async function register(userData) {
   console.log("📝 Registering user:", userData.email)
-  // Backend hanya menerima name, email dan password
+  // Backend menerima: name, email, password
   const registerData = {
     name: userData.fullName,
     email: userData.email,

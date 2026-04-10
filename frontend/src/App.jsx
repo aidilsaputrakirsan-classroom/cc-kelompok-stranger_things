@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react"
-import ItemForm from "./components/ItemForm"
-import ItemList from "./components/ItemList"
-import LoginPage from "./components/LoginPage"
-import SplashPage from "./components/SplashPage"
-import JadwalImunisasi from "./components/JadwalImunisasi"
+import { useState, useEffect, useCallback } from "react";
+import ItemForm from "./components/ItemForm";
+import ItemList from "./components/ItemList";
+import LoginPage from "./components/LoginPage";
+import SplashPage from "./components/SplashPage";
+import JadwalImunisasi from "./components/JadwalImunisasi";
 import {
   fetchItems,
   createItem,
@@ -13,7 +13,7 @@ import {
   login,
   register,
   clearToken,
-} from "./services/api"
+} from "./services/api";
 
 // ── Static data ──
 const scheduleData = [
@@ -23,19 +23,40 @@ const scheduleData = [
   { id: 4, name: "Hepatitis B", date: "6 April 2026", status: "green" },
   { id: 5, name: "DPT 1", date: "6 April 2026", status: "orange" },
   { id: 6, name: "DPT 1", date: "6 April 2026", status: "orange" },
-]
+];
 
 const eduArticles = [
-  { id: 1, tag: "Panduan", tagColor: "#e91e8c", title: "Panduan Lengkap Jadwal Imunisasi Anak Sesuai Usia", bgColor: "#bbdefb", emoji: "👶" },
-  { id: 2, tag: "Tips", tagColor: "#ff9800", title: "Tips Agar Anak Tidak Takut Saat Imunisasi", bgColor: "#fff9c4", emoji: "😢" },
-  { id: 3, tag: "Kesehatan", tagColor: "#4caf50", title: "Mengapa Imunisasi Penting untuk Kesehatan Anak", bgColor: "#c8e6c9", emoji: "💉" },
-]
+  {
+    id: 1,
+    tag: "Panduan",
+    tagColor: "#e91e8c",
+    title: "Panduan Lengkap Jadwal Imunisasi Anak Sesuai Usia",
+    bgColor: "#bbdefb",
+    emoji: "👶",
+  },
+  {
+    id: 2,
+    tag: "Tips",
+    tagColor: "#ff9800",
+    title: "Tips Agar Anak Tidak Takut Saat Imunisasi",
+    bgColor: "#fff9c4",
+    emoji: "😢",
+  },
+  {
+    id: 3,
+    tag: "Kesehatan",
+    tagColor: "#4caf50",
+    title: "Mengapa Imunisasi Penting untuk Kesehatan Anak",
+    bgColor: "#c8e6c9",
+    emoji: "💉",
+  },
+];
 
-const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" }
+const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" };
 
 // ── HomePage Component ──
 function HomePage({ user, onLogout, activePage, onNavigate }) {
-  const summary = { selesai: 7, total: 12, mendatang: 3, belumTerjadwal: 2 }
+  const summary = { selesai: 7, total: 12, mendatang: 3, belumTerjadwal: 2 };
 
   return (
     <div style={homeStyles.page}>
@@ -45,19 +66,28 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
           ByeBye<span style={homeStyles.logoPink}>Virus</span>
         </span>
         <a
-          style={{ ...homeStyles.navLink, ...(activePage === "home" ? homeStyles.navLinkActive : {}) }}
+          style={{
+            ...homeStyles.navLink,
+            ...(activePage === "home" ? homeStyles.navLinkActive : {}),
+          }}
           onClick={() => onNavigate("home")}
         >
           Home
         </a>
         <a
-          style={{ ...homeStyles.navLink, ...(activePage === "jadwal" ? homeStyles.navLinkActive : {}) }}
+          style={{
+            ...homeStyles.navLink,
+            ...(activePage === "jadwal" ? homeStyles.navLinkActive : {}),
+          }}
           onClick={() => onNavigate("jadwal")}
         >
           Jadwal Imunisasi
         </a>
         <a
-          style={{ ...homeStyles.navLink, ...(activePage === "faskes" ? homeStyles.navLinkActive : {}) }}
+          style={{
+            ...homeStyles.navLink,
+            ...(activePage === "faskes" ? homeStyles.navLinkActive : {}),
+          }}
           onClick={() => onNavigate("faskes")}
         >
           Faskes Map
@@ -73,29 +103,59 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
       <div style={homeStyles.main}>
         {/* Left Column */}
         <div style={homeStyles.left}>
-
           {/* Welcome Card */}
           <div style={homeStyles.welcomeCard}>
             <div style={homeStyles.welcomeAvatarWrap}>
-              <svg viewBox="0 0 80 80" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                viewBox="0 0 80 80"
+                width="60"
+                height="60"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <circle cx="40" cy="30" r="18" fill="#f48fb1" />
                 <circle cx="40" cy="30" r="14" fill="#fce4ec" />
                 <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
                 <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
-                <path d="M35 36 Q40 40 45 36" stroke="#e91e8c" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                <rect x="28" y="16" width="24" height="12" rx="6" fill="#e91e8c" />
+                <path
+                  d="M35 36 Q40 40 45 36"
+                  stroke="#e91e8c"
+                  strokeWidth="1.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <rect
+                  x="28"
+                  y="16"
+                  width="24"
+                  height="12"
+                  rx="6"
+                  fill="#e91e8c"
+                />
                 <circle cx="40" cy="55" r="14" fill="#f48fb1" />
-                <path d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z" fill="#e91e8c" />
+                <path
+                  d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z"
+                  fill="#e91e8c"
+                />
                 <circle cx="33" cy="60" r="4" fill="#fff" opacity="0.7" />
-                <text x="31" y="63" fontSize="6" fill="#e91e8c" fontWeight="bold">+</text>
+                <text
+                  x="31"
+                  y="63"
+                  fontSize="6"
+                  fill="#e91e8c"
+                  fontWeight="bold"
+                >
+                  +
+                </text>
               </svg>
             </div>
             <div>
               <h2 style={homeStyles.welcomeTitle}>
-                Selamat Datang, {user?.name || user?.email?.split("@")[0] || "Andin"}!
+                Selamat Datang,{" "}
+                {user?.name || user?.email?.split("@")[0] || "Andin"}!
               </h2>
               <p style={homeStyles.welcomeSubtitle}>
-                Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.<br />
+                Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.
+                <br />
                 Pantau jadwal imunisasi dan tumbuh kembang anak dengan mudah.
               </p>
             </div>
@@ -105,7 +165,8 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
           <div style={homeStyles.reminder}>
             <div style={homeStyles.reminderIcon}>!</div>
             <p style={homeStyles.reminderText}>
-              <strong>Pengingat</strong>: Imunisasi BCG untuk Dina dalam 3 hari lagi
+              <strong>Pengingat</strong>: Imunisasi BCG untuk Dina dalam 3 hari
+              lagi
             </p>
             <span style={homeStyles.reminderBadge}>3 hari lagi</span>
           </div>
@@ -117,7 +178,9 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
               <div style={{ ...homeStyles.statCard, background: "#e91e8c" }}>
                 <div style={homeStyles.statLabel}>Selesai</div>
                 <div style={homeStyles.statNumber}>{summary.selesai}</div>
-                <div style={homeStyles.statSub}>Dari {summary.total} Imunisasi</div>
+                <div style={homeStyles.statSub}>
+                  Dari {summary.total} Imunisasi
+                </div>
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f06292" }}>
                 <div style={homeStyles.statLabel}>Mendatang</div>
@@ -126,7 +189,9 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f48fb1" }}>
                 <div style={homeStyles.statLabel}>Belum terjadwal</div>
-                <div style={homeStyles.statNumber}>{summary.belumTerjadwal}</div>
+                <div style={homeStyles.statNumber}>
+                  {summary.belumTerjadwal}
+                </div>
                 <div style={homeStyles.statSub}>Perlu segera dijadwalkan</div>
               </div>
             </div>
@@ -138,7 +203,12 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
             <div style={homeStyles.scheduleGrid}>
               {scheduleData.map((item) => (
                 <div key={item.id} style={homeStyles.schedCard}>
-                  <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
+                  <div
+                    style={{
+                      ...homeStyles.dot,
+                      background: dotColors[item.status],
+                    }}
+                  />
                   <div style={{ flex: 1 }}>
                     <div style={homeStyles.schedName}>{item.name}</div>
                     <div style={homeStyles.schedDate}>{item.date}</div>
@@ -155,9 +225,15 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
           <h3 style={homeStyles.eduTitle}>EduHealth</h3>
           {eduArticles.map((article) => (
             <div key={article.id} style={homeStyles.eduCard}>
-              <div style={{ ...homeStyles.eduImgBox, background: article.bgColor }}>
+              <div
+                style={{ ...homeStyles.eduImgBox, background: article.bgColor }}
+              >
                 <span style={homeStyles.eduEmoji}>{article.emoji}</span>
-                <span style={{ ...homeStyles.eduTag, background: article.tagColor }}>{article.tag}</span>
+                <span
+                  style={{ ...homeStyles.eduTag, background: article.tagColor }}
+                >
+                  {article.tag}
+                </span>
               </div>
               <div style={homeStyles.eduBody}>
                 <p style={homeStyles.eduBodyText}>{article.title}</p>
@@ -167,126 +243,132 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ── Main App ──
 function App() {
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [showSplash, setShowSplash] = useState(true)
-  const [activePage, setActivePage] = useState("home") // ← DIPINDAH KE SINI
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [activePage, setActivePage] = useState("home"); // ← DIPINDAH KE SINI
 
-  const [items, setItems] = useState([])
-  const [totalItems, setTotalItems] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [isConnected, setIsConnected] = useState(false)
-  const [editingItem, setEditingItem] = useState(null)
+  const [items, setItems] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("newest")
-  const [toast, setToast] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [toast, setToast] = useState(null);
 
   const loadItems = useCallback(async (search = "") => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await fetchItems(search)
-      setItems(data.items)
-      setTotalItems(data.total)
+      const data = await fetchItems(search);
+      setItems(data.items);
+      setTotalItems(data.total);
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
+      if (err.message === "UNAUTHORIZED") handleLogout();
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    checkHealth().then(setIsConnected)
-  }, [])
+    checkHealth().then(setIsConnected);
+  }, []);
 
   useEffect(() => {
-    if (isAuthenticated) loadItems()
-  }, [isAuthenticated, loadItems])
+    if (isAuthenticated) loadItems();
+  }, [isAuthenticated, loadItems]);
 
   useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 3000)
-    return () => clearTimeout(t)
-  }, [toast])
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const handleLogin = async (email, password) => {
-    const data = await login(email, password)
-    setUser(data.user)
-    setIsAuthenticated(true)
-  }
+    const data = await login(email, password);
+    setUser(data.user);
+    setIsAuthenticated(true);
+  };
 
   const handleRegister = async (userData) => {
-    await register(userData)
-    await handleLogin(userData.email, userData.password)
-  }
+    await register(userData);
+    await handleLogin(userData.email, userData.password);
+  };
 
   const handleLogout = () => {
-    clearToken()
-    setUser(null)
-    setIsAuthenticated(false)
-    setItems([])
-    setTotalItems(0)
-    setEditingItem(null)
-    setSearchQuery("")
-    setActivePage("home") // reset halaman saat logout
-    setShowSplash(true)
-  }
+    clearToken();
+    setUser(null);
+    setIsAuthenticated(false);
+    setItems([]);
+    setTotalItems(0);
+    setEditingItem(null);
+    setSearchQuery("");
+    setActivePage("home"); // reset halaman saat logout
+    setShowSplash(true);
+  };
 
   const handleSubmit = async (itemData, editId) => {
     try {
       if (editId) {
-        await updateItem(editId, itemData)
-        setEditingItem(null)
-        setToast({ type: "success", message: "Item berhasil diupdate" })
+        await updateItem(editId, itemData);
+        setEditingItem(null);
+        setToast({ type: "success", message: "Item berhasil diupdate" });
       } else {
-        await createItem(itemData)
-        setToast({ type: "success", message: "Item berhasil ditambahkan" })
+        await createItem(itemData);
+        setToast({ type: "success", message: "Item berhasil ditambahkan" });
       }
-      loadItems(searchQuery)
+      loadItems(searchQuery);
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else setToast({ type: "error", message: err.message })
+      if (err.message === "UNAUTHORIZED") handleLogout();
+      else setToast({ type: "error", message: err.message });
     }
-  }
+  };
 
   const handleEdit = (item) => {
-    setEditingItem(item)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setEditingItem(item);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleDelete = async (id) => {
-    const item = items.find((i) => i.id === id)
-    if (!window.confirm(`Hapus "${item?.name}" ?`)) return
+    const item = items.find((i) => i.id === id);
+    if (!window.confirm(`Hapus "${item?.name}" ?`)) return;
     try {
-      await deleteItem(id)
-      setToast({ type: "success", message: "Item berhasil dihapus" })
-      loadItems(searchQuery)
+      await deleteItem(id);
+      setToast({ type: "success", message: "Item berhasil dihapus" });
+      loadItems(searchQuery);
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else setToast({ type: "error", message: err.message })
+      if (err.message === "UNAUTHORIZED") handleLogout();
+      else setToast({ type: "error", message: err.message });
     }
-  }
+  };
 
   const handleSearch = (query) => {
-    setSearchQuery(query)
-    loadItems(query)
-  }
+    setSearchQuery(query);
+    loadItems(query);
+  };
 
   const sortedItems = [...items].sort((a, b) => {
     switch (sortBy) {
-      case "price_asc": return a.price - b.price
-      case "price_desc": return b.price - a.price
-      case "name_asc": return a.name.localeCompare(b.name)
-      case "name_desc": return b.name.localeCompare(a.name)
-      case "oldest": return a.id - b.id
-      default: return b.id - a.id
+      case "price_asc":
+        return a.price - b.price;
+      case "price_desc":
+        return b.price - a.price;
+      case "name_asc":
+        return a.name.localeCompare(b.name);
+      case "name_desc":
+        return b.name.localeCompare(a.name);
+      case "oldest":
+        return a.id - b.id;
+      default:
+        return b.id - a.id;
     }
-  })
+  });
 
   // Belum login
   if (!isAuthenticated) {
@@ -296,7 +378,7 @@ function App() {
           onSignIn={() => setShowSplash(false)}
           onSignUp={() => setShowSplash(false)}
         />
-      )
+      );
     }
     return (
       <LoginPage
@@ -304,7 +386,7 @@ function App() {
         onRegister={handleRegister}
         onBack={() => setShowSplash(true)}
       />
-    )
+    );
   }
 
   // ── Sudah login → render halaman berdasarkan activePage ──
@@ -328,32 +410,68 @@ function App() {
       )}
 
       {activePage === "faskes" && (
-        <div style={{
-          minHeight: "100vh",
-          background: "#fff5f8",
-          fontFamily: "'Segoe UI', Arial, sans-serif",
-        }}>
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#fff5f8",
+            fontFamily: "'Segoe UI', Arial, sans-serif",
+          }}
+        >
           {/* Navbar sama supaya bisa navigasi balik */}
-          <nav style={{
-            background: "white",
-            borderBottom: "0.5px solid #f0c0d0",
-            padding: "0 2rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "1.5rem",
-            height: "56px",
-          }}>
-            <span style={{ fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" }}>
+          <nav
+            style={{
+              background: "white",
+              borderBottom: "0.5px solid #f0c0d0",
+              padding: "0 2rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "1.5rem",
+              height: "56px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "18px",
+                fontWeight: "700",
+                color: "#1a1a2e",
+                marginRight: "auto",
+              }}
+            >
               ByeBye<span style={{ color: "#e91e8c" }}>Virus</span>
             </span>
-            <a style={{ fontSize: "14px", color: "#888", cursor: "pointer" }} onClick={() => setActivePage("home")}>Home</a>
-            <a style={{ fontSize: "14px", color: "#888", cursor: "pointer" }} onClick={() => setActivePage("jadwal")}>Jadwal Imunisasi</a>
-            <a style={{ fontSize: "14px", color: "#e91e8c", fontWeight: "600", cursor: "pointer" }}>Faskes Map</a>
+            <a
+              style={{ fontSize: "14px", color: "#888", cursor: "pointer" }}
+              onClick={() => setActivePage("home")}
+            >
+              Home
+            </a>
+            <a
+              style={{ fontSize: "14px", color: "#888", cursor: "pointer" }}
+              onClick={() => setActivePage("jadwal")}
+            >
+              Jadwal Imunisasi
+            </a>
+            <a
+              style={{
+                fontSize: "14px",
+                color: "#e91e8c",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
+              Faskes Map
+            </a>
             <div
               style={{
-                width: "36px", height: "36px", borderRadius: "50%",
-                background: "#fce4ec", display: "flex", alignItems: "center",
-                justifyContent: "center", cursor: "pointer", marginLeft: "auto",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "#fce4ec",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                marginLeft: "auto",
               }}
               onClick={handleLogout}
               title="Logout"
@@ -363,29 +481,43 @@ function App() {
               </svg>
             </div>
           </nav>
-          <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#888" }}>
+          <div
+            style={{ padding: "4rem 2rem", textAlign: "center", color: "#888" }}
+          >
             <p style={{ fontSize: "48px" }}>🗺️</p>
-            <p style={{ fontSize: "18px", fontWeight: "600", color: "#1a1a2e" }}>Faskes Map</p>
-            <p style={{ fontSize: "14px" }}>Fitur ini sedang dalam pengembangan.</p>
+            <p
+              style={{ fontSize: "18px", fontWeight: "600", color: "#1a1a2e" }}
+            >
+              Faskes Map
+            </p>
+            <p style={{ fontSize: "14px" }}>
+              Fitur ini sedang dalam pengembangan.
+            </p>
           </div>
         </div>
       )}
 
       {/* Toast notification */}
       {toast && (
-        <div style={{
-          ...toastStyles.base,
-          ...(toast.type === "success" ? toastStyles.success : toastStyles.error),
-        }}>
+        <div
+          style={{
+            ...toastStyles.base,
+            ...(toast.type === "success"
+              ? toastStyles.success
+              : toastStyles.error),
+          }}
+        >
           <div style={toastStyles.iconWrap(toast.type)}>
             {toast.type === "success" ? "✓" : "!"}
           </div>
           <span style={toastStyles.message}>{toast.message}</span>
-          <button style={toastStyles.close} onClick={() => setToast(null)}>✕</button>
+          <button style={toastStyles.close} onClick={() => setToast(null)}>
+            ✕
+          </button>
         </div>
       )}
     </>
-  )
+  );
 }
 
 // ── HomePage Styles ──
@@ -634,7 +766,7 @@ const homeStyles = {
     lineHeight: "1.4",
     margin: 0,
   },
-}
+};
 
 // ── Toast Styles ──
 const toastStyles = {
@@ -694,6 +826,6 @@ const toastStyles = {
     flexShrink: 0,
     lineHeight: 1,
   },
-}
+};
 
-export default App
+export default App;
