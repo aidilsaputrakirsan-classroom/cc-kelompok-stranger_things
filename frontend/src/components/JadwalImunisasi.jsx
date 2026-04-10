@@ -102,9 +102,97 @@ function BoyAvatar() {
   )
 }
 
+// Menu dropdown component
+function ChildMenu({ child, onEdit, onDelete, isOpen }) {
+  if (!isOpen) return null
+  return (
+    <div style={s.dropdown}>
+      <button style={s.dropdownItem} onClick={() => onEdit(child)}>
+        ✏️ Edit
+      </button>
+      <button style={s.dropdownItem} onClick={() => onDelete(child.id)}>
+        🗑️ Hapus
+      </button>
+    </div>
+  )
+}
+
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
+  const [children, setChildren] = useState(childrenList)
   const [selectedChild, setSelectedChild] = useState(childrenList[0])
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingChild, setEditingChild] = useState(null)
+  const [openMenu, setOpenMenu] = useState(null)
+  const [formData, setFormData] = useState({ name: "", birthDate: "", gender: "" })
+
+  const handleSaveChild = () => {
+    if (!formData.name) {
+      alert("Nama anak harus diisi")
+      return
+    }
+    if (!formData.birthDate) {
+      alert("Tanggal lahir harus diisi")
+      return
+    }
+    if (!formData.gender) {
+      alert("Jenis kelamin harus dipilih")
+      return
+    }
+
+    if (editingChild) {
+      // Update existing
+      const updated = children.map(c =>
+        c.id === editingChild.id ? { ...c, ...formData } : c
+      )
+      setChildren(updated)
+      setSelectedChild({ ...editingChild, ...formData })
+      alert("Anak berhasil diupdate")
+    } else {
+      // Add new
+      const newChild = {
+        id: Date.now(),
+        ...formData,
+        age: "Baru lahir",
+        prevVaccines: "-",
+        heightNow: 0,
+        heightDelta: "-",
+        weightNow: 0,
+        weightDelta: "-",
+        avatar: formData.gender === "Laki-laki" ? "boy" : "girl",
+        weightData: [],
+        heightData: [],
+      }
+      setChildren([...children, newChild])
+      setSelectedChild(newChild)
+      alert("Anak berhasil ditambahkan")
+    }
+    handleCloseForm()
+  }
+
+  const handleEditChild = (child) => {
+    setEditingChild(child)
+    setFormData({ name: child.name, birthDate: child.birthDate, gender: child.gender })
+    setShowAddForm(true)
+    setOpenMenu(null)
+  }
+
+  const handleDeleteChild = (childId) => {
+    if (window.confirm("Yakin ingin menghapus anak ini?")) {
+      const updated = children.filter(c => c.id !== childId)
+      setChildren(updated)
+      if (selectedChild.id === childId && updated.length > 0) {
+        setSelectedChild(updated[0])
+      }
+      alert("Anak berhasil dihapus")
+      setOpenMenu(null)
+    }
+  }
+
+  const handleCloseForm = () => {
+    setShowAddForm(false)
+    setEditingChild(null)
+    setFormData({ name: "", birthDate: "", gender: "" })
+  }
 
   return (
     <div style={s.page}>
@@ -128,26 +216,46 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         <div style={s.leftPanel}>
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
-            {childrenList.map((child) => (
-              <div
-                key={child.id}
-                style={{
-                  ...s.childRow,
-                  ...(selectedChild.id === child.id ? s.childRowActive : s.childRowInactive),
-                }}
-                onClick={() => setSelectedChild(child)}
-              >
-                <div style={s.childAvatarWrap}>
-                  {child.avatar === "girl" ? <GirlAvatar /> : <BoyAvatar />}
+            {children.map((child) => (
+              <div key={child.id} style={s.childRowContainer}>
+                <div
+                  style={{
+                    ...s.childRow,
+                    ...(selectedChild.id === child.id ? s.childRowActive : s.childRowInactive),
+                  }}
+                  onClick={() => setSelectedChild(child)}
+                >
+                  <div style={s.childAvatarWrap}>
+                    {child.avatar === "girl" ? <GirlAvatar /> : <BoyAvatar />}
+                  </div>
+                  <span style={{ ...s.childName, color: selectedChild.id === child.id ? "white" : "#444" }}>
+                    {child.name}
+                  </span>
+                  <button
+                    style={s.menuBtn}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpenMenu(openMenu === child.id ? null : child.id)
+                    }}
+                    title="Menu"
+                  >
+                    ⋯
+                  </button>
                 </div>
-                <span style={{ ...s.childName, color: selectedChild.id === child.id ? "white" : "#444" }}>
-                  {child.name}
-                </span>
-                <span style={{ ...s.chevron, color: selectedChild.id === child.id ? "white" : "#aaa" }}>›</span>
+                <ChildMenu
+                  child={child}
+                  onEdit={handleEditChild}
+                  onDelete={handleDeleteChild}
+                  isOpen={openMenu === child.id}
+                />
               </div>
             ))}
 
-            <button style={s.addBtn} onClick={() => setShowAddForm(true)}>
+            <button style={s.addBtn} onClick={() => {
+              setEditingChild(null)
+              setFormData({ name: "", birthDate: "", gender: "" })
+              setShowAddForm(true)
+            }}>
               + &nbsp; Tambah anak
             </button>
           </div>
@@ -193,50 +301,62 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
           <div style={s.chartsRow}>
             {/* Berat */}
             <div style={s.chartBox}>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={selectedChild.weightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                      <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                  <YAxis tickFormatter={(v) => `${v} kg`} tick={{ fontSize: 10 }} />
-                  <Tooltip formatter={(v, n) => [`${v} kg`, n === "anak" ? "Berat anak" : "Berat Ideal"]} />
-                  <Legend
-                    iconType="circle" iconSize={8}
-                    formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Berat anak" : "Berat Ideal"}</span>}
-                  />
-                  <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#weightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                  <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {selectedChild.weightData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={selectedChild.weightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
+                        <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
+                    <YAxis tickFormatter={(v) => `${v} kg`} tick={{ fontSize: 10 }} />
+                    <Tooltip formatter={(v, n) => [`${v} kg`, n === "anak" ? "Berat anak" : "Berat Ideal"]} />
+                    <Legend
+                      iconType="circle" iconSize={8}
+                      formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Berat anak" : "Berat Ideal"}</span>}
+                    />
+                    <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#weightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
+                    <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 180 }}>
+                  <p style={{ color: "#999" }}>Data belum ada</p>
+                </div>
+              )}
             </div>
 
             {/* Tinggi */}
             <div style={s.chartBox}>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={selectedChild.heightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="heightGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                      <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                  <YAxis tickFormatter={(v) => `${v} cm`} tick={{ fontSize: 10 }} />
-                  <Tooltip formatter={(v, n) => [`${v} cm`, n === "anak" ? "Tinggi anak" : "Tinggi Ideal"]} />
-                  <Legend
-                    iconType="circle" iconSize={8}
-                    formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Tinggi anak" : "Tinggi Ideal"}</span>}
-                  />
-                  <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#heightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                  <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {selectedChild.heightData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={selectedChild.heightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="heightGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
+                        <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
+                    <YAxis tickFormatter={(v) => `${v} cm`} tick={{ fontSize: 10 }} />
+                    <Tooltip formatter={(v, n) => [`${v} cm`, n === "anak" ? "Tinggi anak" : "Tinggi Ideal"]} />
+                    <Legend
+                      iconType="circle" iconSize={8}
+                      formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Tinggi anak" : "Tinggi Ideal"}</span>}
+                    />
+                    <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#heightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
+                    <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 180 }}>
+                  <p style={{ color: "#999" }}>Data belum ada</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -262,21 +382,41 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         </div>
       </div>
 
-      {/* Add Child Modal */}
+      {/* Add/Edit Child Modal */}
       {showAddForm && (
-        <div style={s.modalOverlay} onClick={() => setShowAddForm(false)}>
+        <div style={s.modalOverlay} onClick={handleCloseForm}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: "1rem", color: "#1a1a2e" }}>Tambah Anak</h3>
-            <input style={s.modalInput} placeholder="Nama lengkap" />
-            <input style={s.modalInput} placeholder="Tanggal lahir (cth: 10 Mei 2024)" />
-            <select style={s.modalInput}>
+            <h3 style={{ marginBottom: "1rem", color: "#1a1a2e", fontSize: "18px" }}>
+              {editingChild ? "Edit Anak" : "Tambah Anak"}
+            </h3>
+            <input
+              style={s.modalInput}
+              placeholder="Nama lengkap"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <input
+              style={s.modalInput}
+              placeholder="Tanggal lahir (cth: 10 Mei 2024)"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+            />
+            <select
+              style={s.modalInput}
+              value={formData.gender}
+              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            >
               <option value="">Jenis Kelamin</option>
               <option value="Laki-laki">Laki-laki</option>
               <option value="Perempuan">Perempuan</option>
             </select>
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <button style={s.modalBtnPrimary} onClick={() => setShowAddForm(false)}>Simpan</button>
-              <button style={s.modalBtnSecondary} onClick={() => setShowAddForm(false)}>Batal</button>
+              <button style={s.modalBtnPrimary} onClick={handleSaveChild}>
+                {editingChild ? "Update" : "Simpan"}
+              </button>
+              <button style={s.modalBtnSecondary} onClick={handleCloseForm}>
+                Batal
+              </button>
             </div>
           </div>
         </div>
@@ -342,6 +482,9 @@ const s = {
     flexDirection: "column",
     gap: "0.6rem",
   },
+  childRowContainer: {
+    position: "relative",
+  },
   childRow: {
     display: "flex",
     alignItems: "center",
@@ -358,7 +501,38 @@ const s = {
     overflow: "hidden", flexShrink: 0,
   },
   childName: { flex: 1, fontWeight: "600", fontSize: "13px" },
-  chevron: { fontSize: "20px", fontWeight: "700", lineHeight: 1 },
+  menuBtn: {
+    background: "transparent",
+    border: "none",
+    fontSize: "18px",
+    cursor: "pointer",
+    padding: "0 4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dropdown: {
+    position: "absolute",
+    top: "100%",
+    right: "0.75rem",
+    background: "white",
+    border: "1px solid #e2e8f0",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    zIndex: 10,
+    minWidth: "120px",
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    width: "100%",
+    padding: "0.5rem 0.75rem",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: "13px",
+    textAlign: "left",
+    transition: "background 0.2s",
+  },
   addBtn: {
     marginTop: "0.5rem",
     background: "white",
