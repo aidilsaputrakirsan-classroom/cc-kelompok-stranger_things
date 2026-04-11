@@ -551,7 +551,7 @@ const s = {
     background: "#fce4ec",
     borderRadius: "16px",
     padding: "1.5rem",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   profileHeader: {
     display: "flex",
@@ -596,6 +596,7 @@ const s = {
     background: "white",
     borderRadius: "12px",
     padding: "0.75rem",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
 
   // Right panel
