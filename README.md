@@ -673,3 +673,7 @@ Menyimpan riwayat aktivitas dan perubahan data pada sistem.
 - [Modul 3: dokumentasi UI testing](docs/ui-test-results.md)
 - [Modul 4: dokumentasi Auth testing](docs/auth-test-results.md)
 - [Modul 5: dokumentasi perbandingan ukuran image](docs/image-comparison.md)
+
+- Jadwal Imunisasi 
+
+<img src="./frontend/image/jadwal imunisasi.png" />
