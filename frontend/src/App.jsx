@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import ItemForm from "./components/ItemForm";
-import ItemList from "./components/ItemList";
 import LoginPage from "./components/LoginPage";
 import SplashPage from "./components/SplashPage";
 import JadwalImunisasi from "./components/JadwalImunisasi";
+import img1 from "../image/image-size-modul5/edu1.png";
+import img2 from "../image/image-size-modul5/edu2.png";
+import img3 from "../image/image-size-modul5/edu3.png";
 import {
   fetchItems,
   createItem,
@@ -31,24 +32,24 @@ const eduArticles = [
     tag: "Panduan",
     tagColor: "#e91e8c",
     title: "Panduan Lengkap Jadwal Imunisasi Anak Sesuai Usia",
-    bgColor: "#bbdefb",
-    emoji: "👶",
+    bgImage: img1,
+    url: "https://www.halodoc.com/artikel/ini-jadwal-imunisasi-dasar-lengkap-anak-rekomendasi-idai-berdasarkan-usia-dan-jenis",
   },
   {
     id: 2,
     tag: "Tips",
     tagColor: "#ff9800",
     title: "Tips Agar Anak Tidak Takut Saat Imunisasi",
-    bgColor: "#fff9c4",
-    emoji: "😢",
+    bgImage: img2,
+    url: "https://hellosehat.com/parenting/anak-1-sampai-5-tahun/perkembangan-balita/tips-untuk-anak-takut-disuntik/",
   },
   {
     id: 3,
     tag: "Kesehatan",
     tagColor: "#4caf50",
     title: "Mengapa Imunisasi Penting untuk Kesehatan Anak",
-    bgColor: "#c8e6c9",
-    emoji: "💉",
+    bgImage: img3,
+    url: "https://ayosehat.kemkes.go.id/pentingnya-melakukan-imunisasi-pada-anak",
   },
 ];
 
@@ -220,27 +221,65 @@ function HomePage({ user, onLogout, activePage, onNavigate }) {
           </div>
         </div>
 
-        {/* Right Column: EduHealth */}
         <div style={homeStyles.right}>
-          <h3 style={homeStyles.eduTitle}>EduHealth</h3>
-          {eduArticles.map((article) => (
-            <div key={article.id} style={homeStyles.eduCard}>
-              <div
-                style={{ ...homeStyles.eduImgBox, background: article.bgColor }}
-              >
-                <span style={homeStyles.eduEmoji}>{article.emoji}</span>
-                <span
-                  style={{ ...homeStyles.eduTag, background: article.tagColor }}
-                >
-                  {article.tag}
-                </span>
-              </div>
-              <div style={homeStyles.eduBody}>
-                <p style={homeStyles.eduBodyText}>{article.title}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+  <h3 style={homeStyles.eduTitle}>EduHealth</h3>
+
+  {eduArticles.map((article) => (
+    <a
+      key={article.id}
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ ...homeStyles.eduCard, textDecoration: "none" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-4px)";
+        e.currentTarget.style.boxShadow =
+          "0 8px 20px rgba(0,0,0,0.15)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      {/* IMAGE BACKGROUND */}
+      <div
+        style={{
+          ...homeStyles.eduImgBox,
+          backgroundImage: `url(${article.bgImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+          }}
+        />
+
+        {/* Tag */}
+        <span
+          style={{
+            ...homeStyles.eduTag,
+            background: article.tagColor,
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          {article.tag}
+        </span>
+      </div>
+
+      {/* TEXT */}
+      <div style={homeStyles.eduBody}>
+        <p style={homeStyles.eduBodyText}>{article.title}</p>
+        <p style={homeStyles.eduReadMore}>Baca selengkapnya →</p>
+      </div>
+    </a>
+  ))}
+</div>
       </div>
     </div>
   );
@@ -251,7 +290,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
-  const [activePage, setActivePage] = useState("home"); // ← DIPINDAH KE SINI
+  const [activePage, setActivePage] = useState("home");
 
   const [items, setItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -309,7 +348,7 @@ function App() {
     setTotalItems(0);
     setEditingItem(null);
     setSearchQuery("");
-    setActivePage("home"); // reset halaman saat logout
+    setActivePage("home");
     setShowSplash(true);
   };
 
@@ -417,7 +456,6 @@ function App() {
             fontFamily: "'Segoe UI', Arial, sans-serif",
           }}
         >
-          {/* Navbar sama supaya bisa navigasi balik */}
           <nav
             style={{
               background: "white",
@@ -586,6 +624,7 @@ const homeStyles = {
     display: "flex",
     alignItems: "center",
     gap: "1.25rem",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   welcomeAvatarWrap: {
     width: "72px",
@@ -617,6 +656,7 @@ const homeStyles = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   reminderIcon: {
     width: "32px",
@@ -661,6 +701,7 @@ const homeStyles = {
     borderRadius: "14px",
     padding: "1rem 1.25rem",
     color: "white",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   statLabel: {
     fontSize: "13px",
@@ -691,6 +732,7 @@ const homeStyles = {
     display: "flex",
     alignItems: "center",
     gap: "10px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   dot: {
     width: "10px",
@@ -728,13 +770,15 @@ const homeStyles = {
     marginBottom: "1rem",
   },
   eduCard: {
-    background: "white",
-    borderRadius: "12px",
-    overflow: "hidden",
-    marginBottom: "0.75rem",
-    cursor: "pointer",
-    border: "0.5px solid #f0d0da",
-  },
+  background: "white",
+  borderRadius: "12px",
+  overflow: "hidden",
+  marginBottom: "0.75rem",
+  cursor: "pointer",
+  border: "0.5px solid #f0d0da",
+  display: "block",
+  transition: "all 0.25s ease",
+},
   eduImgBox: {
     width: "100%",
     height: "120px",
@@ -748,13 +792,12 @@ const homeStyles = {
   },
   eduTag: {
     position: "absolute",
-    top: "8px",
-    left: "8px",
     padding: "3px 10px",
     borderRadius: "20px",
     fontSize: "11px",
     fontWeight: "600",
     color: "white",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
   },
   eduBody: {
     padding: "0.6rem 0.85rem 0.75rem",
@@ -765,6 +808,13 @@ const homeStyles = {
     color: "#1a1a2e",
     lineHeight: "1.4",
     margin: 0,
+  },
+  eduReadMore: {
+    fontSize: "11px",
+    color: "#e91e8c",
+    marginTop: "6px",
+    marginBottom: 0,
+    fontWeight: "500",
   },
 };
 

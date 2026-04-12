@@ -365,7 +365,7 @@ UI Re-render
 
 
 ## 🗂️ ERD
-<img src="./frontend/image/CC-ERD.drawio.png" />
+<img src="./docs/image/NEW ERD CC.drawio.png" />
 
 Berikut adalah detail arsitektur database PostgreSQL yang digunakan oleh aplikasi **Bye Bye Virus** berdasarkan model SQLAlchemy yang digunakan pada backend.
 
@@ -562,9 +562,9 @@ Menyimpan riwayat aktivitas dan perubahan data pada sistem.
 
 ### Health Check
 
-| Method | Endpoint | Deskripsi |
-| --- | --- | --- |
-| GET | `/health` | Mengecek status API dan versi aplikasi |
+| Method | Endpoint   | Deskripsi       |
+|--------|-----------|-----------------|
+| GET    | /health   | Cek status API  |
 
 ---
 
@@ -667,6 +667,9 @@ Menyimpan riwayat aktivitas dan perubahan data pada sistem.
 - Beranda
 
 <img src="./frontend/image/Home.png" alt="Halaman Beranda" />
+
+- Jadwal Imunisasi
+<img src="./frontend/image/jadwal imunisasi.png" alt="Halaman Jadwal Imunisasi" />
 
 ## 📋 Hasil Pengujian
 - [Modul 2: dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
