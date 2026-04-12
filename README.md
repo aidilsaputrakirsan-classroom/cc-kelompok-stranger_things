@@ -369,194 +369,179 @@ UI Re-render
 
 Berikut adalah detail arsitektur database PostgreSQL yang digunakan oleh aplikasi **Bye Bye Virus** berdasarkan model SQLAlchemy yang digunakan pada backend.
 
-### 1. Tabel roles
-Menyimpan data peran pengguna dalam sistem.
+### Tabel: Roles
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik role. |
-| name | String(50) | UK, Not Null | Nama role, misalnya `parent` atau `health_worker`. |
-| description | Text | Nullable | Penjelasan role. |
-| created_at | DateTime | TZ, Now() | Waktu role dibuat. |
+| Atribut     | Tipe | Keterangan          |
+| ----------- | ---- | ------------------- |
+| id          | PK   | Primary key         |
+| name        | -    | Nama peran pengguna |
+| description | -    | Deskripsi peran     |
+| created_at  | -    | Waktu dibuat        |
 
----
+### Tabel: Users
 
-### 2. Tabel users
-Menyimpan data akun pengguna aplikasi.
+| Atribut         | Tipe | Keterangan                     |
+| --------------- | ---- | ------------------------------ |
+| id              | PK   | Primary key                    |
+| email           | -    | Email pengguna                 |
+| name            | -    | Nama pengguna                  |
+| hashed_password | -    | Password yang sudah dienkripsi |
+| role_id         | FK   | Relasi ke `roles.id`           |
+| is_active       | -    | Status aktif pengguna          |
+| created_at      | -    | Waktu dibuat                   |
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik pengguna. |
-| email | String(255) | UK, Not Null, Index | Email unik untuk login. |
-| name | String(100) | Not Null | Nama lengkap pengguna. |
-| phone | String(20) | Nullable | Nomor telepon pengguna. |
-| address | Text | Nullable | Alamat pengguna. |
-| hashed_password | String(255) | Not Null | Password yang sudah di-hash. |
-| role_id | Integer | FK, Not Null, Index | Relasi ke tabel `roles`. |
-| is_active | Boolean | Default True | Status aktif akun. |
-| created_at | DateTime | TZ, Now() | Waktu akun dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+### Tabel: Children
 
----
+| Atribut         | Tipe | Keterangan           |
+| --------------- | ---- | -------------------- |
+| id              | PK   | Primary key          |
+| parent_id       | FK   | Relasi ke `users.id` |
+| name            | -    | Nama anak            |
+| birth_date      | -    | Tanggal lahir        |
+| gender          | -    | Jenis kelamin        |
+| blood_type      | -    | Golongan darah       |
+| height_at_birth | -    | Tinggi saat lahir    |
+| weight_at_birth | -    | Berat saat lahir     |
+| notes           | -    | Catatan              |
+| is_active       | -    | Status aktif         |
+| created_at      | -    | Waktu dibuat         |
+| updated_at      | -    | Waktu diperbarui     |
 
-### 3. Tabel children
-Menyimpan data profil anak milik pengguna dengan role parent.
+### Tabel: healthcare_facilities
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik anak. |
-| parent_id | Integer | FK, Not Null, Index | Relasi ke tabel `users` sebagai orang tua. |
-| name | String(100) | Not Null | Nama lengkap anak. |
-| birth_date | Date | Not Null, Index | Tanggal lahir anak. |
-| gender | String(10) | Not Null | Jenis kelamin anak, misalnya `male` atau `female`. |
-| blood_type | String(5) | Nullable | Golongan darah anak. |
-| height_at_birth | Float | Nullable | Tinggi badan saat lahir. |
-| weight_at_birth | Float | Nullable | Berat badan saat lahir. |
-| notes | Text | Nullable | Catatan tambahan mengenai anak. |
-| is_active | Boolean | Default True | Status aktif data anak. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+| Atribut         | Tipe | Keterangan        |
+| --------------- | ---- | ----------------- |
+| id              | PK   | Primary key       |
+| name            | -    | Nama fasilitas    |
+| type            | -    | Jenis fasilitas   |
+| address         | -    | Alamat            |
+| phone           | -    | Nomor telepon     |
+| latitude        | -    | Koordinat lintang |
+| longitude       | -    | Koordinat bujur   |
+| operating_hours | -    | Jam operasional   |
+| notes           | -    | Catatan           |
+| is_active       | -    | Status aktif      |
+| created_at      | -    | Waktu dibuat      |
+| updated_at      | -    | Waktu diperbarui  |
 
----
 
-### 4. Tabel healthcare_facilities
-Menyimpan data fasilitas kesehatan untuk imunisasi.
+### Tabel: Vaccine_types
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik fasilitas kesehatan. |
-| name | String(200) | Not Null | Nama fasilitas kesehatan. |
-| type | String(50) | Not Null, Index | Jenis fasilitas kesehatan. |
-| address | Text | Not Null | Alamat lengkap fasilitas. |
-| phone | String(20) | Nullable | Nomor telepon fasilitas. |
-| latitude | Float | Nullable | Koordinat lintang lokasi. |
-| longitude | Float | Nullable | Koordinat bujur lokasi. |
-| operating_hours | String(100) | Nullable | Jam operasional fasilitas. |
-| notes | Text | Nullable | Catatan tambahan. |
-| is_active | Boolean | Default True | Status aktif fasilitas. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+| Atribut       | Tipe | Keterangan            |
+| ------------- | ---- | --------------------- |
+| id            | PK   | Primary key           |
+| name          | -    | Nama vaksin           |
+| description   | -    | Deskripsi             |
+| age_month_min | -    | Usia minimum (bulan)  |
+| age_month_max | -    | Usia maksimum (bulan) |
+| notes         | -    | Catatan               |
+| is_active     | -    | Status aktif          |
+| created_at    | -    | Waktu dibuat          |
 
----
+### Tabel: vaccine_schedules
 
-### 5. Tabel vaccine_types
-Menyimpan data master jenis vaksin.
+| Atribut     | Tipe | Keterangan                   |
+| ----------- | ---- | ---------------------------- |
+| id          | PK   | Primary key                  |
+| vaccine_id  | FK   | Relasi ke `vaccine_types.id` |
+| age_month   | -    | Usia pemberian (bulan)       |
+| dose_number | -    | Dosis ke-                    |
+| description | -    | Deskripsi                    |
+| notes       | -    | Catatan                      |
+| is_active   | -    | Status aktif                 |
+| created_at  | -    | Waktu dibuat                 |
+| updated_at  | -    | Waktu diperbarui             |
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik jenis vaksin. |
-| name | String(100) | UK, Not Null, Index | Nama vaksin. |
-| description | Text | Nullable | Deskripsi vaksin. |
-| age_month_min | Integer | Nullable | Usia minimum pemberian vaksin dalam bulan. |
-| age_month_max | Integer | Nullable | Usia maksimum pemberian vaksin dalam bulan. |
-| notes | Text | Nullable | Catatan tambahan. |
-| is_active | Boolean | Default True | Status aktif vaksin. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
+### Tabel: immunization_logs
 
----
+| Atribut              | Tipe | Keterangan                           |
+| -------------------- | ---- | ------------------------------------ |
+| id                   | PK   | Primary key                          |
+| child_id             | FK   | Relasi ke `children.id`              |
+| vaccine_id           | FK   | Relasi ke `vaccine_types.id`         |
+| schedule_id          | FK   | Relasi ke `vaccine_schedules.id`     |
+| facility_id          | FK   | Relasi ke `healthcare_facilities.id` |
+| healthcare_worker_id | FK   | Relasi ke `users.id`                 |
+| status               | -    | Status imunisasi                     |
+| scheduled_date       | -    | Tanggal jadwal                       |
+| completion_date      | -    | Tanggal selesai                      |
+| notes                | -    | Catatan                              |
+| created_at           | -    | Waktu dibuat                         |
+| updated_at           | -    | Waktu diperbarui                     |
 
-### 6. Tabel vaccine_schedules
-Menyimpan jadwal vaksin.
+### Tabel: growth_records
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik jadwal vaksin. |
-| vaccine_id | Integer | FK, Not Null, Index | Relasi ke tabel `vaccine_types`. |
-| age_month | Integer | Not Null, Index | Usia anak dalam bulan saat vaksin direkomendasikan. |
-| dose_number | Integer | Nullable | Nomor dosis vaksin. |
-| description | Text | Nullable | Penjelasan jadwal vaksin. |
-| notes | Text | Nullable | Catatan tambahan. |
-| is_active | Boolean | Default True | Status aktif jadwal vaksin. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+| Atribut            | Tipe | Keterangan              |
+| ------------------ | ---- | ----------------------- |
+| id                 | PK   | Primary key             |
+| child_id           | FK   | Relasi ke `children.id` |
+| age_month          | -    | Usia (bulan)            |
+| weight             | -    | Berat badan             |
+| height             | -    | Tinggi badan            |
+| head_circumference | -    | Lingkar kepala          |
+| recorded_date      | -    | Tanggal pencatatan      |
+| notes              | -    | Catatan                 |
+| created_at         | -    | Waktu dibuat            |
+| updated_at         | -    | Waktu diperbarui        |
 
----
+### Tabel: reminders
 
-### 7. Tabel immunization_logs
-Menyimpan data jadwal dan pelaksanaan imunisasi anak.
+| Atribut             | Tipe | Keterangan                       |
+| ------------------- | ---- | -------------------------------- |
+| id                  | PK   | Primary key                      |
+| immunization_log_id | FK   | Relasi ke `immunization_logs.id` |
+| reminder_type       | -    | Jenis pengingat                  |
+| reminder_date       | -    | Tanggal pengingat                |
+| is_sent             | -    | Status terkirim                  |
+| sent_at             | -    | Waktu dikirim                    |
+| status              | -    | Status pengingat                 |
+| created_at          | -    | Waktu dibuat                     |
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik log imunisasi. |
-| child_id | Integer | FK, Not Null, Index | Relasi ke tabel `children`. |
-| vaccine_id | Integer | FK, Not Null, Index | Relasi ke tabel `vaccine_types`. |
-| schedule_id | Integer | FK, Nullable | Relasi ke tabel `vaccine_schedules`. |
-| facility_id | Integer | FK, Nullable, Index | Relasi ke tabel `healthcare_facilities`. |
-| status | String(50) | Default `pending` | Status imunisasi. |
-| scheduled_date | Date | Not Null, Index | Tanggal imunisasi dijadwalkan. |
-| completion_date | Date | Nullable | Tanggal imunisasi selesai dilakukan. |
-| healthcare_worker_id | Integer | FK, Nullable | Relasi ke tabel `users` sebagai petugas kesehatan. |
-| notes | Text | Nullable | Catatan tambahan imunisasi. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+### Tabel: articles
 
----
+| Atribut      | Tipe | Keterangan           |
+| ------------ | ---- | -------------------- |
+| id           | PK   | Primary key          |
+| title        | -    | Judul artikel        |
+| content      | -    | Isi artikel          |
+| author_id    | FK   | Relasi ke `users.id` |
+| category     | -    | Kategori             |
+| is_published | -    | Status publikasi     |
+| created_at   | -    | Waktu dibuat         |
+| updated_at   | -    | Waktu diperbarui     |
+| published_at | -    | Waktu publikasi      |
 
-### 8. Tabel growth_records
-Menyimpan riwayat pertumbuhan anak.
+### Tabel: audit_logs
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik catatan pertumbuhan. |
-| child_id | Integer | FK, Not Null, Index | Relasi ke tabel `children`. |
-| age_month | Integer | Not Null | Umur anak dalam bulan saat pencatatan. |
-| weight | Float | Not Null | Berat badan anak. |
-| height | Float | Not Null | Tinggi badan anak. |
-| head_circumference | Float | Nullable | Lingkar kepala anak. |
-| recorded_date | Date | Not Null, Index | Tanggal pencatatan pertumbuhan. |
-| notes | Text | Nullable | Catatan tambahan. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir data diperbarui. |
+| Atribut    | Tipe | Keterangan           |
+| ---------- | ---- | -------------------- |
+| id         | PK   | Primary key          |
+| user_id    | FK   | Relasi ke `users.id` |
+| action     | -    | Aksi yang dilakukan  |
+| table_name | -    | Nama tabel           |
+| record_id  | -    | ID data              |
+| old_values | -    | Data lama            |
+| new_values | -    | Data baru            |
+| ip_address | -    | Alamat IP            |
+| created_at | -    | Waktu dibuat         |
 
----
+### Ringkasan Relasi Utama:
 
-### 9. Tabel reminders
-Menyimpan data reminder atau notifikasi imunisasi.
+| Relasi                                    | Kardinalitas | Penjelasan                                                                           |
+| ----------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
+| roles → users                             | 1 : N        | Satu role dapat dimiliki oleh banyak user, tetapi satu user hanya memiliki satu role |
+| users → children                          | 1 : N        | Satu user (orang tua) dapat memiliki banyak anak                                     |
+| children → growth_records                 | 1 : N        | Satu anak memiliki banyak catatan pertumbuhan                                        |
+| children → immunization_logs              | 1 : N        | Satu anak memiliki banyak riwayat imunisasi                                          |
+| vaccine_types → vaccine_schedules         | 1 : N        | Satu jenis vaksin memiliki banyak jadwal                                             |
+| vaccine_types → immunization_logs         | 1 : N        | Satu jenis vaksin dapat digunakan pada banyak riwayat imunisasi                      |
+| vaccine_schedules → immunization_logs     | 1 : N        | Satu jadwal vaksin dapat digunakan pada banyak imunisasi                             |
+| healthcare_facilities → immunization_logs | 1 : N        | Satu fasilitas melayani banyak imunisasi                                             |
+| users → immunization_logs                 | 1 : N        | Satu user (tenaga kesehatan) dapat menangani banyak imunisasi                        |
+| immunization_logs → reminders             | 1 : N        | Satu riwayat imunisasi memiliki banyak pengingat                                     |
+| users → articles                          | 1 : N        | Satu user dapat menulis banyak artikel                                               |
+| users → audit_logs                        | 1 : N        | Satu user memiliki banyak catatan aktivitas                                          |
 
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik reminder. |
-| immunization_log_id | Integer | FK, Not Null | Relasi ke tabel `immunization_logs`. |
-| reminder_type | String(50) | Default `app_notification` | Jenis reminder yang digunakan. |
-| reminder_date | Date | Not Null, Index | Tanggal reminder dikirim atau dijadwalkan. |
-| is_sent | Boolean | Default False, Index | Status apakah reminder sudah dikirim. |
-| sent_at | DateTime | TZ, Nullable | Waktu reminder dikirim. |
-| status | String(50) | Default `pending` | Status reminder. |
-| created_at | DateTime | TZ, Now() | Waktu data dibuat. |
-
----
-
-### 10. Tabel articles
-Menyimpan artikel edukasi dalam aplikasi.
-
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik artikel. |
-| title | String(255) | Not Null | Judul artikel. |
-| content | Text | Not Null | Isi artikel. |
-| author_id | Integer | FK, Nullable | Relasi ke tabel `users` sebagai penulis artikel. |
-| category | String(100) | Nullable, Index | Kategori artikel. |
-| is_published | Boolean | Default False, Index | Status publikasi artikel. |
-| created_at | DateTime | TZ, Now() | Waktu artikel dibuat. |
-| updated_at | DateTime | TZ, On Update | Waktu terakhir artikel diperbarui. |
-| published_at | DateTime | TZ, Nullable | Waktu artikel dipublikasikan. |
-
----
-
-### 11. Tabel audit_logs
-Menyimpan riwayat aktivitas dan perubahan data pada sistem.
-
-| Kolom | Tipe Data | Constraint | Deskripsi |
-|---|---|---|---|
-| id | Integer | PK, Index | ID unik log audit. |
-| user_id | Integer | FK, Nullable | Relasi ke tabel `users`. |
-| action | String(50) | Not Null | Jenis aksi yang dilakukan pengguna. |
-| table_name | String(100) | Not Null | Nama tabel yang terkena aksi. |
-| record_id | Integer | Nullable | ID record yang diubah. |
-| old_values | JSON | Nullable | Data lama sebelum perubahan. |
-| new_values | JSON | Nullable | Data baru setelah perubahan. |
-| ip_address | String(45) | Nullable | Alamat IP pengguna. |
-| created_at | DateTime | TZ, Now(), Index | Waktu log dicatat. |
 
 ## 🔗 API Endpoints
 
