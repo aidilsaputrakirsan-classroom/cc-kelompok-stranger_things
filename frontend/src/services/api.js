@@ -173,3 +173,47 @@ export async function checkHealth() {
   }
 }
 
+// ==================== CHILDREN API ====================
+
+export async function fetchChildren() {
+  console.log("👶 Fetching children")
+  const response = await fetch(`${API_URL}/children`, {
+    headers: authHeaders(),
+  })
+  return handleResponse(response)
+}
+
+export async function createChild(childData) {
+  console.log("➕ Creating child:", childData.name)
+  const response = await fetch(`${API_URL}/children`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(childData),
+  })
+  return handleResponse(response)
+}
+
+export async function updateChild(id, childData) {
+  console.log("✏️ Updating child:", id)
+  const response = await fetch(`${API_URL}/children/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(childData),
+  })
+  return handleResponse(response)
+}
+
+export async function deleteChild(id) {
+  console.log("🗑️ Deleting child:", id)
+  const response = await fetch(`${API_URL}/children/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  return handleResponse(response)
+}

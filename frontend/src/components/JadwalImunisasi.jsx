@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { fetchChildren, createChild, updateChild, deleteChild } from "../services/api"
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart, Legend
@@ -7,7 +8,7 @@ import {
 // ── Static Data ──
 const childrenList = [
   {
-    id: 1,
+    id: "static-1",
     name: "Cintya Widhi Astuti",
     age: "2 Bulan",
     gender: "Perempuan",
@@ -38,7 +39,7 @@ const childrenList = [
     ],
   },
   {
-    id: 2,
+    id: "static-2",
     name: "Ahmad Daffa Alfattah",
     age: "8 Bulan",
     gender: "Laki-laki",
@@ -124,8 +125,44 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
   const [editingChild, setEditingChild] = useState(null)
   const [openMenu, setOpenMenu] = useState(null)
   const [formData, setFormData] = useState({ name: "", birthDate: "", gender: "" })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSaveChild = () => {
+  // Load backend data
+  useEffect(() => {
+    loadChildren()
+  }, [])
+
+  const loadChildren = async () => {
+    try {
+      const parentChildren = await fetchChildren()
+      // Map backend data to frontend format
+      const formatted = parentChildren.map(c => ({
+        id: c.id,
+        name: c.name,
+        // Backend currently returns YYYY-MM-DD
+        birthDate: c.birth_date,
+        gender: c.gender === "male" || c.gender === "Laki-laki" ? "Laki-laki" : "Perempuan",
+        age: "Sesuai usia",
+        prevVaccines: "-",
+        heightNow: 0,
+        heightDelta: "-",
+        weightNow: 0,
+        weightDelta: "-",
+        avatar: (c.gender === "male" || c.gender === "Laki-laki") ? "boy" : "girl",
+        weightData: [],
+        heightData: []
+      }))
+      
+      if (formatted.length > 0) {
+        setChildren([...formatted, ...childrenList]) // fallback to keep static data visualization for demo, or set only formatted
+        setSelectedChild(formatted[0])
+      }
+    } catch (err) {
+      console.error("Gagal load data anak:", err)
+    }
+  }
+
+  const handleSaveChild = async () => {
     if (!formData.name) {
       alert("Nama anak harus diisi")
       return
@@ -139,34 +176,36 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
       return
     }
 
-    if (editingChild) {
-      // Update existing
-      const updated = children.map(c =>
-        c.id === editingChild.id ? { ...c, ...formData } : c
-      )
-      setChildren(updated)
-      setSelectedChild({ ...editingChild, ...formData })
-      alert("Anak berhasil diupdate")
-    } else {
-      // Add new
-      const newChild = {
-        id: Date.now(),
-        ...formData,
-        age: "Baru lahir",
-        prevVaccines: "-",
-        heightNow: 0,
-        heightDelta: "-",
-        weightNow: 0,
-        weightDelta: "-",
-        avatar: formData.gender === "Laki-laki" ? "boy" : "girl",
-        weightData: [],
-        heightData: [],
+    setIsLoading(true)
+    try {
+      const payload = {
+        name: formData.name,
+        birth_date: formData.birthDate,
+        gender: formData.gender === "Laki-laki" ? "male" : "female"
       }
-      setChildren([...children, newChild])
-      setSelectedChild(newChild)
-      alert("Anak berhasil ditambahkan")
+      
+      if (editingChild && editingChild.id) {
+        // Update existing (check if it's not the static ID)
+        if (typeof editingChild.id !== 'string' || !editingChild.id.toString().startsWith('static')) {
+           await updateChild(editingChild.id, payload)
+        } else {
+           alert("Tidak bisa mengedit data contoh")
+           setIsLoading(false)
+           return
+        }
+        alert("Anak berhasil diupdate")
+      } else {
+        // Add new
+        await createChild(payload)
+        alert("Anak berhasil ditambahkan")
+      }
+      await loadChildren()
+      handleCloseForm()
+    } catch (err) {
+      alert(err.message || "Terjadi kesalahan")
+    } finally {
+      setIsLoading(false)
     }
-    handleCloseForm()
   }
 
   const handleEditChild = (child) => {
@@ -176,14 +215,20 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
     setOpenMenu(null)
   }
 
-  const handleDeleteChild = (childId) => {
+  const handleDeleteChild = async (childId) => {
+    if (typeof childId === 'string' && childId.startsWith('static')) {
+      alert("Tidak bisa menghapus data contoh")
+      setOpenMenu(null)
+      return
+    }
     if (window.confirm("Yakin ingin menghapus anak ini?")) {
-      const updated = children.filter(c => c.id !== childId)
-      setChildren(updated)
-      if (selectedChild.id === childId && updated.length > 0) {
-        setSelectedChild(updated[0])
+      try {
+        await deleteChild(childId)
+        alert("Anak berhasil dihapus")
+        await loadChildren()
+      } catch (err) {
+        alert(err.message || "Gagal menghapus anak")
       }
-      alert("Anak berhasil dihapus")
       setOpenMenu(null)
     }
   }
@@ -397,7 +442,8 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
             />
             <input
               style={s.modalInput}
-              placeholder="Tanggal lahir (cth: 10 Mei 2024)"
+              type="date"
+              placeholder="Tanggal lahir"
               value={formData.birthDate}
               onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
             />
