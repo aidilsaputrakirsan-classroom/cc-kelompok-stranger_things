@@ -9,6 +9,7 @@ from models import Base, User, Role
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
+    ChildCreate, ChildResponse
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -51,7 +52,7 @@ app = FastAPI(
 )
 
 # ==================== CORS (FIXED) ====================
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",")]
 
 app.add_middleware(
@@ -128,6 +129,12 @@ def list_items(
     return crud.get_items(db=db, skip=skip, limit=limit, search=search)
 
 
+@app.get("/items/stats")
+def items_stats(db: Session = Depends(get_db)):
+    """Statistik inventory."""
+    return crud.get_items_stats(db=db)
+
+
 @app.get("/items/{item_id}", response_model=ItemResponse)
 def get_item(
     item_id: int,
@@ -172,9 +179,9 @@ def delete_item(
 
 # ==================== CHILD ENDPOINTS ====================
 
-@app.post("/children", status_code=201)
+@app.post("/children", status_code=201, response_model=ChildResponse)
 def create_child(
-    child_data: dict,
+    child_data: ChildCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -182,7 +189,7 @@ def create_child(
     return crud.create_child(db=db, child_data=child_data, parent_id=current_user.id)
 
 
-@app.get("/children")
+@app.get("/children", response_model=list[ChildResponse])
 def get_user_children(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -206,10 +213,10 @@ def get_child(
     return child
 
 
-@app.put("/children/{child_id}")
+@app.put("/children/{child_id}", response_model=ChildResponse)
 def update_child(
     child_id: int,
-    child_data: dict,
+    child_data: dict, # Using dict for partial updates
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

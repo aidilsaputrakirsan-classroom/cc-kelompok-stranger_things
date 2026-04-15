@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 import re
 
 
@@ -16,7 +16,16 @@ class ItemBase(BaseModel):
 # === CREATE SCHEMA (untuk POST request) ===
 class ItemCreate(ItemBase):
     """Schema untuk membuat item baru. Mewarisi semua field dari ItemBase."""
-    pass
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Laptop",
+                "description": "Laptop untuk cloud computing",
+                "price": 15000000,
+                "quantity": 10
+            }
+        }
+    }
 
 
 # === UPDATE SCHEMA (untuk PUT request) ===
@@ -58,6 +67,15 @@ class UserCreate(BaseModel):
     email: str
     password: str = Field(..., min_length=8)
     
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Daffa Alfattah",
+                "email": "daffa@student.itk.ac.id",
+                "password": "Password123!"
+            }
+        }
+    }
     @field_validator('email')
     @classmethod
     def validate_email(cls, v):
@@ -101,6 +119,15 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "daffa@student.itk.ac.id",
+                "password": "Password123!"
+            }
+        }
+    }
+
 
 class TokenResponse(BaseModel):
     """Schema untuk login response dengan JWT token."""
@@ -116,7 +143,7 @@ class TokenResponse(BaseModel):
 class ChildCreate(BaseModel):
     """Schema untuk membuat data anak baru."""
     name: str = Field(..., min_length=1, max_length=100)
-    birth_date: str  # Format: YYYY-MM-DD
+    birth_date: date  # Format: YYYY-MM-DD
     gender: str  # 'male' atau 'female'
     blood_type: Optional[str] = None
     height_at_birth: Optional[float] = None
@@ -129,7 +156,7 @@ class ChildResponse(BaseModel):
     id: int
     parent_id: int
     name: str
-    birth_date: str
+    birth_date: date
     gender: str
     blood_type: Optional[str] = None
     is_active: bool

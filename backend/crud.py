@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, asc, desc
 from models import Item, User
-from schemas import ItemCreate, ItemUpdate, UserCreate
+from schemas import ItemCreate, ItemUpdate, UserCreate, ChildCreate
 from auth import hash_password, verify_password
 from sqlalchemy import func
 
@@ -130,35 +130,40 @@ def get_items_stats(db: Session) -> dict:
     if not items:
         return {
             "total_items": 0,
-            "avg_price": 0.0,
-            "total_quantity": 0,
-            "total_value": 0.0,
+            "total_value": 0,
+            "most_expensive": None,
+            "cheapest": None
         }
     
-    total_items = len(items)
-    avg_price = sum(item.price for item in items) / total_items
-    total_quantity = sum(item.quantity for item in items)
-    total_value = sum(item.price * item.quantity for item in items)
-    
     return {
-        "total_items": total_items,
-        "avg_price": round(avg_price, 2),
-        "total_quantity": total_quantity,
-        "total_value": round(total_value, 2),
+        "total_items": len(items),
+        "total_value": sum(i.price * i.quantity for i in items),
+        "most_expensive": {
+            "name": max(items, key=lambda x: x.price).name, 
+            "price": max(items, key=lambda x: x.price).price
+        },
+        "cheapest": {
+            "name": min(items, key=lambda x: x.price).name,
+            "price": min(items, key=lambda x: x.price).price
+        },
     }
 
 
 # ==================== CHILD CRUD ====================
 
-def create_child(db: Session, child_data: dict, parent_id: int):
+def create_child(db: Session, child_data: ChildCreate, parent_id: int):
     """Buat profil anak untuk parent."""
     from models import Child
+
     db_child = Child(
         parent_id=parent_id,
-        name=child_data.get("name"),
-        birth_date=child_data.get("birth_date"),
-        gender=child_data.get("gender"),
-        blood_type=child_data.get("blood_type")
+        name=child_data.name,
+        birth_date=child_data.birth_date,
+        gender=child_data.gender,
+        blood_type=child_data.blood_type,
+        height_at_birth=child_data.height_at_birth,
+        weight_at_birth=child_data.weight_at_birth,
+        notes=child_data.notes
     )
     db.add(db_child)
     db.commit()
@@ -180,10 +185,16 @@ def get_children_by_parent(db: Session, parent_id: int):
 
 def update_child(db: Session, child_id: int, child_data: dict):
     """Update profil anak."""
+    from datetime import datetime
     db_child = get_child(db, child_id)
     if db_child:
         for key, value in child_data.items():
             if value is not None:
+                if key == "birth_date" and isinstance(value, str):
+                    try:
+                        value = datetime.strptime(value, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
                 setattr(db_child, key, value)
         db.commit()
         db.refresh(db_child)

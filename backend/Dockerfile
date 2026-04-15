@@ -24,9 +24,18 @@ RUN useradd -m appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Tambahkan perintah instalasi curl karena standard image python slim biasanya tidak punya curl
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+USER appuser
+
+# Healthcheck yang diarahkan Modul 5
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
 # 6. Dokumentasikan port yang digunakan
 EXPOSE 8000
 
 # 7. Command untuk menjalankan aplikasi
 #    --host 0.0.0.0: agar bisa diakses dari luar container
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "scripts/wait-for-db.sh", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
