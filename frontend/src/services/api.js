@@ -81,10 +81,16 @@ export async function register(userData) {
 
 export async function login(email, password) {
   console.log("🔐 Logging in:", email)
+  
+  // Gunakan URLSearchParams untuk mendukung OAuth2PasswordRequestForm dari FastAPI
+  const formData = new URLSearchParams()
+  formData.append("username", email) // FastAPI OAuth form menggunakan 'username', bukan 'email'
+  formData.append("password", password)
+
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData,
   })
   const data = await handleResponse(response)
   console.log("✅ Full login response:", data)

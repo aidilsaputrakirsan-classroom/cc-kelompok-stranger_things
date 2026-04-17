@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from database import engine, get_db, SessionLocal
@@ -86,8 +87,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/auth/login", response_model=TokenResponse)
-def login(login_data: LoginRequest, db: Session = Depends(get_db)):
-    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = crud.authenticate_user(db=db, email=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Email atau password salah")
 
