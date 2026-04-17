@@ -2,12 +2,12 @@ services:
   # ==================== DATABASE ====================
   db:
     image: postgres:16-alpine
-    container_name: db
+    container_name: bye_virus-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: appdb
+      POSTGRES_DB: bye_virus
     ports:
       - "5432:5432"
     volumes:
@@ -15,7 +15,7 @@ services:
     networks:
       - cloudnet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: backend
+    image: bye_virus-backend
+    container_name: bye_virus-backend
     restart: unless-stopped
     env_file:
       - ./backend/.env.docker
@@ -49,6 +50,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost:8000
+    image: bye_virus-frontend
     container_name: frontend
     restart: unless-stopped
     ports:
@@ -61,10 +63,10 @@ services:
 # ==================== VOLUMES ====================
 volumes:
   pgdata:
-    name: cloudapp-pgdata
+    name: bye_virus
 
 # ==================== NETWORKS ====================
 networks:
   cloudnet:
-    name: cloudapp-network
+    name: cloudnet
     driver: bridge
