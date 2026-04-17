@@ -139,7 +139,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
       const formatted = parentChildren.map(c => ({
         id: c.id,
         name: c.name,
-        // Backend currently returns YYYY-MM-DD
         birthDate: c.birth_date,
         gender: c.gender === "male" || c.gender === "Laki-laki" ? "Laki-laki" : "Perempuan",
         age: "Sesuai usia",
@@ -153,9 +152,14 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         heightData: []
       }))
       
+      const newChildren = [...formatted, ...childrenList];
+      setChildren(newChildren);
+      
+      // Jika berhasil delete tetapi format baru kosong, selectedChild kembali ke statis pertama
       if (formatted.length > 0) {
-        setChildren([...formatted, ...childrenList]) // fallback to keep static data visualization for demo, or set only formatted
         setSelectedChild(formatted[0])
+      } else {
+        setSelectedChild(childrenList[0])
       }
     } catch (err) {
       console.error("Gagal load data anak:", err)

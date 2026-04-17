@@ -145,10 +145,20 @@ class ChildCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     birth_date: date  # Format: YYYY-MM-DD
     gender: str  # 'male' atau 'female'
-    blood_type: Optional[str] = None
-    height_at_birth: Optional[float] = None
-    weight_at_birth: Optional[float] = None
-    notes: Optional[str] = None
+    blood_type: Optional[str] = Field(None, title="Golongan Darah")
+    height_at_birth: Optional[float] = Field(None, title="Tinggi Saat Lahir (cm)")
+    weight_at_birth: Optional[float] = Field(None, title="Berat Saat Lahir (kg)")
+    notes: Optional[str] = Field(None, title="Catatan Khusus")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Nama Anak",
+                "birth_date": "2024-05-10",
+                "gender": "male"
+            }
+        }
+    }
 
 
 class ChildResponse(BaseModel):
