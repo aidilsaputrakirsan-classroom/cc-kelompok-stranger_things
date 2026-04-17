@@ -448,6 +448,13 @@ function App() {
         />
       )}
 
+      {activePage === "dataanak" && (
+        <DataAnak 
+        setActivePage={setActivePage} 
+        onLogout={handleLogout} 
+        />
+      )}
+
       {activePage === "faskes" && (
         <div
           style={{

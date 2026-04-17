@@ -1,75 +1,10 @@
-import { useState, useEffect } from "react"
-import { fetchChildren, createChild, updateChild, deleteChild } from "../services/api"
+import { useState } from "react"
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart, Legend
 } from "recharts"
 
-// ── Static Data ──
-const childrenList = [
-  {
-    id: "static-1",
-    name: "Cintya Widhi Astuti",
-    age: "2 Bulan",
-    gender: "Perempuan",
-    birthDate: "15 November 2024",
-    prevVaccines: "Hepatitis B, DPT",
-    heightNow: 105,
-    heightDelta: "+5 cm bulan ini",
-    weightNow: 11.5,
-    weightDelta: "+0.5 kg bulan ini",
-    avatar: "girl",
-    weightData: [
-      { bulan: "Sep", anak: 3.2, ideal: 3.3 },
-      { bulan: "Okt", anak: 4.5, ideal: 4.5 },
-      { bulan: "Nov", anak: 5.8, ideal: 5.8 },
-      { bulan: "Des", anak: 6.8, ideal: 6.9 },
-      { bulan: "Jan", anak: 8.2, ideal: 8.0 },
-      { bulan: "Feb", anak: 10.1, ideal: 9.2 },
-      { bulan: "Mar", anak: 11.5, ideal: 10.5 },
-    ],
-    heightData: [
-      { bulan: "Sep", anak: 50, ideal: 50 },
-      { bulan: "Okt", anak: 58, ideal: 57 },
-      { bulan: "Nov", anak: 65, ideal: 64 },
-      { bulan: "Des", anak: 72, ideal: 71 },
-      { bulan: "Jan", anak: 82, ideal: 80 },
-      { bulan: "Feb", anak: 95, ideal: 90 },
-      { bulan: "Mar", anak: 105, ideal: 99 },
-    ],
-  },
-  {
-    id: "static-2",
-    name: "Ahmad Daffa Alfattah",
-    age: "8 Bulan",
-    gender: "Laki-laki",
-    birthDate: "10 Mei 2024",
-    prevVaccines: "BCG, Polio, DPT",
-    heightNow: 72,
-    heightDelta: "+2 cm bulan ini",
-    weightNow: 9.2,
-    weightDelta: "+0.3 kg bulan ini",
-    avatar: "boy",
-    weightData: [
-      { bulan: "Sep", anak: 5.5, ideal: 5.6 },
-      { bulan: "Okt", anak: 6.2, ideal: 6.3 },
-      { bulan: "Nov", anak: 7.0, ideal: 7.1 },
-      { bulan: "Des", anak: 7.8, ideal: 7.9 },
-      { bulan: "Jan", anak: 8.3, ideal: 8.4 },
-      { bulan: "Feb", anak: 8.9, ideal: 8.9 },
-      { bulan: "Mar", anak: 9.2, ideal: 9.3 },
-    ],
-    heightData: [
-      { bulan: "Sep", anak: 62, ideal: 63 },
-      { bulan: "Okt", anak: 65, ideal: 66 },
-      { bulan: "Nov", anak: 67, ideal: 68 },
-      { bulan: "Des", anak: 69, ideal: 70 },
-      { bulan: "Jan", anak: 70, ideal: 71 },
-      { bulan: "Feb", anak: 71, ideal: 72 },
-      { bulan: "Mar", anak: 72, ideal: 73 },
-    ],
-  },
-]
+const childrenList = []
 
 function GirlAvatar() {
   return (
@@ -103,145 +38,8 @@ function BoyAvatar() {
   )
 }
 
-// Menu dropdown component
-function ChildMenu({ child, onEdit, onDelete, isOpen }) {
-  if (!isOpen) return null
-  return (
-    <div style={s.dropdown}>
-      <button style={s.dropdownItem} onClick={() => onEdit(child)}>
-        ✏️ Edit
-      </button>
-      <button style={s.dropdownItem} onClick={() => onDelete(child.id)}>
-        🗑️ Hapus
-      </button>
-    </div>
-  )
-}
-
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
-  const [children, setChildren] = useState(childrenList)
-  const [selectedChild, setSelectedChild] = useState(childrenList[0])
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [editingChild, setEditingChild] = useState(null)
-  const [openMenu, setOpenMenu] = useState(null)
-  const [formData, setFormData] = useState({ name: "", birthDate: "", gender: "" })
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Load backend data
-  useEffect(() => {
-    loadChildren()
-  }, [])
-
-  const loadChildren = async () => {
-    try {
-      const parentChildren = await fetchChildren()
-      // Map backend data to frontend format
-      const formatted = parentChildren.map(c => ({
-        id: c.id,
-        name: c.name,
-        birthDate: c.birth_date,
-        gender: c.gender === "male" || c.gender === "Laki-laki" ? "Laki-laki" : "Perempuan",
-        age: "Sesuai usia",
-        prevVaccines: "-",
-        heightNow: 0,
-        heightDelta: "-",
-        weightNow: 0,
-        weightDelta: "-",
-        avatar: (c.gender === "male" || c.gender === "Laki-laki") ? "boy" : "girl",
-        weightData: [],
-        heightData: []
-      }))
-      
-      const newChildren = [...formatted, ...childrenList];
-      setChildren(newChildren);
-      
-      // Jika berhasil delete tetapi format baru kosong, selectedChild kembali ke statis pertama
-      if (formatted.length > 0) {
-        setSelectedChild(formatted[0])
-      } else {
-        setSelectedChild(childrenList[0])
-      }
-    } catch (err) {
-      console.error("Gagal load data anak:", err)
-    }
-  }
-
-  const handleSaveChild = async () => {
-    if (!formData.name) {
-      alert("Nama anak harus diisi")
-      return
-    }
-    if (!formData.birthDate) {
-      alert("Tanggal lahir harus diisi")
-      return
-    }
-    if (!formData.gender) {
-      alert("Jenis kelamin harus dipilih")
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const payload = {
-        name: formData.name,
-        birth_date: formData.birthDate,
-        gender: formData.gender === "Laki-laki" ? "male" : "female"
-      }
-      
-      if (editingChild && editingChild.id) {
-        // Update existing (check if it's not the static ID)
-        if (typeof editingChild.id !== 'string' || !editingChild.id.toString().startsWith('static')) {
-           await updateChild(editingChild.id, payload)
-        } else {
-           alert("Tidak bisa mengedit data contoh")
-           setIsLoading(false)
-           return
-        }
-        alert("Anak berhasil diupdate")
-      } else {
-        // Add new
-        await createChild(payload)
-        alert("Anak berhasil ditambahkan")
-      }
-      await loadChildren()
-      handleCloseForm()
-    } catch (err) {
-      alert(err.message || "Terjadi kesalahan")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleEditChild = (child) => {
-    setEditingChild(child)
-    setFormData({ name: child.name, birthDate: child.birthDate, gender: child.gender })
-    setShowAddForm(true)
-    setOpenMenu(null)
-  }
-
-  const handleDeleteChild = async (childId) => {
-    if (typeof childId === 'string' && childId.startsWith('static')) {
-      alert("Tidak bisa menghapus data contoh")
-      setOpenMenu(null)
-      return
-    }
-    if (window.confirm("Yakin ingin menghapus anak ini?")) {
-      try {
-        await deleteChild(childId)
-        alert("Anak berhasil dihapus")
-        await loadChildren()
-      } catch (err) {
-        alert(err.message || "Gagal menghapus anak")
-      }
-      setOpenMenu(null)
-    }
-  }
-
-  const handleCloseForm = () => {
-    setShowAddForm(false)
-    setEditingChild(null)
-    setFormData({ name: "", birthDate: "", gender: "" })
-  }
+  const [selectedChild, setSelectedChild] = useState(null)
 
   return (
     <div style={s.page}>
@@ -265,212 +63,145 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         <div style={s.leftPanel}>
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
-            {children.map((child) => (
-              <div key={child.id} style={s.childRowContainer}>
+            {childrenList.length === 0 ? (
+              <p style={s.emptyText}>Belum ada data anak.</p>
+            ) : (
+              childrenList.map((child) => (
                 <div
+                  key={child.id}
                   style={{
                     ...s.childRow,
-                    ...(selectedChild.id === child.id ? s.childRowActive : s.childRowInactive),
+                    ...(selectedChild?.id === child.id ? s.childRowActive : s.childRowInactive),
                   }}
                   onClick={() => setSelectedChild(child)}
                 >
                   <div style={s.childAvatarWrap}>
                     {child.avatar === "girl" ? <GirlAvatar /> : <BoyAvatar />}
                   </div>
-                  <span style={{ ...s.childName, color: selectedChild.id === child.id ? "white" : "#444" }}>
+                  <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
                     {child.name}
                   </span>
-                  <button
-                    style={s.menuBtn}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setOpenMenu(openMenu === child.id ? null : child.id)
-                    }}
-                    title="Menu"
-                  >
-                    ⋯
-                  </button>
                 </div>
-                <ChildMenu
-                  child={child}
-                  onEdit={handleEditChild}
-                  onDelete={handleDeleteChild}
-                  isOpen={openMenu === child.id}
-                />
-              </div>
-            ))}
-
-            <button style={s.addBtn} onClick={() => {
-              setEditingChild(null)
-              setFormData({ name: "", birthDate: "", gender: "" })
-              setShowAddForm(true)
-            }}>
-              + &nbsp; Tambah anak
-            </button>
+              ))
+            )}
           </div>
         </div>
 
         {/* Center: Profil Data Anak */}
         <div style={s.centerPanel}>
-          {/* Header */}
-          <div style={s.profileHeader}>
-            <h2 style={s.profileTitle}>Profil Data Anak</h2>
-            <button style={s.jadwalBtn}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: "14px" }}>Jadwal Imunisasi</div>
-                <div style={{ fontSize: "11px", opacity: 0.85 }}>Buat jadwal imunisasi</div>
+          {!selectedChild ? (
+            <div style={s.emptyCenter}>
+              <span style={{ fontSize: "48px" }}>👶</span>
+              <p style={{ color: "#e91e8c", fontWeight: "600", marginTop: "1rem" }}>
+                Pilih anak untuk melihat profil
+              </p>
+            </div>
+          ) : (
+            <>
+              <div style={s.profileHeader}>
+                <h2 style={s.profileTitle}>Profil Data Anak</h2>
+                <button style={s.jadwalBtn}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "14px" }}>Jadwal Imunisasi</div>
+                    <div style={{ fontSize: "11px", opacity: 0.85 }}>Buat jadwal imunisasi</div>
+                  </div>
+                  <span style={s.jadwalChevron}>›</span>
+                </button>
               </div>
-              <span style={s.jadwalChevron}>›</span>
-            </button>
-          </div>
 
-          {/* Name */}
-          <h3 style={s.childFullName}>{selectedChild.name}</h3>
+              <h3 style={s.childFullName}>{selectedChild.name}</h3>
 
-          {/* Info rows */}
-          <div style={s.infoRow}>
-            <span style={s.infoIcon}>🍼</span>
-            <span>Umur : {selectedChild.age}</span>
-          </div>
-          <div style={s.infoRow}>
-            <span style={s.infoIcon}>⚥</span>
-            <span>Jenis Kelamin : {selectedChild.gender}</span>
-          </div>
-          <div style={s.infoRow}>
-            <span style={s.infoIcon}>📅</span>
-            <span>Lahir : {selectedChild.birthDate}</span>
-          </div>
-          <div style={s.infoRow}>
-            <span style={s.infoIcon}>🕐</span>
-            <span>Imunisasi Sebelumnya : {selectedChild.prevVaccines}</span>
-          </div>
+              <div style={s.infoRow}>
+                <span style={s.infoIcon}>🍼</span>
+                <span>Umur : {selectedChild.age}</span>
+              </div>
+              <div style={s.infoRow}>
+                <span style={s.infoIcon}>⚥</span>
+                <span>Jenis Kelamin : {selectedChild.gender}</span>
+              </div>
+              <div style={s.infoRow}>
+                <span style={s.infoIcon}>📅</span>
+                <span>Lahir : {selectedChild.birthDate}</span>
+              </div>
+              <div style={s.infoRow}>
+                <span style={s.infoIcon}>🕐</span>
+                <span>Imunisasi Sebelumnya : {selectedChild.prevVaccines}</span>
+              </div>
 
-          {/* Statistik */}
-          <h3 style={s.statsTitle}>Statistik</h3>
-          <div style={s.chartsRow}>
-            {/* Berat */}
-            <div style={s.chartBox}>
-              {selectedChild.weightData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={selectedChild.weightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                        <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                    <YAxis tickFormatter={(v) => `${v} kg`} tick={{ fontSize: 10 }} />
-                    <Tooltip formatter={(v, n) => [`${v} kg`, n === "anak" ? "Berat anak" : "Berat Ideal"]} />
-                    <Legend
-                      iconType="circle" iconSize={8}
-                      formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Berat anak" : "Berat Ideal"}</span>}
-                    />
-                    <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#weightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                    <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 180 }}>
-                  <p style={{ color: "#999" }}>Data belum ada</p>
+              <h3 style={s.statsTitle}>Statistik</h3>
+              <div style={s.chartsRow}>
+                <div style={s.chartBox}>
+                  {selectedChild.weightData?.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <AreaChart data={selectedChild.weightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
+                        <YAxis tickFormatter={(v) => `${v} kg`} tick={{ fontSize: 10 }} />
+                        <Tooltip formatter={(v, n) => [`${v} kg`, n === "anak" ? "Berat anak" : "Berat Ideal"]} />
+                        <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Berat anak" : "Berat Ideal"}</span>} />
+                        <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#weightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
+                        <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={s.noData}>Data belum ada</div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Tinggi */}
-            <div style={s.chartBox}>
-              {selectedChild.heightData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={selectedChild.heightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="heightGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                        <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                    <YAxis tickFormatter={(v) => `${v} cm`} tick={{ fontSize: 10 }} />
-                    <Tooltip formatter={(v, n) => [`${v} cm`, n === "anak" ? "Tinggi anak" : "Tinggi Ideal"]} />
-                    <Legend
-                      iconType="circle" iconSize={8}
-                      formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Tinggi anak" : "Tinggi Ideal"}</span>}
-                    />
-                    <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#heightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                    <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 180 }}>
-                  <p style={{ color: "#999" }}>Data belum ada</p>
+                <div style={s.chartBox}>
+                  {selectedChild.heightData?.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <AreaChart data={selectedChild.heightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="heightGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
+                        <YAxis tickFormatter={(v) => `${v} cm`} tick={{ fontSize: 10 }} />
+                        <Tooltip formatter={(v, n) => [`${v} cm`, n === "anak" ? "Tinggi anak" : "Tinggi Ideal"]} />
+                        <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Tinggi anak" : "Tinggi Ideal"}</span>} />
+                        <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#heightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
+                        <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={s.noData}>Data belum ada</div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right: Stats Cards */}
         <div style={s.rightPanel}>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Tinggi Terkini</div>
-            <div style={s.statCardValue}>{selectedChild.heightNow} cm</div>
+            <div style={s.statCardValue}>{selectedChild ? `${selectedChild.heightNow} cm` : "— cm"}</div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
-              <span style={s.deltaText}>{selectedChild.heightDelta}</span>
+              <span style={s.deltaText}>{selectedChild?.heightDelta ?? "-"}</span>
             </div>
           </div>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Berat Terkini</div>
-            <div style={s.statCardValue}>{selectedChild.weightNow}kg</div>
+            <div style={s.statCardValue}>{selectedChild ? `${selectedChild.weightNow} kg` : "— kg"}</div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
-              <span style={s.deltaText}>{selectedChild.weightDelta}</span>
+              <span style={s.deltaText}>{selectedChild?.weightDelta ?? "-"}</span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Add/Edit Child Modal */}
-      {showAddForm && (
-        <div style={s.modalOverlay} onClick={handleCloseForm}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: "1rem", color: "#1a1a2e", fontSize: "18px" }}>
-              {editingChild ? "Edit Anak" : "Tambah Anak"}
-            </h3>
-            <input
-              style={s.modalInput}
-              placeholder="Nama lengkap"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <input
-              style={s.modalInput}
-              type="date"
-              placeholder="Tanggal lahir"
-              value={formData.birthDate}
-              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-            />
-            <select
-              style={s.modalInput}
-              value={formData.gender}
-              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-            >
-              <option value="">Jenis Kelamin</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <button style={s.modalBtnPrimary} onClick={handleSaveChild}>
-                {editingChild ? "Update" : "Simpan"}
-              </button>
-              <button style={s.modalBtnSecondary} onClick={handleCloseForm}>
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -501,7 +232,6 @@ const s = {
     background: "#fce4ec", display: "flex", alignItems: "center",
     justifyContent: "center", cursor: "pointer", marginLeft: "auto",
   },
-
   main: {
     display: "grid",
     gridTemplateColumns: "280px 1fr 200px",
@@ -511,8 +241,6 @@ const s = {
     margin: "0 auto",
     alignItems: "start",
   },
-
-  // Left panel
   leftPanel: {
     background: "white",
     borderRadius: "16px",
@@ -532,8 +260,11 @@ const s = {
     flexDirection: "column",
     gap: "0.6rem",
   },
-  childRowContainer: {
-    position: "relative",
+  emptyText: {
+    color: "#aaa",
+    fontSize: "13px",
+    textAlign: "center",
+    padding: "1rem 0",
   },
   childRow: {
     display: "flex",
@@ -551,57 +282,19 @@ const s = {
     overflow: "hidden", flexShrink: 0,
   },
   childName: { flex: 1, fontWeight: "600", fontSize: "13px" },
-  menuBtn: {
-    background: "transparent",
-    border: "none",
-    fontSize: "18px",
-    cursor: "pointer",
-    padding: "0 4px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dropdown: {
-    position: "absolute",
-    top: "100%",
-    right: "0.75rem",
-    background: "white",
-    border: "1px solid #e2e8f0",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    zIndex: 10,
-    minWidth: "120px",
-    overflow: "hidden",
-  },
-  dropdownItem: {
-    width: "100%",
-    padding: "0.5rem 0.75rem",
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    fontSize: "13px",
-    textAlign: "left",
-    transition: "background 0.2s",
-  },
-  addBtn: {
-    marginTop: "0.5rem",
-    background: "white",
-    border: "1.5px solid #e91e8c",
-    color: "#e91e8c",
-    borderRadius: "12px",
-    padding: "0.75rem",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    width: "100%",
-  },
-
-  // Center panel
   centerPanel: {
     background: "#fce4ec",
     borderRadius: "16px",
     padding: "1.5rem",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    minHeight: "300px",
+  },
+  emptyCenter: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "260px",
   },
   profileHeader: {
     display: "flex",
@@ -646,10 +339,16 @@ const s = {
     background: "white",
     borderRadius: "12px",
     padding: "0.75rem",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
-
-  // Right panel
+  noData: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "180px",
+    color: "#999",
+    fontSize: "13px",
+  },
   rightPanel: {
     display: "flex",
     flexDirection: "column",
@@ -666,39 +365,4 @@ const s = {
   statCardDelta: { display: "flex", alignItems: "center", gap: "6px" },
   arrowUp: { fontSize: "18px", color: "#4caf50", fontWeight: "700" },
   deltaText: { fontSize: "12px", color: "#555" },
-
-  // Modal
-  modalOverlay: {
-    position: "fixed", inset: 0,
-    background: "rgba(0,0,0,0.4)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    zIndex: 100,
-  },
-  modal: {
-    background: "white",
-    borderRadius: "16px",
-    padding: "2rem",
-    width: "360px",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-  },
-  modalInput: {
-    width: "100%",
-    padding: "0.7rem 1rem",
-    borderRadius: "10px",
-    border: "1.5px solid #e2e8f0",
-    fontSize: "14px",
-    marginBottom: "0.75rem",
-    outline: "none",
-    boxSizing: "border-box",
-  },
-  modalBtnPrimary: {
-    flex: 1, background: "#e91e8c", color: "white",
-    border: "none", borderRadius: "10px",
-    padding: "0.7rem", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-  },
-  modalBtnSecondary: {
-    flex: 1, background: "#f1f5f9", color: "#555",
-    border: "1.5px solid #e2e8f0", borderRadius: "10px",
-    padding: "0.7rem", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-  },
 }
