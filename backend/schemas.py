@@ -142,9 +142,42 @@ class TokenResponse(BaseModel):
 
 class ChildCreate(BaseModel):
     """Schema untuk membuat data anak baru."""
-    name: str = Field(..., min_length=1, max_length=100)
-    birth_date: date  # Format: YYYY-MM-DD
-    gender: str  # 'male' atau 'female'
+    name: str = Field(..., min_length=1, max_length=100, title="Nama Anak")
+    birth_date: date = Field(..., title="Tanggal Lahir", description="Format: YYYY-MM-DD")
+    gender: str = Field(..., title="Jenis Kelamin", description="Isi dengan: male atau female")
+    blood_type: Optional[str] = Field(None, title="Golongan Darah", description="Contoh: A, B, AB, O")
+    height_at_birth: Optional[float] = Field(None, title="Tinggi Saat Lahir (cm)")
+    weight_at_birth: Optional[float] = Field(None, title="Berat Saat Lahir (kg)")
+    notes: Optional[str] = Field(None, title="Catatan Khusus")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "name": "Budi Santoso",
+                "birth_date": "2024-05-10",
+                "gender": "male",
+                "blood_type": "A",
+                "height_at_birth": 50.0,
+                "weight_at_birth": 3.2,
+                "notes": "Lahir normal"
+            }
+        }
+    }
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, v):
+        allowed = {"male", "female"}
+        if v.lower() not in allowed:
+            raise ValueError("Gender harus 'male' atau 'female'")
+        return v.lower()
+
+
+class ChildUpdate(BaseModel):
+    """Schema untuk update data anak (semua field opsional)."""
+    name: Optional[str] = Field(None, min_length=1, max_length=100, title="Nama Anak")
+    birth_date: Optional[date] = Field(None, title="Tanggal Lahir", description="Format: YYYY-MM-DD")
+    gender: Optional[str] = Field(None, title="Jenis Kelamin", description="Isi dengan: male atau female")
     blood_type: Optional[str] = Field(None, title="Golongan Darah")
     height_at_birth: Optional[float] = Field(None, title="Tinggi Saat Lahir (cm)")
     weight_at_birth: Optional[float] = Field(None, title="Berat Saat Lahir (kg)")
@@ -153,12 +186,23 @@ class ChildCreate(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "name": "Nama Anak",
-                "birth_date": "2024-05-10",
+                "name": "Budi Santoso Updated",
                 "gender": "male"
             }
         }
     }
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, v):
+        if v is None:
+            return v
+        allowed = {"male", "female"}
+        if v.lower() not in allowed:
+            raise ValueError("Gender harus 'male' atau 'female'")
+        return v.lower()
+
+
 
 
 class ChildResponse(BaseModel):

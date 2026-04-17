@@ -10,7 +10,7 @@ from models import Base, User, Role
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ChildCreate, ChildResponse
+    ChildCreate, ChildUpdate, ChildResponse
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -231,17 +231,17 @@ def get_child(
 @app.put("/children/{child_id}", response_model=ChildResponse)
 def update_child(
     child_id: int,
-    child_data: dict, # Using dict for partial updates
+    child_data: ChildUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Update profil anak."""
+    """Update profil anak. Hanya field yang dikirim yang akan diubah."""
     child = crud.get_child(db=db, child_id=child_id)
     if not child:
         raise HTTPException(status_code=404, detail="Anak tidak ditemukan")
     if child.parent_id != current_user.id:
         raise HTTPException(status_code=403, detail="Tidak berhak mengakses data anak ini")
-    return crud.update_child(db=db, child_id=child_id, child_data=child_data)
+    return crud.update_child(db=db, child_id=child_id, child_data=child_data.model_dump(exclude_unset=True))
 
 
 @app.delete("/children/{child_id}", status_code=204)

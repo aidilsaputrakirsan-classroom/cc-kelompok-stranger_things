@@ -1,28 +1,27 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 // ==================== TOKEN MANAGEMENT ====================
-
-let authToken = null
+// Token disimpan di localStorage agar tidak hilang saat refresh/pindah halaman
 
 export function setToken(token) {
-  authToken = token
-  console.log("🔐 Token set:", token)
+  localStorage.setItem("authToken", token)
+  console.log("🔐 Token saved to localStorage")
 }
 
 export function getToken() {
-  return authToken
+  return localStorage.getItem("authToken")
 }
 
 export function clearToken() {
-  authToken = null
-  console.log("🗑️ Token cleared")
+  localStorage.removeItem("authToken")
+  console.log("🗑️ Token cleared from localStorage")
 }
 
 function authHeaders() {
+  const token = getToken()
   const headers = {}
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`
-    console.log("📤 Authorization header added")
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
   } else {
     console.warn("⚠️ No token available! Cannot authorize request")
   }
@@ -99,7 +98,7 @@ export async function login(email, password) {
   }
   
   setToken(data.access_token)
-  console.log("✅ Token saved, authToken is now:", data.access_token.substring(0, 20) + "...")
+  console.log("✅ Token saved to localStorage:", data.access_token.substring(0, 20) + "...")
   return data
 }
 export async function getMe() {
