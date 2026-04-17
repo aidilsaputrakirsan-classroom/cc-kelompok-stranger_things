@@ -87,16 +87,30 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/auth/login", response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = crud.authenticate_user(db=db, email=form_data.username, password=form_data.password)
+def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+    """Login biasa untuk frontend (menerima JSON body)."""
+    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Email atau password salah")
 
-    token = create_access_token(data={"sub": str(user.id)})  # ← Tambah str()
+    token = create_access_token(data={"sub": str(user.id)})
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": user,
+    }
+
+@app.post("/auth/swagger-token", include_in_schema=False)
+def swagger_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Endpoint khusus untuk tombol Authorize/Lock di Swagger UI."""
+    user = crud.authenticate_user(db=db, email=form_data.username, password=form_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Email atau password salah")
+
+    token = create_access_token(data={"sub": str(user.id)})
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
 
 
