@@ -19,7 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 5. Copy seluruh kode aplikasi
 #    Layer ini rebuild setiap kali kode berubah
 COPY . .
-# Tambahan
+
+# Konversi line ending CRLF (Windows) ke LF (Linux) agar bash tidak error
+RUN sed -i 's/\r$//' scripts/wait-for-db.sh
+
 RUN useradd -m appuser
 RUN chown -R appuser:appuser /app
 USER appuser
