@@ -668,6 +668,14 @@ Di bawah ringkasan, terdapat daftar Jadwal Imunisasi Terdekat yang semuanya jatu
 
 Halaman ini merupakan bagian dari fitur jadwal imunisasi yang menampilkan data anak dan riwayat imunisasi masing-masing. Di bagian atas, terdapat Daftar anak yang berisi dua nama, yaitu Cintya Widhi Astuti dan Ahmad Daffa Alfattah, serta tombol + Tambah anak untuk menambahkan anak baru ke dalam sistem. Ketika salah satu anak dipilih, misalnya Cintya Widhi Astuti, maka di sebelah kanan akan muncul Profil Data Anak yang mencakup umur (2 bulan), jenis kelamin (perempuan), tanggal lahir (15 November 2024), serta daftar imunisasi sebelumnya yaitu Hepatitis B dan DPT. Di bawah profil, terdapat data Tinggi Terkini sebesar 105 cm dengan kenaikan +5 cm bulan ini, serta Berat Terkini sebesar 11,5 kg dengan kenaikan +0,5 kg bulan ini. Dengan demikian, halaman ini tidak hanya membantu orang tua melihat jadwal imunisasi yang akan datang, tetapi juga memantau pertumbuhan anak secara berkala dalam satu tampilan yang ringkas.
 
+- Data Anak
+
+<img src="./frontend/image/DataAnak.png" />
+
+- Faskes Map
+
+<img src="./frontend/image/FaskesMap.png" />
+
 ## 📋 Hasil Pengujian
 - [Modul 2: dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
 - [Modul 3: dokumentasi UI testing](docs/ui-test-results.md)
