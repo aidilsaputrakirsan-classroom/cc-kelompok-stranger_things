@@ -10,7 +10,8 @@ from models import Base, User, Role
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ChildCreate, ChildUpdate, ChildResponse
+    ChildCreate, ChildUpdate, ChildResponse,
+    ImmunizationLogCreate, ImmunizationLogResponse
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -58,12 +59,11 @@ origins_list = [origin.strip() for origin in allowed_origins.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins_list,
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # ==================== HEALTH CHECK ====================
 

@@ -1,19 +1,56 @@
 import { useState, useEffect } from "react"
 import { createChild, fetchVaccineTypes, createImmunization } from "../services/api"
 
+const defaultVaccines = [
+  { id: 1, name: "BCG (TBC)" },
+  { id: 2, name: "Hepatitis B" },
+  { id: 3, name: "DPT (Difteri, Pertusis, Tetanus)" },
+  { id: 4, name: "Polio" },
+  { id: 5, name: "Hib" },
+  { id: 6, name: "Campak" },
+  { id: 7, name: "MMR" },
+  { id: 8, name: "Influenza" },
+  { id: 9, name: "Pneumokokus (PCV)" },
+  { id: 10, name: "Rotavirus" },
+  { id: 11, name: "Varicella (Cacar Air)" },
+  { id: 12, name: "Hepatitis A" },
+  { id: 13, name: "Tifoid" },
+  { id: 14, name: "Japanese Encephalitis (JE)" },
+  { id: 15, name: "Dengue" },
+]
+
+function SectionLabel({ children }) {
+  return (
+    <div style={s.sectionLabel}>
+      <span>{children}</span>
+      <div style={s.sectionLine} />
+    </div>
+  )
+}
+
 export default function DataAnak({ setActivePage, onLogout }) {
-  const [child, setChild] = useState({ name: "", birth_date: "", gender: "" })
+  const [child, setChild] = useState({
+    name: "",
+    birth_date: "",
+    gender: "",
+    weight: "",
+    height: "",
+  })
   const [immunizations, setImmunizations] = useState([{ vaccine_id: "", scheduled_date: "" }])
   const [vaccineTypes, setVaccineTypes] = useState([])
   const [loading, setLoading] = useState(false)
+  const [focusedField, setFocusedField] = useState(null)
 
   useEffect(() => { loadVaccines() }, [])
 
   const loadVaccines = async () => {
     try {
       const data = await fetchVaccineTypes()
-      setVaccineTypes(data)
-    } catch (err) { console.error(err) }
+      setVaccineTypes(!data || data.length === 0 ? defaultVaccines : data)
+    } catch (err) {
+      console.error(err)
+      setVaccineTypes(defaultVaccines)
+    }
   }
 
   const handleChildChange = (e) => setChild({ ...child, [e.target.name]: e.target.value })
@@ -24,13 +61,11 @@ export default function DataAnak({ setActivePage, onLogout }) {
     setImmunizations(updated)
   }
 
-  const addImmunization = () => {
+  const addImmunization = () =>
     setImmunizations([...immunizations, { vaccine_id: "", scheduled_date: "" }])
-  }
 
-  const removeImmunization = (i) => {
+  const removeImmunization = (i) =>
     setImmunizations(immunizations.filter((_, idx) => idx !== i))
-  }
 
   const handleSubmit = async () => {
     if (!child.name || !child.birth_date || !child.gender) {
@@ -39,25 +74,41 @@ export default function DataAnak({ setActivePage, onLogout }) {
     }
     setLoading(true)
     try {
-      const newChild = await createChild(child)
+      const newChild = await createChild({
+        name: child.name,
+        birth_date: child.birth_date,
+        gender: child.gender,
+        weight: child.weight ? parseFloat(child.weight) : null,
+        height: child.height ? parseFloat(child.height) : null,
+      })
       for (let item of immunizations) {
         if (item.vaccine_id && item.scheduled_date) {
           await createImmunization({
             child_id: newChild.id,
             vaccine_id: item.vaccine_id,
             scheduled_date: item.scheduled_date,
-            status: "pending"
+            status: "pending",
           })
         }
       }
       alert("Data berhasil disimpan")
-      setActivePage?.("jadwal") // ← ganti navigate() dengan ini
+      setActivePage?.("jadwal")
     } catch (err) {
-      alert("Gagal menyimpan")
+      alert("Gagal menyimpan: " + err.message)
     } finally {
       setLoading(false)
     }
   }
+
+  const inputStyle = (name) => ({
+    ...s.input,
+    borderColor: focusedField === name ? "#e91e8c" : "#e0e0e0",
+  })
+
+  const unitBoxStyle = (name) => ({
+    ...s.inputWithUnit,
+    borderColor: focusedField === name ? "#e91e8c" : "#e0e0e0",
+  })
 
   return (
     <div style={s.page}>
@@ -68,7 +119,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
         <a style={{ ...s.navLink, ...s.navActive }}>Jadwal Imunisasi</a>
         <a style={s.navLink} onClick={() => setActivePage?.("faskes")}>Faskes Map</a>
         <div style={s.navAvatar} onClick={onLogout} title="Logout">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#e91e8c">
             <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
           </svg>
         </div>
@@ -76,7 +127,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
 
       {/* Card Utama */}
       <div style={s.card}>
-        {/* Header card */}
+        {/* Header */}
         <div style={s.cardHeader}>
           <button style={s.backBtn} onClick={() => setActivePage?.("jadwal")}>
             ↩ Kembali
@@ -85,83 +136,136 @@ export default function DataAnak({ setActivePage, onLogout }) {
           <div style={{ width: 100 }} />
         </div>
 
-        {/* Layout 2 kolom */}
+        {/* 2 Kolom */}
         <div style={s.twoCol}>
-          {/* Kolom Kiri: Data Anak */}
-          <div style={s.leftCol}>
-            <label style={s.label}>Nama Lengkap</label>
-            <input
-              name="name"
-              value={child.name}
-              onChange={handleChildChange}
-              placeholder="Masukkan Nama Lengkap"
-              style={s.input}
-            />
 
-            <label style={s.label}>Tanggal Lahir</label>
-            <input
-              type="date"
-              name="birth_date"
-              value={child.birth_date}
-              onChange={handleChildChange}
-              style={s.input}
-            />
+          {/* Kolom Kiri */}
+          <div>
+            <SectionLabel>Data Anak</SectionLabel>
 
-            <label style={s.label}>Jenis Kelamin</label>
-            <div style={s.genderRow}>
-              <span style={s.genderIcon}>♀</span>
-              <button
-                style={child.gender === "female" ? s.genderActive : s.genderInactive}
-                onClick={() => setChild({ ...child, gender: "female" })}
-              >
-                Perempuan
-              </button>
-              <span style={{ ...s.genderIcon, color: "#42a5f5" }}>♂</span>
-              <button
-                style={child.gender === "male" ? s.genderActive : s.genderInactive}
-                onClick={() => setChild({ ...child, gender: "male" })}
-              >
-                Laki - Laki
-              </button>
+            <div style={s.field}>
+              <label style={s.label}>Nama Lengkap</label>
+              <input
+                name="name"
+                value={child.name}
+                onChange={handleChildChange}
+                placeholder="Masukkan nama lengkap"
+                style={inputStyle("name")}
+                onFocus={() => setFocusedField("name")}
+                onBlur={() => setFocusedField(null)}
+              />
+            </div>
+
+            <div style={s.field}>
+              <label style={s.label}>Tanggal Lahir</label>
+              <input
+                type="date"
+                name="birth_date"
+                value={child.birth_date}
+                onChange={handleChildChange}
+                style={inputStyle("birth_date")}
+                onFocus={() => setFocusedField("birth_date")}
+                onBlur={() => setFocusedField(null)}
+              />
+            </div>
+
+            <div style={s.field}>
+              <label style={s.label}>Jenis Kelamin</label>
+              <div style={s.genderRow}>
+                <button
+                  style={child.gender === "female" ? s.genderActive : s.genderInactive}
+                  onClick={() => setChild({ ...child, gender: "female" })}
+                >
+                  <span style={s.genderSymbol}>♀</span> Perempuan
+                </button>
+                <button
+                  style={child.gender === "male" ? s.genderActive : s.genderInactive}
+                  onClick={() => setChild({ ...child, gender: "male" })}
+                >
+                  <span style={{ ...s.genderSymbol, color: child.gender === "male" ? "#e91e8c" : "#42a5f5" }}>♂</span> Laki-laki
+                </button>
+              </div>
+            </div>
+
+            <div style={s.divider} />
+            <SectionLabel>Antropometri</SectionLabel>
+
+            <div style={s.bbTbRow}>
+              <div style={s.field}>
+                <label style={s.label}>Berat Badan</label>
+                <div style={unitBoxStyle("weight")}>
+                  <input
+                    type="number"
+                    name="weight"
+                    value={child.weight}
+                    onChange={handleChildChange}
+                    placeholder="0.0"
+                    min="0"
+                    step="0.1"
+                    style={s.inputUnit}
+                    onFocus={() => setFocusedField("weight")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                  <span style={s.unitBadge}>kg</span>
+                </div>
+              </div>
+
+              <div style={s.field}>
+                <label style={s.label}>Tinggi Badan</label>
+                <div style={unitBoxStyle("height")}>
+                  <input
+                    type="number"
+                    name="height"
+                    value={child.height}
+                    onChange={handleChildChange}
+                    placeholder="0.0"
+                    min="0"
+                    step="0.1"
+                    style={s.inputUnit}
+                    onFocus={() => setFocusedField("height")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                  <span style={s.unitBadge}>cm</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Kolom Kanan: Data Imunisasi */}
-          <div style={s.rightCol}>
+          {/* Kolom Kanan */}
+          <div>
+            <SectionLabel>Data Imunisasi</SectionLabel>
             <div style={s.imunBox}>
-              <div style={s.imunTitle}>
-                <span style={s.imunTitleBar} />
-                Data Imunisasi
-              </div>
-
               {immunizations.map((item, i) => (
                 <div key={i} style={s.imunCard}>
                   <div style={s.imunCardHeader}>
-                    <span style={{ fontWeight: 700, fontSize: 14 }}>Imunisasi {i + 1}</span>
+                    <span style={s.imunCardTitle}>
+                      Imunisasi
+                      <span style={s.imunBadge}>{i + 1}</span>
+                    </span>
                     <button style={s.deleteBtn} onClick={() => removeImmunization(i)}>🗑</button>
                   </div>
 
                   <label style={s.imunLabel}>Jenis Vaksin</label>
-                  <div style={s.selectWrap}>
-                    <select
-                      value={item.vaccine_id}
-                      onChange={(e) => handleImmunizationChange(i, "vaccine_id", e.target.value)}
-                      style={s.selectInput}
-                    >
-                      <option value="">Pilih jenis vaksin</option>
-                      {vaccineTypes.map(v => (
-                        <option key={v.id} value={v.id}>{v.name}</option>
-                      ))}
-                    </select>
-                    <span style={s.chevron}>▾</span>
-                  </div>
+                  <select
+                    value={item.vaccine_id}
+                    onChange={(e) => handleImmunizationChange(i, "vaccine_id", e.target.value)}
+                    style={s.imunInput}
+                  >
+                    <option value="">Pilih jenis vaksin</option>
+                    {vaccineTypes.length === 0 && (
+                      <option disabled>Memuat vaksin...</option>
+                    )}
+                    {vaccineTypes.map((v) => (
+                      <option key={v.id} value={v.id}>💉 {v.name}</option>
+                    ))}
+                  </select>
 
                   <label style={s.imunLabel}>Tanggal Vaksin</label>
                   <input
                     type="date"
                     value={item.scheduled_date}
                     onChange={(e) => handleImmunizationChange(i, "scheduled_date", e.target.value)}
-                    style={s.dateInput}
+                    style={s.imunInput}
                   />
                 </div>
               ))}
@@ -173,9 +277,9 @@ export default function DataAnak({ setActivePage, onLogout }) {
           </div>
         </div>
 
-        {/* Tombol Simpan */}
+        {/* Simpan */}
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <button style={s.saveBtn} onClick={handleSubmit}>
+          <button style={s.saveBtn} onClick={handleSubmit} disabled={loading}>
             {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
@@ -186,155 +290,149 @@ export default function DataAnak({ setActivePage, onLogout }) {
 
 const s = {
   page: {
-    background: "#fff5f8",
+    background: "linear-gradient(180deg, #fff5f8, #fdeef4)",
     minHeight: "100vh",
     fontFamily: "'Segoe UI', Arial, sans-serif",
   },
   nav: {
-    background: "white",
+    background: "rgba(255,255,255,0.95)",
+    backdropFilter: "blur(10px)",
     borderBottom: "0.5px solid #f0c0d0",
     padding: "0 2rem",
     display: "flex",
     alignItems: "center",
     gap: "1.5rem",
     height: "56px",
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
   },
-  logo: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
+  logo: { fontSize: "17px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
   logoPink: { color: "#e91e8c" },
-  navLink: { fontSize: "14px", color: "#888", cursor: "pointer", textDecoration: "none" },
-  navActive: { color: "#e91e8c", fontWeight: "600" },
+  navLink: { fontSize: "13px", color: "#aaa", cursor: "pointer", textDecoration: "none" },
+  navActive: { color: "#e91e8c", fontWeight: "600", borderBottom: "2px solid #e91e8c", paddingBottom: "2px" },
   navAvatar: {
-    width: "36px", height: "36px", borderRadius: "50%",
+    width: "34px", height: "34px", borderRadius: "50%",
     background: "#fce4ec", display: "flex", alignItems: "center",
     justifyContent: "center", cursor: "pointer", marginLeft: "auto",
   },
-
   card: {
-    background: "#fce4ec",
+    background: "rgba(255,255,255,0.7)",
+    backdropFilter: "blur(12px)",
     borderRadius: "20px",
-    maxWidth: "960px",
+    maxWidth: "900px",
     margin: "2rem auto",
     padding: "2rem 2.5rem",
-    boxShadow: "0 4px 20px rgba(233,30,140,0.08)",
+    border: "0.5px solid rgba(233,30,140,0.12)",
   },
   cardHeader: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: "2rem",
+    paddingBottom: "1.25rem",
+    borderBottom: "0.5px solid #fce4ec",
   },
-  cardTitle: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#e91e8c",
-    margin: 0,
-    textAlign: "center",
-    flex: 1,
-  },
+  cardTitle: { fontSize: "20px", fontWeight: "700", color: "#e91e8c", margin: 0, flex: 1, textAlign: "center" },
   backBtn: {
-    background: "transparent",
-    border: "none",
-    color: "#444",
-    fontSize: "14px",
-    cursor: "pointer",
-    fontWeight: "600",
-    width: 100,
-    textAlign: "left",
+    background: "#fff", border: "0.5px solid #e0e0e0", color: "#666",
+    fontSize: "13px", cursor: "pointer", fontWeight: "600",
+    borderRadius: "10px", padding: "8px 14px",
+    display: "flex", alignItems: "center", gap: "6px",
   },
-
-  twoCol: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "2rem",
-    alignItems: "start",
+  twoCol: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start" },
+  sectionLabel: {
+    display: "flex", alignItems: "center", gap: "10px",
+    fontSize: "11px", fontWeight: "700", letterSpacing: "0.08em",
+    color: "#e91e8c", textTransform: "uppercase", marginBottom: "1rem",
   },
-  leftCol: { display: "flex", flexDirection: "column", gap: "0.25rem" },
-  rightCol: {},
-
-  label: { fontSize: "15px", fontWeight: "600", color: "#1a1a2e", marginBottom: "6px", display: "block" },
+  sectionLine: { flex: 1, height: "0.5px", background: "#fce4ec" },
+  field: { display: "flex", flexDirection: "column", gap: "6px", marginBottom: "1rem" },
+  label: { fontSize: "13px", fontWeight: "600", color: "#444" },
   input: {
-    width: "100%",
-    padding: "0.75rem 1rem",
-    borderRadius: "10px",
-    border: "1.5px solid #e2e8f0",
-    fontSize: "14px",
-    marginBottom: "1rem",
-    outline: "none",
+    width: "100%", padding: "10px 14px", borderRadius: "10px",
+    border: "0.5px solid #e0e0e0", fontSize: "14px", outline: "none",
+    background: "white", color: "#1a1a2e", transition: "border-color 0.15s",
     boxSizing: "border-box",
-    background: "white",
   },
-
-  genderRow: { display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" },
-  genderIcon: { fontSize: "22px", color: "#e91e8c" },
+  genderRow: { display: "flex", gap: "10px" },
   genderActive: {
-    padding: "10px 28px", borderRadius: "24px",
-    background: "#e91e8c", color: "white",
-    border: "none", fontWeight: "600", fontSize: "14px", cursor: "pointer",
+    flex: 1, padding: "10px", borderRadius: "10px",
+    background: "#fce4ec", border: "0.5px solid #e91e8c",
+    color: "#e91e8c", fontWeight: "600", fontSize: "13px",
+    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
   },
   genderInactive: {
-    padding: "10px 28px", borderRadius: "24px",
-    background: "white", color: "#444",
-    border: "1.5px solid #ddd", fontWeight: "600", fontSize: "14px", cursor: "pointer",
+    flex: 1, padding: "10px", borderRadius: "10px",
+    background: "white", border: "0.5px solid #e0e0e0",
+    color: "#666", fontWeight: "600", fontSize: "13px",
+    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
   },
-
+  genderSymbol: { fontSize: "16px" },
+  divider: { height: "0.5px", background: "#fce4ec", margin: "1.25rem 0" },
+  bbTbRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" },
+  inputWithUnit: {
+    display: "flex", alignItems: "center",
+    border: "0.5px solid #e0e0e0", borderRadius: "10px",
+    overflow: "hidden", background: "white", transition: "border-color 0.15s",
+  },
+  inputUnit: {
+    flex: 1, padding: "10px 14px", border: "none",
+    outline: "none", fontSize: "14px", background: "transparent",
+    color: "#1a1a2e", width: "100%",
+  },
+  unitBadge: {
+    padding: "0 14px", fontSize: "12px", fontWeight: "700",
+    color: "#e91e8c", background: "#fff5f8", alignSelf: "stretch",
+    display: "flex", alignItems: "center", borderLeft: "0.5px solid #fce4ec",
+    whiteSpace: "nowrap",
+  },
   imunBox: {
-    background: "white",
-    borderRadius: "16px",
-    padding: "1.25rem",
-  },
-  imunTitle: {
-    display: "flex", alignItems: "center", gap: "8px",
-    fontWeight: "700", fontSize: "16px", color: "#1a1a2e",
-    marginBottom: "1rem",
-  },
-  imunTitleBar: {
-    display: "inline-block", width: "4px", height: "20px",
-    background: "#e91e8c", borderRadius: "4px",
+    background: "white", borderRadius: "16px",
+    padding: "1.25rem", border: "0.5px solid #fce4ec",
   },
   imunCard: {
     background: "linear-gradient(135deg, #e91e8c, #f48fb1)",
-    borderRadius: "12px",
-    padding: "1rem",
-    marginBottom: "0.75rem",
+    borderRadius: "14px", padding: "1rem", marginBottom: "1rem",
   },
   imunCardHeader: {
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    marginBottom: "0.75rem", color: "white",
+    display: "flex", justifyContent: "space-between",
+    alignItems: "center", marginBottom: "12px",
+  },
+  imunCardTitle: {
+    fontWeight: "700", fontSize: "13px", color: "white",
+    display: "flex", alignItems: "center", gap: "8px",
+  },
+  imunBadge: {
+    background: "rgba(255,255,255,0.25)", borderRadius: "20px",
+    padding: "2px 10px", fontSize: "11px",
   },
   deleteBtn: {
-    background: "rgba(255,255,255,0.2)",
-    border: "none", borderRadius: "8px",
-    padding: "4px 8px", cursor: "pointer", fontSize: "14px",
+    background: "rgba(255,255,255,0.2)", border: "none",
+    borderRadius: "8px", padding: "5px 9px",
+    cursor: "pointer", fontSize: "13px", color: "white",
   },
-  imunLabel: { fontSize: "12px", color: "rgba(255,255,255,0.9)", fontWeight: "600", display: "block", marginBottom: "4px" },
-  selectWrap: { position: "relative", marginBottom: "0.75rem" },
-  selectInput: {
-    width: "100%", padding: "0.6rem 2rem 0.6rem 0.75rem",
-    borderRadius: "8px", border: "none",
-    fontSize: "14px", appearance: "none", outline: "none",
-    background: "white", color: "#444", boxSizing: "border-box",
+  imunLabel: {
+    fontSize: "11px", color: "rgba(255,255,255,0.85)",
+    fontWeight: "600", marginBottom: "4px", display: "block",
   },
-  chevron: {
-    position: "absolute", right: "10px", top: "50%",
-    transform: "translateY(-50%)", pointerEvents: "none",
-    color: "#888", fontSize: "16px",
-  },
-  dateInput: {
-    width: "100%", padding: "0.6rem 0.75rem",
-    borderRadius: "8px", border: "none",
-    fontSize: "14px", outline: "none",
-    background: "white", color: "#444", boxSizing: "border-box",
+  imunInput: {
+    width: "100%", padding: "9px 12px", borderRadius: "9px",
+    border: "none", fontSize: "13px", outline: "none",
+    background: "white", color: "#1a1a2e", marginBottom: "8px",
+    boxSizing: "border-box",
   },
   addImunBtn: {
-    background: "none", border: "none",
-    color: "#e91e8c", fontWeight: "600",
-    fontSize: "14px", cursor: "pointer", padding: "4px 0",
+    width: "100%", padding: "10px", borderRadius: "10px",
+    border: "1.5px dashed #f48fb1", background: "transparent",
+    color: "#e91e8c", fontWeight: "600", fontSize: "13px",
+    cursor: "pointer", marginTop: "4px",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
   },
-
   saveBtn: {
     background: "linear-gradient(135deg, #2196f3, #42a5f5)",
-    color: "white", border: "none",
-    borderRadius: "12px", padding: "14px 80px",
-    fontSize: "16px", fontWeight: "700", cursor: "pointer",
+    color: "white", border: "none", borderRadius: "14px",
+    padding: "14px 80px", fontSize: "15px", fontWeight: "700",
+    cursor: "pointer",
   },
 }

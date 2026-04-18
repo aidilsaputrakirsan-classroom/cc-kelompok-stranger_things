@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import LoginPage from "./components/LoginPage";
 import SplashPage from "./components/SplashPage";
 import JadwalImunisasi from "./components/JadwalImunisasi";
+import FaskesMap from "./components/FaskesMap";
+import DataAnak from "./components/DataAnak";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -448,10 +450,10 @@ function App() {
         />
       )}
 
-      {activePage === "dataanak" && (
-        <DataAnak 
-        setActivePage={setActivePage} 
-        onLogout={handleLogout} 
+      {activePage === "dataAnak" && (
+        <DataAnak
+          setActivePage={setActivePage}
+          onLogout={() => setActivePage("login")}
         />
       )}
 

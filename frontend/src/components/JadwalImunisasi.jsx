@@ -1,10 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart, Legend
 } from "recharts"
-
-const childrenList = []
+import { fetchChildren } from "../services/api"   // ← tambahkan export ini di api.js
 
 function GirlAvatar() {
   return (
@@ -38,8 +37,50 @@ function BoyAvatar() {
   )
 }
 
+// Hitung umur dari tanggal lahir
+function hitungUmur(birthDate) {
+  if (!birthDate) return "-"
+  const lahir = new Date(birthDate)
+  const sekarang = new Date()
+  const bulan =
+    (sekarang.getFullYear() - lahir.getFullYear()) * 12 +
+    (sekarang.getMonth() - lahir.getMonth())
+  if (bulan < 12) return `${bulan} bulan`
+  return `${Math.floor(bulan / 12)} tahun ${bulan % 12} bulan`
+}
+
+// Format tanggal ke "DD MMM YYYY"
+function formatTanggal(dateStr) {
+  if (!dateStr) return "-"
+  return new Date(dateStr).toLocaleDateString("id-ID", {
+    day: "2-digit", month: "short", year: "numeric",
+  })
+}
+
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
+  const [childrenList, setChildrenList] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // ── Fetch daftar anak setiap kali halaman ini aktif ──────────────
+  useEffect(() => {
+    loadChildren()
+  }, [])
+
+  const loadChildren = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchChildren()       // GET /children dari API
+      setChildrenList(data ?? [])
+    } catch (err) {
+      console.error(err)
+      setError("Gagal memuat data anak.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={s.page}>
@@ -63,27 +104,46 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         <div style={s.leftPanel}>
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
-            {childrenList.length === 0 ? (
-              <p style={s.emptyText}>Belum ada data anak.</p>
-            ) : (
-              childrenList.map((child) => (
-                <div
-                  key={child.id}
-                  style={{
-                    ...s.childRow,
-                    ...(selectedChild?.id === child.id ? s.childRowActive : s.childRowInactive),
-                  }}
-                  onClick={() => setSelectedChild(child)}
-                >
-                  <div style={s.childAvatarWrap}>
-                    {child.avatar === "girl" ? <GirlAvatar /> : <BoyAvatar />}
-                  </div>
-                  <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
-                    {child.name}
-                  </span>
-                </div>
-              ))
+
+            {/* ── Status loading / error / kosong ── */}
+            {loading && (
+              <p style={s.emptyText}>Memuat data...</p>
             )}
+            {!loading && error && (
+              <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>
+            )}
+            {!loading && !error && childrenList.length === 0 && (
+              <p style={s.emptyText}>Belum ada data anak.</p>
+            )}
+
+            {/* ── Daftar anak dari API ── */}
+            {!loading && childrenList.map((child) => (
+              <div
+                key={child.id}
+                style={{
+                  ...s.childRow,
+                  ...(selectedChild?.id === child.id ? s.childRowActive : s.childRowInactive),
+                }}
+                onClick={() => setSelectedChild(child)}
+              >
+                <div style={s.childAvatarWrap}>
+                  {child.gender === "female" ? <GirlAvatar /> : <BoyAvatar />}
+                </div>
+                <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
+                  {child.name}
+                </span>
+                <span style={{ color: selectedChild?.id === child.id ? "white" : "#bbb", fontSize: "18px" }}>›</span>
+              </div>
+            ))}
+
+            {/* Tombol Tambah Anak */}
+            <button
+              style={s.tambahAnakBtn}
+              onClick={() => setActivePage?.("dataAnak")}
+            >
+              <span style={s.tambahAnakPlus}>+</span>
+              Tambah anak
+            </button>
           </div>
         </div>
 
@@ -111,21 +171,27 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
 
               <h3 style={s.childFullName}>{selectedChild.name}</h3>
 
+              {/* ── Info dari field API ── */}
               <div style={s.infoRow}>
                 <span style={s.infoIcon}>🍼</span>
-                <span>Umur : {selectedChild.age}</span>
+                <span>Umur : {hitungUmur(selectedChild.birth_date)}</span>
               </div>
               <div style={s.infoRow}>
                 <span style={s.infoIcon}>⚥</span>
-                <span>Jenis Kelamin : {selectedChild.gender}</span>
+                <span>Jenis Kelamin : {selectedChild.gender === "female" ? "Perempuan" : "Laki-laki"}</span>
               </div>
               <div style={s.infoRow}>
                 <span style={s.infoIcon}>📅</span>
-                <span>Lahir : {selectedChild.birthDate}</span>
+                <span>Lahir : {formatTanggal(selectedChild.birth_date)}</span>
               </div>
               <div style={s.infoRow}>
                 <span style={s.infoIcon}>🕐</span>
-                <span>Imunisasi Sebelumnya : {selectedChild.prevVaccines}</span>
+                <span>
+                  Imunisasi Sebelumnya :{" "}
+                  {selectedChild.immunizations?.length
+                    ? `${selectedChild.immunizations.length} jadwal`
+                    : "Belum ada"}
+                </span>
               </div>
 
               <h3 style={s.statsTitle}>Statistik</h3>
@@ -186,7 +252,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         <div style={s.rightPanel}>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Tinggi Terkini</div>
-            <div style={s.statCardValue}>{selectedChild ? `${selectedChild.heightNow} cm` : "— cm"}</div>
+            <div style={s.statCardValue}>{selectedChild?.heightNow ? `${selectedChild.heightNow} cm` : "— cm"}</div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
               <span style={s.deltaText}>{selectedChild?.heightDelta ?? "-"}</span>
@@ -194,7 +260,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
           </div>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Berat Terkini</div>
-            <div style={s.statCardValue}>{selectedChild ? `${selectedChild.weightNow} kg` : "— kg"}</div>
+            <div style={s.statCardValue}>{selectedChild?.weightNow ? `${selectedChild.weightNow} kg` : "— kg"}</div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
               <span style={s.deltaText}>{selectedChild?.weightDelta ?? "-"}</span>
@@ -265,6 +331,7 @@ const s = {
     fontSize: "13px",
     textAlign: "center",
     padding: "1rem 0",
+    margin: 0,
   },
   childRow: {
     display: "flex",
@@ -282,6 +349,27 @@ const s = {
     overflow: "hidden", flexShrink: 0,
   },
   childName: { flex: 1, fontWeight: "600", fontSize: "13px" },
+  tambahAnakBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    width: "100%",
+    padding: "0.7rem 1rem",
+    marginTop: "0.25rem",
+    borderRadius: "24px",
+    border: "2px dashed #f48fb1",
+    background: "transparent",
+    color: "#e91e8c",
+    fontWeight: "600",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  tambahAnakPlus: {
+    fontSize: "18px",
+    fontWeight: "700",
+    lineHeight: 1,
+  },
   centerPanel: {
     background: "#fce4ec",
     borderRadius: "16px",

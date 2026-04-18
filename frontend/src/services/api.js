@@ -216,3 +216,52 @@ export async function deleteChild(id) {
   })
   return handleResponse(response)
 }
+
+// ==================== VACCINE API ====================
+
+export async function fetchVaccineTypes() {
+  console.log("💉 Fetching vaccine types")
+  const response = await fetch(`${API_URL}/vaccines`, {
+    headers: authHeaders(), // kalau butuh token
+  })
+  return handleResponse(response)
+}
+
+// ==================== IMMUNIZATION API ====================
+
+export async function createImmunization(data) {
+  console.log("💉 Creating immunization:", data)
+
+  const response = await fetch(
+    `${API_URL}/children/${data.child_id}/immunization`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify({
+        vaccine_id: data.vaccine_id,
+        scheduled_date: data.scheduled_date,
+        status: data.status,
+      }),
+    }
+  )
+
+  return handleResponse(response)
+}
+
+// ====================FECTH IMMUNIZATION API ====================
+
+export async function fetchImmunizations(childId) {
+  console.log("📅 Fetching immunizations for child:", childId)
+
+  const response = await fetch(
+    `${API_URL}/children/${childId}/immunization`,
+    {
+      headers: authHeaders(),
+    }
+  )
+
+  return handleResponse(response)
+}
