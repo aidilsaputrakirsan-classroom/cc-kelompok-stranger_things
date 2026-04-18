@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { createChild, fetchVaccineTypes, createImmunization } from "../services/api"
+import { createChild, fetchVaccineTypes, createImmunization, updateChild } from "../services/api"
 
 const defaultVaccines = [
   { id: 1, name: "BCG (TBC)" },
@@ -18,6 +18,67 @@ const defaultVaccines = [
   { id: 14, name: "Japanese Encephalitis (JE)" },
   { id: 15, name: "Dengue" },
 ]
+
+// ── Notification (inline) ─────────────────────────────────────────
+function useNotification() {
+  const [notif, setNotif] = useState({ message: "", type: "success" })
+  const showNotif = (message, type = "success") => setNotif({ message, type })
+  const closeNotif = () => setNotif({ message: "", type: "success" })
+  return { notif, showNotif, closeNotif }
+}
+
+function Notification({ message, type = "success", onClose }) {
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(onClose, 3000)
+    return () => clearTimeout(timer)
+  }, [message])
+
+  if (!message) return null
+
+  const colors = {
+    success: { bg: "#e8f5e9", border: "#4caf50", icon: "✅", text: "#2e7d32" },
+    error:   { bg: "#fce4ec", border: "#e91e8c", icon: "❌", text: "#c62828" },
+    info:    { bg: "#e3f2fd", border: "#2196f3", icon: "ℹ️", text: "#1565c0" },
+  }
+  const c = colors[type] ?? colors.success
+
+  return (
+    <>
+      <style>{`
+        @keyframes slideInNotif {
+          from { opacity: 0; transform: translateX(60px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+      <div style={{
+        position: "fixed", top: "24px", right: "24px", zIndex: 9999,
+        background: c.bg,
+        border: `1.5px solid ${c.border}`,
+        borderRadius: "16px",
+        padding: "14px 18px",
+        display: "flex", alignItems: "center", gap: "12px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
+        animation: "slideInNotif 0.3s ease",
+        minWidth: "280px", maxWidth: "380px",
+      }}>
+        <span style={{ fontSize: "22px", flexShrink: 0 }}>{c.icon}</span>
+        <span style={{
+          flex: 1, fontSize: "14px", fontWeight: "600",
+          color: c.text, lineHeight: 1.4,
+        }}>
+          {message}
+        </span>
+        <button onClick={onClose} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: "20px", color: c.text, padding: "0 2px",
+          lineHeight: 1, flexShrink: 0, opacity: 0.7,
+        }}>×</button>
+      </div>
+    </>
+  )
+}
+// ─────────────────────────────────────────────────────────────────
 
 function SectionLabel({ children }) {
   return (
@@ -40,8 +101,28 @@ export default function DataAnak({ setActivePage, onLogout }) {
   const [vaccineTypes, setVaccineTypes] = useState([])
   const [loading, setLoading] = useState(false)
   const [focusedField, setFocusedField] = useState(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const { notif, showNotif, closeNotif } = useNotification()
 
-  useEffect(() => { loadVaccines() }, [])
+  useEffect(() => {
+    loadVaccines()
+
+    const data = localStorage.getItem("editChild")
+    if (data) {
+      const editChild = JSON.parse(data)
+      setChild({
+        name: editChild.name ?? "",
+        birth_date: editChild.birth_date ?? "",
+        gender: editChild.gender ?? "",
+        weight: editChild.weight ?? "",
+        height: editChild.height ?? "",
+      })
+      setIsEditMode(true)
+      setEditId(editChild.id)
+      localStorage.removeItem("editChild")
+    }
+  }, [])
 
   const loadVaccines = async () => {
     try {
@@ -69,32 +150,38 @@ export default function DataAnak({ setActivePage, onLogout }) {
 
   const handleSubmit = async () => {
     if (!child.name || !child.birth_date || !child.gender) {
-      alert("Data anak wajib diisi")
+      showNotif("Data anak wajib diisi", "error")
       return
     }
     setLoading(true)
     try {
-      const newChild = await createChild({
+      const payload = {
         name: child.name,
         birth_date: child.birth_date,
         gender: child.gender,
         weight: child.weight ? parseFloat(child.weight) : null,
         height: child.height ? parseFloat(child.height) : null,
-      })
-      for (let item of immunizations) {
-        if (item.vaccine_id && item.scheduled_date) {
-          await createImmunization({
-            child_id: newChild.id,
-            vaccine_id: item.vaccine_id,
-            scheduled_date: item.scheduled_date,
-            status: "pending",
-          })
-        }
       }
-      alert("Data berhasil disimpan")
-      setActivePage?.("jadwal")
+      if (isEditMode) {
+        await updateChild(editId, payload)
+        showNotif("Data berhasil diperbarui!", "success")
+      } else {
+        const newChild = await createChild(payload)
+        for (let item of immunizations) {
+          if (item.vaccine_id && item.scheduled_date) {
+            await createImmunization({
+              child_id: newChild.id,
+              vaccine_id: item.vaccine_id,
+              scheduled_date: item.scheduled_date,
+              status: "pending",
+            })
+          }
+        }
+        showNotif("Data berhasil disimpan!", "success")
+      }
+      setTimeout(() => setActivePage?.("jadwal"), 1500)
     } catch (err) {
-      alert("Gagal menyimpan: " + err.message)
+      showNotif("Gagal menyimpan: " + err.message, "error")
     } finally {
       setLoading(false)
     }
@@ -112,6 +199,9 @@ export default function DataAnak({ setActivePage, onLogout }) {
 
   return (
     <div style={s.page}>
+      {/* Notification */}
+      <Notification message={notif.message} type={notif.type} onClose={closeNotif} />
+
       {/* Navbar */}
       <nav style={s.nav}>
         <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
@@ -132,7 +222,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
           <button style={s.backBtn} onClick={() => setActivePage?.("jadwal")}>
             ↩ Kembali
           </button>
-          <h2 style={s.cardTitle}>Tambah Data Anak</h2>
+          <h2 style={s.cardTitle}>{isEditMode ? "Edit Data Anak" : "Tambah Data Anak"}</h2>
           <div style={{ width: 100 }} />
         </div>
 
@@ -280,7 +370,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
         {/* Simpan */}
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
           <button style={s.saveBtn} onClick={handleSubmit} disabled={loading}>
-            {loading ? "Menyimpan..." : "Simpan"}
+            {loading ? "Menyimpan..." : isEditMode ? "Perbarui" : "Simpan"}
           </button>
         </div>
       </div>

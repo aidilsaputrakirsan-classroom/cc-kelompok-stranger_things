@@ -458,92 +458,13 @@ function App() {
       )}
 
       {activePage === "faskes" && (
-        <div
-          style={{
-            minHeight: "100vh",
-            background: "#fff5f8",
-            fontFamily: "'Segoe UI', Arial, sans-serif",
-          }}
-        >
-          <nav
-            style={{
-              background: "white",
-              borderBottom: "0.5px solid #f0c0d0",
-              padding: "0 2rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "1.5rem",
-              height: "56px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "18px",
-                fontWeight: "700",
-                color: "#1a1a2e",
-                marginRight: "auto",
-              }}
-            >
-              ByeBye<span style={{ color: "#e91e8c" }}>Virus</span>
-            </span>
-            <a
-              style={{ fontSize: "14px", color: "#888", cursor: "pointer" }}
-              onClick={() => setActivePage("home")}
-            >
-              Home
-            </a>
-            <a
-              style={{ fontSize: "14px", color: "#888", cursor: "pointer" }}
-              onClick={() => setActivePage("jadwal")}
-            >
-              Jadwal Imunisasi
-            </a>
-            <a
-              style={{
-                fontSize: "14px",
-                color: "#e91e8c",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              Faskes Map
-            </a>
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "#fce4ec",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                marginLeft: "auto",
-              }}
-              onClick={handleLogout}
-              title="Logout"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
-            </div>
-          </nav>
-          <div
-            style={{ padding: "4rem 2rem", textAlign: "center", color: "#888" }}
-          >
-            <p style={{ fontSize: "48px" }}>🗺️</p>
-            <p
-              style={{ fontSize: "18px", fontWeight: "600", color: "#1a1a2e" }}
-            >
-              Faskes Map
-            </p>
-            <p style={{ fontSize: "14px" }}>
-              Fitur ini sedang dalam pengembangan.
-            </p>
-          </div>
-        </div>
+        <FaskesMap
+          onLogout={handleLogout}
+          activePage={activePage}
+          setActivePage={setActivePage}
+        />
       )}
-
+          
       {/* Toast notification */}
       {toast && (
         <div

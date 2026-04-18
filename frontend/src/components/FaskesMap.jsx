@@ -65,7 +65,7 @@ const HomeIcon = () => (
   </svg>
 )
 
-export default function FaskesMap({ setActivePage }) {
+export default function FaskesMap({ setActivePage, onLogout }) {
   const [selected, setSelected] = useState(0)
   const [search, setSearch] = useState("")
   const [activeFilter, setActiveFilter] = useState("Semua")
@@ -83,259 +83,186 @@ export default function FaskesMap({ setActivePage }) {
   const selectedData = faskesData[selected]
 
   return (
-    <div style={s.layout}>
-      {/* Top Bar */}
-      <div style={s.topbar}>
-        <span style={s.logo}>SehatKu</span>
-        <span style={s.logoSub}>/ Faskes Map</span>
-        <div style={s.topbarNav}>
-          {["Beranda", "Faskes Map", "Konsultasi AI", "Profil"].map((nav) => (
-            <button
-              key={nav}
-              style={{
-                ...s.tnav,
-                ...(nav === "Faskes Map" ? s.tnavActive : {}),
-              }}
-              onClick={() => {
-                if (nav === "Beranda") setActivePage?.("home")
-              }}
-            >
-              {nav}
-            </button>
-          ))}
+    <div style={s.page}>
+      {/* Navbar — sama persis dengan JadwalImunisasi & DataAnak */}
+      <nav style={s.nav}>
+        <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
+        <a style={s.navLink} onClick={() => setActivePage?.("home")}>Home</a>
+        <a style={s.navLink} onClick={() => setActivePage?.("jadwal")}>Jadwal Imunisasi</a>
+        <a style={{ ...s.navLink, ...s.navActive }}>Faskes Map</a>
+        <div style={s.avatar} onClick={onLogout} title="Logout">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+          </svg>
         </div>
-      </div>
+      </nav>
 
-      {/* Sidebar */}
-      <div style={s.sidebar}>
-        {/* Search */}
-        <div style={s.searchBox}>
-          <input
-            style={s.searchInp}
-            placeholder="Cari puskesmas, klinik, RS..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Map Layout */}
+      <div style={s.layout}>
+        {/* Sidebar */}
+        <div style={s.sidebar}>
+          {/* Search */}
+          <div style={s.searchBox}>
+            <input
+              style={s.searchInp}
+              placeholder="Cari puskesmas, klinik, RS..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-        {/* Location Banner */}
-        <div style={s.locBanner}>
-          <div style={s.locDot} />
-          <div>
-            <div style={s.locLbl}>Lokasi anda saat ini</div>
-            <div style={s.locAddr}>
-              Jl. Tunggal Ika No. 11b, Kec. Balikpapan Selatan, Kel. Sepinggan Baru, Balikpapan
+          {/* Location Banner */}
+          <div style={s.locBanner}>
+            <div style={s.locDot} />
+            <div>
+              <div style={s.locLbl}>Lokasi anda saat ini</div>
+              <div style={s.locAddr}>
+                Jl. Tunggal Ika No. 11b, Kec. Balikpapan Selatan, Kel. Sepinggan Baru, Balikpapan
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Filter Chips */}
-        <div style={s.filterRow}>
-          {filters.map((f) => (
-            <span
-              key={f}
-              style={{ ...s.chip, ...(activeFilter === f ? s.chipOn : {}) }}
-              onClick={() => setActiveFilter(f)}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-
-        {/* List Header */}
-        <div style={s.listHeader}>
-          <div style={s.listBar} />
-          <span style={s.listTitle}>Faskes Terdekat</span>
-          <span style={s.listCount}>{filtered.length} hasil</span>
-        </div>
-
-        {/* Faskes List */}
-        <div style={s.faskesList}>
-          {filtered.map((d) => (
-            <div
-              key={d.id}
-              style={{ ...s.fcard, ...(d.id === selected ? s.fcardSelected : {}) }}
-              onClick={() => setSelected(d.id)}
-            >
-              <div style={s.fcardHead}>
-                <div style={s.fcardIcon}>
-                  <HomeIcon />
-                </div>
-                <div style={s.fcardName}>
-                  {d.name}
-                  <span style={{ ...s.badge, ...(d.status === "Tutup" ? s.badgeTutup : s.badgeBuka) }}>
-                    {d.status}
-                  </span>
-                </div>
-              </div>
-              <div style={s.fcardMeta}>
-                <span>● {d.distance} km</span>
-                <span>{d.type}</span>
-              </div>
-              <div style={s.fcardAddr}>📍 {d.address}</div>
-              <div style={s.fcardPhone}>📞 {d.phone}</div>
-              <div style={s.fcardFooter}>
-                <button style={s.btnRoute}>🗺 Rute</button>
-                <button style={s.btnDetail}>Detail ›</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Map Area */}
-      <div style={s.mapArea}>
-        <svg width="100%" height="100%" viewBox="0 0 700 624" xmlns="http://www.w3.org/2000/svg">
-          <rect width="700" height="624" fill="#e8ede8" />
-          <path d="M0,200 Q100,180 200,220 Q320,265 440,190 Q560,115 700,160 L700,624 L0,624Z" fill="#dde8dd" />
-          <path
-            d="M0,260 Q120,235 260,275 Q380,310 500,245 L700,260 L700,624 L0,624Z"
-            fill="#ccdacc"
-            opacity="0.7"
-          />
-          <path
-            d="M80,140 Q140,100 220,140 Q300,180 380,100 Q440,40 540,90 Q580,110 630,150"
-            stroke="#d4c4a0"
-            strokeWidth="18"
-            fill="none"
-          />
-          <path
-            d="M0,300 Q100,280 210,315 Q330,355 460,295 Q560,245 660,300 L700,310"
-            stroke="#c4b890"
-            strokeWidth="12"
-            fill="none"
-          />
-          <path
-            d="M350,624 Q370,500 400,380 Q415,310 450,240"
-            stroke="#d4c4a0"
-            strokeWidth="12"
-            fill="none"
-          />
-          <path
-            d="M0,420 Q80,400 180,440 Q280,475 380,430 Q460,395 560,435 L700,445"
-            stroke="#c8b880"
-            strokeWidth="8"
-            fill="none"
-            opacity="0.7"
-          />
-          <rect x="80" y="125" width="120" height="22" rx="4" fill="#f5f0e0" opacity="0.9" />
-          <text x="140" y="141" textAnchor="middle" fontSize="11" fill="#666" fontFamily="sans-serif">
-            KM. 5.5 Graha Indah
-          </text>
-          <text x="120" y="180" textAnchor="start" fontSize="9" fill="#999" fontFamily="sans-serif">
-            GN. PIPA
-          </text>
-          <text x="580" y="360" textAnchor="middle" fontSize="9" fill="#999" fontFamily="sans-serif">
-            PUSKES SEPINGGAN
-          </text>
-          <text x="380" y="228" textAnchor="middle" fontSize="10" fill="#555" fontFamily="sans-serif" fontWeight="bold">
-            UPTD Puskesmas Gn. Bahagia
-          </text>
-
-          {/* Markers */}
-          {faskesData.map((d) => (
-            <g
-              key={d.id}
-              style={{ cursor: "pointer", opacity: d.id === selected ? 1 : 0.5 }}
-              onClick={() => setSelected(d.id)}
-            >
-              <circle cx={d.markerX} cy={d.markerY - 8} r="18" fill="#cc1166" />
-              <text
-                x={d.markerX}
-                y={d.markerY - 3}
-                textAnchor="middle"
-                fontSize={d.type === "RS" ? "11" : "14"}
-                fill="#fff"
-                fontFamily="sans-serif"
+          {/* Filter Chips */}
+          <div style={s.filterRow}>
+            {filters.map((f) => (
+              <span
+                key={f}
+                style={{ ...s.chip, ...(activeFilter === f ? s.chipOn : {}) }}
+                onClick={() => setActiveFilter(f)}
               >
-                {d.type === "RS" ? "H" : "⌂"}
-              </text>
-              <polygon
-                points={`${d.markerX},${d.markerY + 12} ${d.markerX - 6},${d.markerY - 2} ${d.markerX + 6},${d.markerY - 2}`}
-                fill="#cc1166"
-              />
-            </g>
-          ))}
+                {f}
+              </span>
+            ))}
+          </div>
 
-          {/* User location */}
-          <circle cx="540" cy="290" r="12" fill="#1a6fcc" opacity="0.9" />
-          <circle cx="540" cy="290" r="20" fill="#1a6fcc" opacity="0.2" />
-        </svg>
+          {/* List Header */}
+          <div style={s.listHeader}>
+            <div style={s.listBar} />
+            <span style={s.listTitle}>Faskes Terdekat</span>
+            <span style={s.listCount}>{filtered.length} hasil</span>
+          </div>
 
-        {/* Map Zoom Controls */}
-        <div style={s.mapOverlay}>
-          <div style={s.mapBtn}>+</div>
-          <div style={s.mapBtn}>-</div>
-          <div style={{ ...s.mapBtn, fontSize: "13px" }}>●</div>
+          {/* Faskes List */}
+          <div style={s.faskesList}>
+            {filtered.map((d) => (
+              <div
+                key={d.id}
+                style={{ ...s.fcard, ...(d.id === selected ? s.fcardSelected : {}) }}
+                onClick={() => setSelected(d.id)}
+              >
+                <div style={s.fcardHead}>
+                  <div style={s.fcardIcon}>
+                    <HomeIcon />
+                  </div>
+                  <div style={s.fcardName}>
+                    {d.name}
+                    <span style={{ ...s.badge, ...(d.status === "Tutup" ? s.badgeTutup : s.badgeBuka) }}>
+                      {d.status}
+                    </span>
+                  </div>
+                </div>
+                <div style={s.fcardMeta}>
+                  <span>● {d.distance} km</span>
+                  <span>{d.type}</span>
+                </div>
+                <div style={s.fcardAddr}>📍 {d.address}</div>
+                <div style={s.fcardPhone}>📞 {d.phone}</div>
+                <div style={s.fcardFooter}>
+                  <button style={s.btnRoute}>🗺 Rute</button>
+                  <button style={s.btnDetail}>Detail ›</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Info Popup */}
-        {selectedData && (
-          <div style={s.infoPopup}>
-            <div style={s.popupName}>{selectedData.name}</div>
-            <div style={s.popupRow}>
-              <span style={s.popupOpen}>{selectedData.status}</span> · {selectedData.type}
-            </div>
-            <div style={s.popupRow}>{selectedData.distance} km dari lokasi anda</div>
-            <div style={{ ...s.popupRow, color: "#aaa", fontSize: "11px" }}>{selectedData.address}</div>
+        {/* Map Area */}
+        <div style={s.mapArea}>
+          <svg width="100%" height="100%" viewBox="0 0 700 624" xmlns="http://www.w3.org/2000/svg">
+            <rect width="700" height="624" fill="#e8ede8" />
+            <path d="M0,200 Q100,180 200,220 Q320,265 440,190 Q560,115 700,160 L700,624 L0,624Z" fill="#dde8dd" />
+            <path d="M0,260 Q120,235 260,275 Q380,310 500,245 L700,260 L700,624 L0,624Z" fill="#ccdacc" opacity="0.7" />
+            <path d="M80,140 Q140,100 220,140 Q300,180 380,100 Q440,40 540,90 Q580,110 630,150" stroke="#d4c4a0" strokeWidth="18" fill="none" />
+            <path d="M0,300 Q100,280 210,315 Q330,355 460,295 Q560,245 660,300 L700,310" stroke="#c4b890" strokeWidth="12" fill="none" />
+            <path d="M350,624 Q370,500 400,380 Q415,310 450,240" stroke="#d4c4a0" strokeWidth="12" fill="none" />
+            <path d="M0,420 Q80,400 180,440 Q280,475 380,430 Q460,395 560,435 L700,445" stroke="#c8b880" strokeWidth="8" fill="none" opacity="0.7" />
+            <rect x="80" y="125" width="120" height="22" rx="4" fill="#f5f0e0" opacity="0.9" />
+            <text x="140" y="141" textAnchor="middle" fontSize="11" fill="#666" fontFamily="sans-serif">KM. 5.5 Graha Indah</text>
+            <text x="120" y="180" textAnchor="start" fontSize="9" fill="#999" fontFamily="sans-serif">GN. PIPA</text>
+            <text x="580" y="360" textAnchor="middle" fontSize="9" fill="#999" fontFamily="sans-serif">PUSKES SEPINGGAN</text>
+            <text x="380" y="228" textAnchor="middle" fontSize="10" fill="#555" fontFamily="sans-serif" fontWeight="bold">UPTD Puskesmas Gn. Bahagia</text>
+
+            {faskesData.map((d) => (
+              <g key={d.id} style={{ cursor: "pointer", opacity: d.id === selected ? 1 : 0.5 }} onClick={() => setSelected(d.id)}>
+                <circle cx={d.markerX} cy={d.markerY - 8} r="18" fill="#cc1166" />
+                <text x={d.markerX} y={d.markerY - 3} textAnchor="middle" fontSize={d.type === "RS" ? "11" : "14"} fill="#fff" fontFamily="sans-serif">
+                  {d.type === "RS" ? "H" : "⌂"}
+                </text>
+                <polygon points={`${d.markerX},${d.markerY + 12} ${d.markerX - 6},${d.markerY - 2} ${d.markerX + 6},${d.markerY - 2}`} fill="#cc1166" />
+              </g>
+            ))}
+
+            <circle cx="540" cy="290" r="12" fill="#1a6fcc" opacity="0.9" />
+            <circle cx="540" cy="290" r="20" fill="#1a6fcc" opacity="0.2" />
+          </svg>
+
+          <div style={s.mapOverlay}>
+            <div style={s.mapBtn}>+</div>
+            <div style={s.mapBtn}>-</div>
+            <div style={{ ...s.mapBtn, fontSize: "13px" }}>●</div>
           </div>
-        )}
+
+          {selectedData && (
+            <div style={s.infoPopup}>
+              <div style={s.popupName}>{selectedData.name}</div>
+              <div style={s.popupRow}>
+                <span style={s.popupOpen}>{selectedData.status}</span> · {selectedData.type}
+              </div>
+              <div style={s.popupRow}>{selectedData.distance} km dari lokasi anda</div>
+              <div style={{ ...s.popupRow, color: "#aaa", fontSize: "11px" }}>{selectedData.address}</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
 const s = {
+  page: {
+    background: "#fff5f8",
+    minHeight: "100vh",
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    color: "#1a1a2e",
+    fontSize: "14px",
+  },
+
+  // Navbar — sama dengan JadwalImunisasi & DataAnak
+  nav: {
+    background: "white",
+    borderBottom: "0.5px solid #f0c0d0",
+    padding: "0 2rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "1.5rem",
+    height: "56px",
+  },
+  logo: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
+  logoPink: { color: "#e91e8c" },
+  navLink: { fontSize: "14px", color: "#888", cursor: "pointer", textDecoration: "none" },
+  navActive: { color: "#e91e8c", fontWeight: "600" },
+  avatar: {
+    width: "36px", height: "36px", borderRadius: "50%",
+    background: "#fce4ec", display: "flex", alignItems: "center",
+    justifyContent: "center", cursor: "pointer", marginLeft: "auto",
+  },
+
+  // Map Layout
   layout: {
     display: "grid",
     gridTemplateColumns: "340px 1fr",
-    gridTemplateRows: "56px 1fr",
-    height: "680px",
-    fontFamily: "Segoe UI, sans-serif",
-    background: "#f5f6fa",
-    borderRadius: "12px",
+    height: "calc(100vh - 56px)",
     overflow: "hidden",
-    border: "1px solid #eee",
-  },
-
-  // Top Bar
-  topbar: {
-    gridColumn: "1 / -1",
-    background: "#fff",
-    borderBottom: "1px solid #eee",
-    display: "flex",
-    alignItems: "center",
-    padding: "0 24px",
-    gap: "8px",
-  },
-  logo: {
-    color: "#e91e8c",
-    fontWeight: "700",
-    fontSize: "18px",
-    letterSpacing: "-0.5px",
-  },
-  logoSub: {
-    fontSize: "13px",
-    color: "#bbb",
-  },
-  topbarNav: {
-    display: "flex",
-    gap: "4px",
-    marginLeft: "auto",
-  },
-  tnav: {
-    padding: "6px 14px",
-    borderRadius: "8px",
-    fontSize: "13px",
-    cursor: "pointer",
-    color: "#666",
-    border: "none",
-    background: "transparent",
-  },
-  tnavActive: {
-    background: "#fce4ec",
-    color: "#e91e8c",
-    fontWeight: "600",
   },
 
   // Sidebar
@@ -358,6 +285,7 @@ const s = {
     fontSize: "13px",
     background: "#f9f9f9",
     outline: "none",
+    boxSizing: "border-box",
   },
   locBanner: {
     margin: "12px 16px 0",
@@ -370,218 +298,84 @@ const s = {
     alignItems: "flex-start",
   },
   locDot: {
-    width: "12px",
-    height: "12px",
-    borderRadius: "50%",
-    background: "#e91e8c",
-    flexShrink: 0,
-    marginTop: "3px",
+    width: "12px", height: "12px", borderRadius: "50%",
+    background: "#e91e8c", flexShrink: 0, marginTop: "3px",
   },
-  locLbl: {
-    fontSize: "11px",
-    color: "#888",
-    marginBottom: "2px",
-  },
-  locAddr: {
-    fontSize: "12px",
-    color: "#333",
-    lineHeight: "1.4",
-  },
-  filterRow: {
-    padding: "10px 16px 0",
-    display: "flex",
-    gap: "6px",
-  },
+  locLbl: { fontSize: "11px", color: "#888", marginBottom: "2px" },
+  locAddr: { fontSize: "12px", color: "#333", lineHeight: "1.4" },
+  filterRow: { padding: "10px 16px 0", display: "flex", gap: "6px" },
   chip: {
-    fontSize: "11px",
-    padding: "4px 10px",
-    borderRadius: "20px",
-    border: "1px solid #e0e0e0",
-    cursor: "pointer",
-    background: "#fff",
-    color: "#666",
+    fontSize: "11px", padding: "4px 10px", borderRadius: "20px",
+    border: "1px solid #e0e0e0", cursor: "pointer", background: "#fff", color: "#666",
   },
   chipOn: {
-    background: "#fce4ec",
-    borderColor: "#f48fb1",
-    color: "#c2185b",
-    fontWeight: "600",
+    background: "#fce4ec", borderColor: "#f48fb1",
+    color: "#c2185b", fontWeight: "600",
   },
   listHeader: {
     padding: "12px 16px 8px",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
+    display: "flex", alignItems: "center", gap: "8px",
   },
-  listBar: {
-    width: "3px",
-    height: "18px",
-    background: "#e91e8c",
-    borderRadius: "2px",
-  },
-  listTitle: {
-    fontSize: "14px",
-    fontWeight: "700",
-    color: "#555",
-  },
-  listCount: {
-    marginLeft: "auto",
-    fontSize: "12px",
-    color: "#aaa",
-  },
-  faskesList: {
-    overflowY: "auto",
-    flex: 1,
-    padding: "0 16px 16px",
-  },
+  listBar: { width: "3px", height: "18px", background: "#e91e8c", borderRadius: "2px" },
+  listTitle: { fontSize: "14px", fontWeight: "700", color: "#555" },
+  listCount: { marginLeft: "auto", fontSize: "12px", color: "#aaa" },
+  faskesList: { overflowY: "auto", flex: 1, padding: "0 16px 16px" },
 
   // Faskes Card
   fcard: {
-    background: "#fce4ec",
-    borderRadius: "12px",
-    padding: "12px",
-    marginBottom: "10px",
-    cursor: "pointer",
-    border: "2px solid transparent",
+    background: "#fce4ec", borderRadius: "12px",
+    padding: "12px", marginBottom: "10px",
+    cursor: "pointer", border: "2px solid transparent",
   },
-  fcardSelected: {
-    borderColor: "#e91e8c",
-    background: "#fad7e8",
-  },
-  fcardHead: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "8px",
-    marginBottom: "6px",
-  },
+  fcardSelected: { borderColor: "#e91e8c", background: "#fad7e8" },
+  fcardHead: { display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "6px" },
   fcardIcon: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "8px",
-    background: "#e91e8c",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    color: "#fff",
+    width: "32px", height: "32px", borderRadius: "8px",
+    background: "#e91e8c", display: "flex", alignItems: "center",
+    justifyContent: "center", flexShrink: 0, color: "#fff",
   },
-  fcardName: {
-    fontWeight: "700",
-    color: "#e91e8c",
-    fontSize: "13px",
-    lineHeight: "1.3",
-  },
+  fcardName: { fontWeight: "700", color: "#e91e8c", fontSize: "13px", lineHeight: "1.3" },
   badge: {
-    display: "inline-block",
-    fontSize: "10px",
-    fontWeight: "600",
-    padding: "2px 7px",
-    borderRadius: "20px",
-    marginLeft: "6px",
+    display: "inline-block", fontSize: "10px", fontWeight: "600",
+    padding: "2px 7px", borderRadius: "20px", marginLeft: "6px",
   },
-  badgeBuka: {
-    background: "#e8f5e9",
-    color: "#2e7d32",
-  },
-  badgeTutup: {
-    background: "#fff3e0",
-    color: "#e65100",
-  },
-  fcardMeta: {
-    fontSize: "12px",
-    color: "#666",
-    marginBottom: "4px",
-    display: "flex",
-    gap: "12px",
-  },
-  fcardAddr: {
-    fontSize: "11px",
-    color: "#555",
-    lineHeight: "1.4",
-    marginBottom: "3px",
-  },
-  fcardPhone: {
-    fontSize: "11px",
-    color: "#888",
-  },
+  badgeBuka: { background: "#e8f5e9", color: "#2e7d32" },
+  badgeTutup: { background: "#fff3e0", color: "#e65100" },
+  fcardMeta: { fontSize: "12px", color: "#666", marginBottom: "4px", display: "flex", gap: "12px" },
+  fcardAddr: { fontSize: "11px", color: "#555", lineHeight: "1.4", marginBottom: "3px" },
+  fcardPhone: { fontSize: "11px", color: "#888" },
   fcardFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "8px",
-    paddingTop: "8px",
-    borderTop: "1px solid #f8bbd0",
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    marginTop: "8px", paddingTop: "8px", borderTop: "1px solid #f8bbd0",
   },
   btnRoute: {
-    fontSize: "11px",
-    background: "#e91e8c",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    padding: "5px 10px",
-    cursor: "pointer",
+    fontSize: "11px", background: "#e91e8c", color: "#fff",
+    border: "none", borderRadius: "6px", padding: "5px 10px", cursor: "pointer",
   },
   btnDetail: {
-    fontSize: "11px",
-    background: "#fff",
-    color: "#e91e8c",
-    border: "1px solid #e91e8c",
-    borderRadius: "6px",
-    padding: "5px 10px",
-    cursor: "pointer",
+    fontSize: "11px", background: "#fff", color: "#e91e8c",
+    border: "1px solid #e91e8c", borderRadius: "6px", padding: "5px 10px", cursor: "pointer",
   },
 
   // Map
-  mapArea: {
-    position: "relative",
-    background: "#e8ede8",
-    overflow: "hidden",
-  },
+  mapArea: { position: "relative", background: "#e8ede8", overflow: "hidden" },
   mapOverlay: {
-    position: "absolute",
-    top: "12px",
-    right: "12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
+    position: "absolute", top: "12px", right: "12px",
+    display: "flex", flexDirection: "column", gap: "6px",
   },
   mapBtn: {
-    width: "32px",
-    height: "32px",
-    background: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#555",
+    width: "32px", height: "32px", background: "#fff",
+    border: "1px solid #ddd", borderRadius: "8px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", fontSize: "16px", fontWeight: "700", color: "#555",
   },
   infoPopup: {
-    position: "absolute",
-    top: "12px",
-    left: "12px",
-    background: "#fff",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+    position: "absolute", top: "12px", left: "12px",
+    background: "#fff", borderRadius: "10px",
+    padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
     minWidth: "200px",
   },
-  popupName: {
-    fontWeight: "700",
-    fontSize: "13px",
-    color: "#e91e8c",
-    marginBottom: "4px",
-  },
-  popupRow: {
-    fontSize: "12px",
-    color: "#555",
-    marginBottom: "2px",
-  },
-  popupOpen: {
-    color: "#2e7d32",
-    fontWeight: "600",
-  },
+  popupName: { fontWeight: "700", fontSize: "13px", color: "#e91e8c", marginBottom: "4px" },
+  popupRow: { fontSize: "12px", color: "#555", marginBottom: "2px" },
+  popupOpen: { color: "#2e7d32", fontWeight: "600" },
 }

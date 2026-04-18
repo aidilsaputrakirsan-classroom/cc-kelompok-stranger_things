@@ -3,7 +3,7 @@ import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart, Legend
 } from "recharts"
-import { fetchChildren } from "../services/api"   // ← tambahkan export ini di api.js
+import { fetchChildren, deleteChild } from "../services/api"
 
 function GirlAvatar() {
   return (
@@ -37,7 +37,6 @@ function BoyAvatar() {
   )
 }
 
-// Hitung umur dari tanggal lahir
 function hitungUmur(birthDate) {
   if (!birthDate) return "-"
   const lahir = new Date(birthDate)
@@ -49,7 +48,6 @@ function hitungUmur(birthDate) {
   return `${Math.floor(bulan / 12)} tahun ${bulan % 12} bulan`
 }
 
-// Format tanggal ke "DD MMM YYYY"
 function formatTanggal(dateStr) {
   if (!dateStr) return "-"
   return new Date(dateStr).toLocaleDateString("id-ID", {
@@ -57,13 +55,127 @@ function formatTanggal(dateStr) {
   })
 }
 
+// ── Notification (inline) ─────────────────────────────────────────
+function useNotification() {
+  const [notif, setNotif] = useState({ message: "", type: "success" })
+  const showNotif = (message, type = "success") => setNotif({ message, type })
+  const closeNotif = () => setNotif({ message: "", type: "success" })
+  return { notif, showNotif, closeNotif }
+}
+
+function Notification({ message, type = "success", onClose }) {
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(onClose, 3000)
+    return () => clearTimeout(timer)
+  }, [message])
+
+  if (!message) return null
+
+  const colors = {
+    success: { bg: "#e8f5e9", border: "#4caf50", icon: "✅", text: "#2e7d32" },
+    error:   { bg: "#fce4ec", border: "#e91e8c", icon: "❌", text: "#c62828" },
+    info:    { bg: "#e3f2fd", border: "#2196f3", icon: "ℹ️", text: "#1565c0" },
+  }
+  const c = colors[type] ?? colors.success
+
+  return (
+    <>
+      <style>{`
+        @keyframes slideInNotif {
+          from { opacity: 0; transform: translateX(60px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+      <div style={{
+        position: "fixed", top: "24px", right: "24px", zIndex: 9999,
+        background: c.bg,
+        border: `1.5px solid ${c.border}`,
+        borderRadius: "16px",
+        padding: "14px 18px",
+        display: "flex", alignItems: "center", gap: "12px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
+        animation: "slideInNotif 0.3s ease",
+        minWidth: "280px", maxWidth: "380px",
+      }}>
+        <span style={{ fontSize: "22px", flexShrink: 0 }}>{c.icon}</span>
+        <span style={{
+          flex: 1, fontSize: "14px", fontWeight: "600",
+          color: c.text, lineHeight: 1.4,
+        }}>
+          {message}
+        </span>
+        <button onClick={onClose} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: "20px", color: c.text, padding: "0 2px",
+          lineHeight: 1, flexShrink: 0, opacity: 0.7,
+        }}>×</button>
+      </div>
+    </>
+  )
+}
+
+// ── Confirm Dialog (pengganti window.confirm) ─────────────────────
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  if (!message) return null
+  return (
+    <>
+      <style>{`
+        @keyframes fadeInDialog {
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 9998,
+        background: "rgba(0,0,0,0.35)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <div style={{
+          background: "white", borderRadius: "20px",
+          padding: "2rem 2.5rem", maxWidth: "360px", width: "90%",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+          animation: "fadeInDialog 0.2s ease",
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🗑️</div>
+          <p style={{
+            fontSize: "15px", fontWeight: "600",
+            color: "#1a1a2e", marginBottom: "1.5rem", lineHeight: 1.5,
+          }}>
+            {message}
+          </p>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <button onClick={onCancel} style={{
+              flex: 1, padding: "10px", borderRadius: "12px",
+              border: "1px solid #e0e0e0", background: "white",
+              color: "#666", fontWeight: "600", fontSize: "14px", cursor: "pointer",
+            }}>
+              Batal
+            </button>
+            <button onClick={onConfirm} style={{
+              flex: 1, padding: "10px", borderRadius: "12px",
+              border: "none", background: "linear-gradient(135deg, #e91e8c, #f48fb1)",
+              color: "white", fontWeight: "600", fontSize: "14px", cursor: "pointer",
+            }}>
+              Hapus
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+// ─────────────────────────────────────────────────────────────────
+
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
   const [childrenList, setChildrenList] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const { notif, showNotif, closeNotif } = useNotification()
+  const [confirmDialog, setConfirmDialog] = useState({ message: "", child: null })
 
-  // ── Fetch daftar anak setiap kali halaman ini aktif ──────────────
   useEffect(() => {
     loadChildren()
   }, [])
@@ -72,7 +184,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchChildren()       // GET /children dari API
+      const data = await fetchChildren()
       setChildrenList(data ?? [])
     } catch (err) {
       console.error(err)
@@ -82,8 +194,31 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
     }
   }
 
+  const handleDeleteConfirm = async () => {
+    const child = confirmDialog.child
+    setConfirmDialog({ message: "", child: null })
+    try {
+      await deleteChild(child.id)
+      if (selectedChild?.id === child.id) setSelectedChild(null)
+      loadChildren()
+      showNotif(`Data ${child.name} berhasil dihapus`, "success")
+    } catch {
+      showNotif("Gagal menghapus data anak.", "error")
+    }
+  }
+
   return (
     <div style={s.page}>
+      {/* Notification */}
+      <Notification message={notif.message} type={notif.type} onClose={closeNotif} />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        message={confirmDialog.message}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDialog({ message: "", child: null })}
+      />
+
       {/* Navbar */}
       <nav style={s.nav}>
         <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
@@ -105,10 +240,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
 
-            {/* ── Status loading / error / kosong ── */}
-            {loading && (
-              <p style={s.emptyText}>Memuat data...</p>
-            )}
+            {loading && <p style={s.emptyText}>Memuat data...</p>}
             {!loading && error && (
               <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>
             )}
@@ -116,7 +248,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
               <p style={s.emptyText}>Belum ada data anak.</p>
             )}
 
-            {/* ── Daftar anak dari API ── */}
             {!loading && childrenList.map((child) => (
               <div
                 key={child.id}
@@ -132,17 +263,40 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                 <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
                   {child.name}
                 </span>
-                <span style={{ color: selectedChild?.id === child.id ? "white" : "#bbb", fontSize: "18px" }}>›</span>
+
+                <div style={{ display: "flex", gap: "4px" }} onClick={e => e.stopPropagation()}>
+                  <button
+                    style={{
+                      ...s.iconBtn,
+                      background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : "#fff3e0",
+                      color: selectedChild?.id === child.id ? "white" : "#fb8c00",
+                    }}
+                    title="Edit"
+                    onClick={() => {
+                      localStorage.setItem("editChild", JSON.stringify(child))
+                      setActivePage?.("dataAnak")
+                    }}
+                  >✏️</button>
+
+                  <button
+                    style={{
+                      ...s.iconBtn,
+                      background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : "#fce4ec",
+                      color: selectedChild?.id === child.id ? "white" : "#e53935",
+                    }}
+                    title="Hapus"
+                    onClick={() => setConfirmDialog({
+                      message: `Hapus data ${child.name}?`,
+                      child,
+                    })}
+                  >🗑️</button>
+                </div>
               </div>
             ))}
 
-            {/* Tombol Tambah Anak */}
-            <button
-              style={s.tambahAnakBtn}
-              onClick={() => setActivePage?.("dataAnak")}
-            >
+            <button style={s.tambahAnakBtn} onClick={() => setActivePage?.("dataAnak")}>
               <span style={s.tambahAnakPlus}>+</span>
-              Tambah anak
+              Tambah data anak
             </button>
           </div>
         </div>
@@ -171,7 +325,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
 
               <h3 style={s.childFullName}>{selectedChild.name}</h3>
 
-              {/* ── Info dari field API ── */}
               <div style={s.infoRow}>
                 <span style={s.infoIcon}>🍼</span>
                 <span>Umur : {hitungUmur(selectedChild.birth_date)}</span>
@@ -365,11 +518,7 @@ const s = {
     fontSize: "14px",
     cursor: "pointer",
   },
-  tambahAnakPlus: {
-    fontSize: "18px",
-    fontWeight: "700",
-    lineHeight: 1,
-  },
+  tambahAnakPlus: { fontSize: "18px", fontWeight: "700", lineHeight: 1 },
   centerPanel: {
     background: "#fce4ec",
     borderRadius: "16px",
@@ -418,11 +567,7 @@ const s = {
   },
   infoIcon: { fontSize: "16px" },
   statsTitle: { fontSize: "17px", fontWeight: "700", color: "#1a1a2e", margin: "1.25rem 0 0.75rem 0" },
-  chartsRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "0.75rem",
-  },
+  chartsRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" },
   chartBox: {
     background: "white",
     borderRadius: "12px",
@@ -437,16 +582,25 @@ const s = {
     color: "#999",
     fontSize: "13px",
   },
-  rightPanel: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-  },
+  rightPanel: { display: "flex", flexDirection: "column", gap: "1rem" },
   statCard: {
     background: "white",
     borderRadius: "16px",
     padding: "1.25rem 1.5rem",
     boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+  },
+  iconBtn: {
+    border: "none",
+    borderRadius: "50%",
+    width: "28px",
+    height: "28px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    fontSize: "13px",
+    padding: 0,
+    flexShrink: 0,
   },
   statCardTitle: { fontSize: "16px", fontWeight: "700", color: "#1a1a2e", marginBottom: "8px" },
   statCardValue: { fontSize: "28px", fontWeight: "700", color: "#2196f3", marginBottom: "8px" },
