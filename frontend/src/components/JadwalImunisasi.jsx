@@ -1,8 +1,4 @@
 import { useState, useEffect } from "react"
-import {
-  Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Area, AreaChart, Legend
-} from "recharts"
 import { fetchChildren, deleteChild } from "../services/api"
 
 function GirlAvatar() {
@@ -346,57 +342,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                     : "Belum ada"}
                 </span>
               </div>
-
-              <h3 style={s.statsTitle}>Statistik</h3>
-              <div style={s.chartsRow}>
-                <div style={s.chartBox}>
-                  {selectedChild.weightData?.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={180}>
-                      <AreaChart data={selectedChild.weightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                            <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                        <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                        <YAxis tickFormatter={(v) => `${v} kg`} tick={{ fontSize: 10 }} />
-                        <Tooltip formatter={(v, n) => [`${v} kg`, n === "anak" ? "Berat anak" : "Berat Ideal"]} />
-                        <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Berat anak" : "Berat Ideal"}</span>} />
-                        <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#weightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                        <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div style={s.noData}>Data belum ada</div>
-                  )}
-                </div>
-
-                <div style={s.chartBox}>
-                  {selectedChild.heightData?.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={180}>
-                      <AreaChart data={selectedChild.heightData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="heightGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#42a5f5" stopOpacity={0.6} />
-                            <stop offset="95%" stopColor="#42a5f5" stopOpacity={0.05} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                        <XAxis dataKey="bulan" tick={{ fontSize: 10 }} />
-                        <YAxis tickFormatter={(v) => `${v} cm`} tick={{ fontSize: 10 }} />
-                        <Tooltip formatter={(v, n) => [`${v} cm`, n === "anak" ? "Tinggi anak" : "Tinggi Ideal"]} />
-                        <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: 11 }}>{v === "anak" ? "Tinggi anak" : "Tinggi Ideal"}</span>} />
-                        <Area type="monotone" dataKey="anak" stroke="#1565c0" strokeWidth={2} fill="url(#heightGrad)" dot={{ r: 4, fill: "#1565c0" }} name="anak" />
-                        <Line type="monotone" dataKey="ideal" stroke="#aaa" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="ideal" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div style={s.noData}>Data belum ada</div>
-                  )}
-                </div>
-              </div>
             </>
           )}
         </div>
@@ -566,22 +511,6 @@ const s = {
     color: "#333",
   },
   infoIcon: { fontSize: "16px" },
-  statsTitle: { fontSize: "17px", fontWeight: "700", color: "#1a1a2e", margin: "1.25rem 0 0.75rem 0" },
-  chartsRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" },
-  chartBox: {
-    background: "white",
-    borderRadius: "12px",
-    padding: "0.75rem",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-  },
-  noData: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "180px",
-    color: "#999",
-    fontSize: "13px",
-  },
   rightPanel: { display: "flex", flexDirection: "column", gap: "1rem" },
   statCard: {
     background: "white",
