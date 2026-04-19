@@ -5,21 +5,6 @@ Bye bye Virus adalah aplikasi yang dirancang untuk memantau dan mengelola imunis
 Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan sedang bekerja, biasanya sering terlewat jadwal imunisasi dikarenakan tidak adanya informasi atau pengingat secara berkala. Aplikasi ini hadir untuk memudahkan para orang tua (ibu rumah tangga maupun yang sedang bekerja) dalam merencanakan dan menjadwalkan imunisasi anak mereka.
 
 ---
-
-## 📊 Project Status ✅
-
-| Component          | Status         | Progress                    |
-| ------------------ | -------------- | --------------------------- |
-| **Backend Core**   | ✅ COMPLETE    | 100%                        |
-| **Database**       | ✅ COMPLETE    | 100%                        |
-| **API Endpoints**  | ✅ COMPLETE    | 35+ endpoints               |
-| **Authentication** | ✅ COMPLETE    | JWT + bcrypt                |
-| **Documentation**  | ✅ COMPLETE    | 5 comprehensive guides      |
-| **Frontend**       | 🏗️ IN PROGRESS | 40% (needs API integration) |
-| **Testing**        | 🧪 READY       | Setup complete              |
-| **Deployment**     | 🚀 READY       | Railway/Render/Docker       |
-
----
 ## 📅 Roadmap
 
 | Minggu | Target                 | Status |
@@ -28,7 +13,7 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 | 2      | REST API + Database    | ✅     |
 | 3      | React Frontend         | ✅     |
 | 4      | Full-Stack Integration | ✅     |
-| 5-7    | Docker & Compose       | ⬜     |
+| 5-7    | Docker & Compose       | ✅     |
 | 8      | UTS Demo               | ⬜     |
 | 9-11   | CI/CD Pipeline         | ⬜     |
 | 12-14  | Microservices          | ⬜     |
@@ -58,46 +43,114 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 
 ## 🏗️ Architecture
 
-```
-Frontend (React)
-        ↓ HTTP Request
-Backend (FastAPI - Python)
-        ↓ SQL Query
-Database (PostgreSQL)
-```
+Aplikasi ini menggunakan arsitektur full-stack berbasis service:
 
-_(Diagram ini akan berkembang setiap minggu)_
+```text
+┌───────────────┐
+│   Frontend    │
+│   React       │
+│ Port: 3000    │
+└───────┬───────┘
+        │ HTTP Request
+        ▼
+┌───────────────┐
+│   Backend     │
+│   FastAPI     │
+│ Port: 8000    │
+└───────┬───────┘
+        │ SQL Query
+        ▼
+┌───────────────┐
+│   Database    │
+│ PostgreSQL    │
+│ Port: 5432    │
+└───────────────┘
+```
 
 ## 📁 Struktur File
 
 ```
-cloud-team-stranger_things/
+cc-kelompok-stranger_things/
+│
 ├── backend/
-|   ├── Dockerfile           ← BARU
-│   ├── .dockerignore        ← BARU
-│   ├── main.py              ← Updated (auth endpoints, CORS fix)
-│   ├── auth.py              ← BARU (JWT utilities)
+│   ├── __pycache__/
+│   ├── .venv/
+│   ├── venv/
+│   ├── scripts/
+│   │
+│   ├── .dockerignore
+│   ├── .env
+│   ├── .env.example
+│   ├── .env.docker
+│   ├── .env.docker.example
+│   │
+│   ├── auth.py
+│   ├── crud.py
 │   ├── database.py
-│   ├── models.py            ← Updated (+ User model)
-│   ├── schemas.py           ← Updated (+ auth schemas)
-│   ├── crud.py              ← Updated (+ user CRUD)
-│   ├── requirements.txt     ← Updated (+ jose, passlib, bcrypt)
-│   ├── .env                 ← Updated (+ JWT & CORS config)
-│   └── .env.example         ← Updated
+│   ├── models.py
+│   ├── schemas.py
+│   ├── main.py
+│   ├── run.py
+│   │
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   │
+│   └── test.db
+│
 ├── frontend/
+│   ├── node_modules/
+│   ├── public/
 │   ├── src/
-│   │   ├── App.jsx              ← Updated (auth integration)
+│   │   ├── assets/
 │   │   ├── components/
-│   │   │   ├── Header.jsx       ← Updated (+ user info, logout)
-│   │   │   ├── LoginPage.jsx    ← BARU
-│   │   │   ├── SearchBar.jsx
+│   │   │   ├── DataAnak.jsx
+│   │   │   ├── EditAnak.jsx
+│   │   │   ├── FaskesMap.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── ItemCard.jsx
 │   │   │   ├── ItemForm.jsx
 │   │   │   ├── ItemList.jsx
-│   │   │   └── ItemCard.jsx
-│   │   └── services/
-│   │       └── api.js           ← Updated (+ auth, token mgmt)
+│   │   │   ├── JadwalImunisasi.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── SearchBar.jsx
+│   │   │   └── SplashPage.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── (API integration files)
+│   │   │
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── App.css
+│   │   └── index.css
+│   │
+│   ├── .dockerignore
 │   ├── .env
-│   └── .env.example
+│   ├── .env.example
+│   ├── .env.development
+│   │
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.js
+│   ├── eslint.config.js
+│   └── index.html
+│
+├── docs/
+│   ├── image/
+│   ├── api-test-results.md
+│   ├── auth-test-result.md
+│   ├── docker-cheatsheet.md
+│   ├── env-setup.md
+│   ├── image-comparison.md
+│   ├── setup-guide.md
+│   ├── ui-test-results.md
+│   ├── member-[cintya].md
+│   ├── member-[daffa].md
+│   ├── member-[nazwa].md
+│   └── member-[verina].md
+│
+├── docker-compose.yml
 ├── .gitignore
 └── README.md
 ```
@@ -140,89 +193,65 @@ Git digunakan sebagai sistem version control dalam pengembangan proyek. Berfungs
 
 Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Git sangat penting dalam proses pengembangan dan deployment.
 
-## 📖  Quick Start
+## 📖 Quick Start
+
+Pastikan **Docker Desktop** sudah terpasang dan sedang berjalan.
+
+### Menjalankan aplikasi
+
+Gunakan perintah berikut untuk membangun dan menjalankan seluruh service:
 
 ```bash
-# 1. Setup Database
-psql -U postgres -d bye_virus -f backend/database_schema_postgre.sql
+docker compose up -d --build
+```
+Setelah proses selesai, aplikasi dapat diakses melalui:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
 
-# 2. Install Dependencies
-cd backend
-pip install -r requirements.txt
+### Menghentikan aplikasi
 
-# 3. Run Backend
-uvicorn main:app --reload
-
-# 4. Open API Documentation
-# http://localhost:8000/docs
-
-# 5. Run Frontend (di terminal baru)
-cd frontend
-npm install
-npm run dev
+Untuk menghentikan seluruh service, gunakan perintah berikut:
+```bash
+docker compose down
 ```
 
-Panduan langkah-langkah yang lengkap untuk menjalankan proyek ini dapat dilihat di [Setup Guide](docs/setup-guide.md).
+## 🐳 Docker Compose Commands
 
-## 🔧Backend
+###  Lifecycle Commands
 
-Backend pada aplikasi Perisai Anak / Bye Bye Virus akan dibangun menggunakan FastAPI, yaitu framework Python modern yang dirancang untuk membangun REST API .
+| Command | Fungsi |
+|--------|--------|
+| `docker compose up` | Build (jika perlu) dan menjalankan semua services |
+| `docker compose up -d` | Menjalankan semua services di background (detached) |
+| `docker compose up --build` | Force rebuild image lalu menjalankan services |
+| `docker compose down` | Menghentikan dan menghapus container serta network |
+| `docker compose down -v` | Menghapus container + volume (⚠️ data akan hilang) |
+| `docker compose restart` | Restart semua services |
+| `docker compose stop` | Menghentikan service tanpa menghapus container |
 
-**Rencana Logika Backend**
-1. Sistem Autentikasi\
-Bye Bye Virus menggunakan:
-
-   - JWT (JSON Web Token) untuk autentikasi
-   - bcrypt untuk hashing password
-   - Role-Based Access Control untuk membatasi akses berdasarkan role:
-      - parent
-      - health_worker
-  
-2. Data Schema\
-Untuk mendukung kebutuhan aplikasi, data utama yang dikelola meliputi:
-    - **Users:** menyimpan data akun orang tua / tenaga kesehatan
-    - **Children:** menyimpan profil anak
-    - **Vaccine Schedule:** master jadwal imunisasi berdasarkan usia
-    - **Immunization Logs:** catatan status imunisasi anak
-    - **Growth Records:** data pertumbuhan anak
-    - **Reminders:** pengaturan dan riwayat notifikasi
-    - **Health Facilities:** data fasilitas kesehatan
-  
-3. Backend Logic Flow\
-Alur kerja backend dirancang untuk menjaga integritas data:
-
-   - FastAPI menerima request dari React Frontend melalui HTTP
-   - Sistem melakukan validasi data
-   - Backend memproses logika bisnis
-   - Backend menghitung dynamic schedule berdasarkan usia anak
-   - Data disimpan / diambil dari PostgreSQL
-   - Response dikembalikan ke frontend dalam format JSON
-
-
-## 🎨 Frontend
-Frontend aplikasi **Bye Bye Virus** bertugas sebagai antarmuka pengguna (UI/UX) yang berinteraksi langsung dengan backend melalui REST API.
-
-**Manajemen State**\
-Frontend menggunakan:
-- React Context API untuk autentikasi
-- LocalStorage untuk menyimpan JWT
-- Protected Route untuk membatasi akses halaman tertentu
-
-**Alur Integrasi Frontend ke Backend**
-```
-User Action (Form Submit)
-        ↓
-Axios / Fetch API
-        ↓
-FastAPI Backend
-        ↓
-Response JSON
-        ↓
-Update State React
-        ↓
-UI Re-render
-```
 ---
+
+###  Monitoring Commands
+
+| Command | Fungsi |
+|--------|--------|
+| `docker compose ps` | Menampilkan status semua services |
+| `docker compose logs` | Menampilkan log semua services |
+| `docker compose logs -f backend` | Menampilkan log backend secara real-time |
+| `docker compose exec backend bash` | Masuk ke dalam container backend |
+| `docker compose top` | Menampilkan proses yang berjalan di container |
+
+---
+
+###  Build Commands
+
+| Command | Fungsi |
+|--------|--------|
+| `docker compose build` | Build semua image |
+| `docker compose build backend` | Build image backend saja |
+| `docker compose pull` | Mengambil image dari registry |
+
 
 ## 📦 Modul Aplikasi
 
@@ -676,7 +705,48 @@ Halaman ini merupakan bagian dari fitur jadwal imunisasi yang menampilkan data a
 
 <img src="./frontend/image/FaskesMap.png" />
 
-## 📋 Hasil Pengujian
+## ✅ UTS Demo Preparation Checklist
+
+### 🔧 Environment
+- [ ] Docker Desktop running
+- [ ] Tidak ada konflik port (3000, 8000, 5432)
+- [ ] File `.env` sudah sesuai
+
+### 🐳 Docker
+- [ ] `docker compose up -d --build` berhasil
+- [ ] `docker compose ps` menunjukkan semua container aktif
+- [ ] Tidak ada error di `docker compose logs`
+
+### 🌐 Aplikasi
+- [ ] Frontend bisa diakses
+- [ ] Backend API berjalan
+- [ ] Swagger (`/docs`) bisa dibuka
+
+### 🔐 Auth
+- [ ] Register berhasil
+- [ ] Login berhasil
+
+### 📦 CRUD
+- [ ] Create data
+- [ ] Read tampil di UI
+- [ ] Update berhasil
+- [ ] Delete berhasil
+- [ ] Search (jika ada)
+
+### 🔁 Persistence
+Jalankan perintah berikut:
+
+```bash
+docker compose down
+docker compose up -d
+```
+Data tetap ada (tidak hilang)
+
+### 📄 API Demo
+ - [ ] Endpoint terlihat di Swagger
+ - [ ] Bisa testing endpoint dari /docs
+
+## 📋 Dokumentasi
 - [Modul 2: dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
 - [Modul 3: dokumentasi UI testing](docs/ui-test-results.md)
 - [Modul 4: dokumentasi Auth testing](docs/auth-test-results.md)
