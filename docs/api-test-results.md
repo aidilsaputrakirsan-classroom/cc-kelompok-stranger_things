@@ -1,63 +1,13 @@
-- Cloud App API (Halaman Utama)
-Halaman dokumentasi Swagger UI menampilkan daftar endpoint REST API untuk manajemen item dan informasi tim, disertai dengan metode HTTP seperti GET, POST, PUT, dan DELETE.
+## 📋 Tabel Pengujian API Authentication dan Child Management
 
-<img src="../frontend/image/WhatsApp Image 2026-03-05 at 08.03.03.jpeg" />
-
-
-- Proses pembuatan data item baru (contoh : mouse wireless) ke dalam database melalui metode POST, yang menghasilkan respon status 201 created beserta detail ID otomatis.
-
-<img src="../frontend/image/WhatsApp Image 2026-03-05 at 08.05.36.jpeg" />
-
-
-- Menampilkan daftar seluruh item yang tersimpan menggunakan metode GET, lengkap dengan fitur pencarian (search) dan batasan jumlah data (limit) yang ditampilkan dalam format JSON.
-
-<img src="../frontend/image/get i tems.jpeg" />
-
-
-- Proses pengambilan detail informasi satu item secara spesifik berdasarkan parameter item_id. Respon menampilkan atribut lengkap seperti harga, kuantitas, serta waktu pembuatan data.
-
-<img src="../frontend/image/get items id.jpeg" />
-
-
-- Aksi memperbarui data item yang sudah ada menggunakan metode PUT. Gambar menunjukkan perubahan atribut item pada ID tertentu, yang ditandai dengan perubahan pada kolom updated_at.
-
-<img src="../frontend/image/update items.jpeg" />
-
-
-- Proses menghapus data item dari sistem berdasarkan item_id. Operasi ini berhasil ditandai dengan kode respon 204 No Content, yang berarti data telah terhapus tanpa ada konten yang dikembalikan.
-
-<img src="../frontend/image/delete items.jpeg" />
-
-
-- Endpoint khusus untuk menampilkan ringkasan statistik inventaris, seperti total jumlah item, total nilai aset, serta informasi barang dengan harga termahal dan termurah.
-
-<img src="../frontend/image/items stats.jpeg" />
-
-
-- Menampilkan informasi anggota tim "Steanger, things" yang bertanggung jawab atas pengembangan proyek, mencakup nama, NIM, dan peran masing-masing anggota (Backend, Frontend, DevOps, QA)
-
-<img src="../frontend/image/tim info.jpeg" />
-
-# API Test Results — Modul 3
-
-## Test Status: ✅ PASSED
-
-### 1. Health Check
-- Endpoint: `GET /health`
-- Status: ✅ PASSED
-- Response: `{"status": "healthy", "version": "0.2.0"}`
-
-### 2. Pagination Test
-- Endpoint: `GET /items?skip=0&limit=2`
-- Status: ✅ PASSED
-- Result:
-  - Total items in DB: 3
-  - Items returned: 2
-  - Data: Mouse Wireless, Keyboard Mechanical
-
-### 3. Items Stats Endpoint
-- Endpoint: `GET /items/stats`
-- Status: ✅ PASSED (test this now)
-- Result:
-   {"total_items":3,"total_value":14600100.0,"most_expensive":{"name":"Keyboard Mechanical","price":1200000.0},"cheapest":{"name":"string","price":1.0}}
-
+| Kode Testing | Skenario Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Hasil Aktual | Status | Bukti |
+|---|---|---|---|---|---|---|
+| API-01 | Health check endpoint berjalan dengan baik | Jalankan endpoint `GET /health` melalui Swagger lalu klik **Execute** | Sistem menampilkan status layanan API dalam kondisi aktif/healthy dengan kode response `200` | Endpoint `GET /health` berhasil dijalankan dan mengembalikan response `200 OK` dengan isi status `"healthy"` dan versi API `"0.4.0"` | ✅ Berhasil | <img src="../docs/image/api test/API-01.png" /> |
+| API-02 | Registrasi user baru berhasil | Jalankan endpoint `POST /auth/register`, isi request body dengan data user valid, lalu klik **Execute** | Sistem berhasil membuat akun baru dan mengembalikan data user dengan kode response `201` | Endpoint registrasi berhasil dijalankan dan mengembalikan response `201 Created` berisi data user baru seperti `id`, `email`, `name`, `is_active`, dan `created_at` | ✅ Berhasil | <img src="../docs/image/api test/API-02 (1).png" /> <img src="../docs/image/api test/API-02 (2).png" />|
+| API-03 | Login user berhasil | Jalankan endpoint `POST /auth/login`, isi email dan password yang valid, lalu klik **Execute** | Sistem berhasil melakukan autentikasi dan mengembalikan access token beserta data user dengan kode response `200` | Endpoint login berhasil dijalankan dan mengembalikan response `200 OK` yang berisi `access_token`, `token_type`, dan informasi user yang berhasil login | ✅ Berhasil |<img src="../docs/image/api test/API-03 (1).png" /> <img src="../docs/image/api test/API-03 (2).png" /> |
+| API-04 | Otorisasi Swagger berhasil menggunakan token login | Klik tombol **Authorize** pada Swagger, masukkan token atau kredensial yang sesuai, lalu lakukan otorisasi | Swagger berhasil menandai user sebagai **Authorized** sehingga endpoint yang membutuhkan autentikasi dapat diakses | Proses otorisasi berhasil, ditandai dengan status **Authorized** pada Swagger UI untuk skema `OAuth2PasswordBearer` | ✅ Berhasil | <img src="../docs/image/api test/API-04.png" /> |
+| API-05 | Menambahkan data anak berhasil | Jalankan endpoint `POST /children`, isi request body dengan data anak yang valid, lalu klik **Execute** | Sistem berhasil menambahkan data anak dan mengembalikan data anak yang tersimpan dengan kode response `201` | Endpoint `POST /children` berhasil dijalankan dan mengembalikan response `201 Created` berisi data anak baru seperti `id`, `parent_id`, `name`, `birth_date`, `gender`, `blood_type`, `height`, `weight`, dan `notes` | ✅ Berhasil | <img src="../docs/image/api test/API-05 (1).png" /> <img src="../docs/image/api test/API-05 (2).png" /> |
+| API-06 | Mengambil seluruh data anak berhasil | Jalankan endpoint `GET /children` lalu klik **Execute** | Sistem menampilkan daftar seluruh data anak milik parent yang sedang login dengan kode response `200` | Endpoint `GET /children` berhasil dijalankan dan mengembalikan response `200 OK` berupa list data anak yang tersimpan | ✅ Berhasil | <img src="../docs/image/api test/API-06.png" /> |
+| API-07 | Mengambil detail anak berdasarkan ID berhasil | Jalankan endpoint `GET /children/{child_id}`, isi parameter `child_id`, lalu klik **Execute** | Sistem menampilkan detail data anak sesuai ID yang diminta dengan kode response `200` | Endpoint `GET /children/{child_id}` berhasil dijalankan dan mengembalikan response `200 OK` berisi detail lengkap data anak sesuai `child_id` yang dimasukkan | ✅ Berhasil | <img src="../docs/image/api test/API-07 (1).png" /> <img src="../docs/image/api test/API-07 (2).png" /> |
+| API-08 | Memperbarui data anak berhasil | Jalankan endpoint `PUT /children/{child_id}`, isi parameter `child_id` dan request body berisi field yang ingin diubah, lalu klik **Execute** | Sistem berhasil memperbarui data anak sesuai input dan mengembalikan data terbaru dengan kode response `200` | Endpoint `PUT /children/{child_id}` berhasil dijalankan dan mengembalikan response `200 OK` dengan data anak yang telah diperbarui, misalnya perubahan nama menjadi `"mark"` | ✅ Berhasil | <img src="../docs/image/api test/API-08 (1).png" /> <img src="../docs/image/api test/API-08 (2).png" /> |
+| API-09 | Menghapus data anak berhasil | Jalankan endpoint `DELETE /children/{child_id}`, isi parameter `child_id`, lalu klik **Execute** | Sistem berhasil menghapus data anak sesuai ID yang dipilih dengan kode response `204` | Endpoint `DELETE /children/{child_id}` berhasil dijalankan dan mengembalikan response `204 No Content`, yang menandakan data anak berhasil dihapus | ✅ Berhasil | <img src="../docs/image/api test/API-09 (1).png" /> <img src="../docs/image/api test/API-09 (2).png" /> |
