@@ -172,15 +172,17 @@ def create_child(db: Session, child_data: ChildCreate, parent_id: int):
 
 
 def get_child(db: Session, child_id: int):
-    """Ambil anak berdasarkan ID."""
+    """Ambil anak berdasarkan ID dengan immunizations."""
     from models import Child
-    return db.query(Child).filter(Child.id == child_id).first()
+    from sqlalchemy.orm import joinedload
+    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.id == child_id).first()
 
 
 def get_children_by_parent(db: Session, parent_id: int):
-    """Ambil semua anak untuk seorang parent."""
+    """Ambil semua anak untuk seorang parent dengan immunizations."""
     from models import Child
-    return db.query(Child).filter(Child.parent_id == parent_id).all()
+    from sqlalchemy.orm import joinedload
+    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.parent_id == parent_id).all()
 
 
 def update_child(db: Session, child_id: int, child_data: dict):

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, computed_field
 from typing import Optional
 from datetime import datetime, date
 import re
@@ -213,12 +213,33 @@ class ChildResponse(BaseModel):
     birth_date: date
     gender: str
     blood_type: Optional[str] = None
+    height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
+    weight: Optional[float] = Field(None, title="Berat Badan (kg)")
+    notes: Optional[str] = None
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    immunizations: Optional[list] = Field(
+        default_factory=list, 
+        alias="immunization_logs",
+        title="Riwayat Imunisasi"
+    )
 
     class Config:
         from_attributes = True
+        populate_by_name = True
+    
+    @computed_field
+    @property
+    def heightNow(self) -> Optional[float]:
+        """Alias untuk height (untuk frontend)"""
+        return self.height
+    
+    @computed_field
+    @property
+    def weightNow(self) -> Optional[float]:
+        """Alias untuk weight (untuk frontend)"""
+        return self.weight
 
 
 # ============================================
@@ -282,6 +303,7 @@ class ImmunizationLogResponse(BaseModel):
     scheduled_date: date
     completion_date: Optional[date] = None
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
