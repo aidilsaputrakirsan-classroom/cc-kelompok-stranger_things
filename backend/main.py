@@ -262,10 +262,10 @@ def delete_child(
 
 # ==================== IMMUNIZATION ENDPOINTS ====================
 
-@app.post("/children/{child_id}/immunization", status_code=201)
+@app.post("/children/{child_id}/immunization", status_code=201, response_model=ImmunizationLogResponse)
 def create_immunization_log(
     child_id: int,
-    log_data: dict,
+    log_data: ImmunizationLogCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -276,8 +276,15 @@ def create_immunization_log(
     if child.parent_id != current_user.id:
         raise HTTPException(status_code=403, detail="Tidak berhak mengakses data anak ini")
     
-    log_data["child_id"] = child_id
-    return crud.create_immunization_log(db=db, log_data=log_data)
+    try:
+        log_dict = log_data.model_dump(exclude_unset=True)
+        log_dict["child_id"] = child_id
+        result = crud.create_immunization_log(db=db, log_data=log_dict)
+        print(f"✅ Immunization log created: child_id={child_id}, vaccine_id={log_data.vaccine_id}")
+        return result
+    except Exception as e:
+        print(f"❌ Error creating immunization log: {e}")
+        raise HTTPException(status_code=500, detail=f"Gagal membuat catatan imunisasi: {str(e)}")
 
 
 @app.get("/children/{child_id}/immunization")

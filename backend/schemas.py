@@ -259,18 +259,18 @@ class VaccineScheduleResponse(BaseModel):
 
 class ImmunizationLogCreate(BaseModel):
     """Schema untuk membuat catatan imunisasi."""
-    child_id: int
     vaccine_id: int
-    scheduled_date: str  # Format: YYYY-MM-DD
+    scheduled_date: date  # Format: YYYY-MM-DD
+    status: Optional[str] = Field(None, description="pending, completed, delayed, skipped")
     facility_id: Optional[int] = None
-    completion_date: Optional[str] = None
+    completion_date: Optional[date] = None
     notes: Optional[str] = None
 
 
 class ImmunizationLogUpdate(BaseModel):
     """Schema untuk update status imunisasi."""
     status: Optional[str] = None  # 'pending', 'completed', 'delayed', 'skipped'
-    completion_date: Optional[str] = None
+    completion_date: Optional[date] = None
 
 
 class ImmunizationLogResponse(BaseModel):
@@ -279,8 +279,8 @@ class ImmunizationLogResponse(BaseModel):
     child_id: int
     vaccine_id: int
     status: str
-    scheduled_date: str
-    completion_date: Optional[str] = None
+    scheduled_date: date
+    completion_date: Optional[date] = None
     created_at: datetime
 
     class Config:

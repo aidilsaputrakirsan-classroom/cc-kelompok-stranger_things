@@ -216,11 +216,15 @@ def delete_child(db: Session, child_id: int) -> bool:
 def create_immunization_log(db: Session, log_data: dict):
     """Buat catatan vaksinasi."""
     from models import ImmunizationLog
+    from datetime import datetime
+    
     db_log = ImmunizationLog(
         child_id=log_data.get("child_id"),
         vaccine_id=log_data.get("vaccine_id"),
+        schedule_id=log_data.get("schedule_id"),
         facility_id=log_data.get("facility_id"),
-        immunization_date=log_data.get("immunization_date"),
+        scheduled_date=log_data.get("scheduled_date"),
+        completion_date=log_data.get("completion_date"),
         status=log_data.get("status", "pending"),
         notes=log_data.get("notes")
     )
