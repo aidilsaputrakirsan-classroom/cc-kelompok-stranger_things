@@ -1,54 +1,22 @@
-# 📋 UI TEST RESULT
+# 📋 Tabel Pengujian Fitur Aplikasi ByeByeVirus
 
-## 1. Cek Status API ✅
-<img src="../frontend/image/ui-test/1-status api.png" />
-Hasil pengujian menunjukkan bahwa frontend berhasil terhubung dengan backend. Hal ini ditandai dengan munculnya status API Connected pada tampilan aplikasi.
-
-
-## 2. Items dari Modul 2 Muncul di daftar ✅
-<img src="../frontend/image/ui-test/2- daftar item.png" />
-Hasil pengujian menunjukkan bahwa item yang telah dibuat pada modul sebelumnya berhasil ditampilkan di daftar item.
-
-
-## 3. Menambah Item Baru melalui Form ✅
-<img src="../frontend/image/ui-test/3-tambah item.png" />
-Hasil pengujian menunjukkan bahwa form penambahan item dapat digunakan dengan baik.
-
-
-## 4. Items Baru Muncul di Daftar ✅
-<img src="../frontend/image/ui-test/4-item baru muncul di daftar.png" />
-Hasil pengujian menunjukkan bahwa item yang baru ditambahkan langsung muncul pada daftar item. Hal ini membuktikan bahwa data berhasil disimpan ke database dan frontend mampu memperbarui tampilan secara otomatis.
-
-
-## 5. Klik Edit pada Item ✅
-<img src="../frontend/image/ui-test/5-klik edit.png" />
-Hasil pengujian menunjukkan bahwa tombol Edit berfungsi dengan baik. Saat tombol diklik, sistem berhasil memilih item yang diinginkan untuk diedit dan menyiapkan data item tersebut ke dalam form.
-
-## 6. Form Terisi Data Lama, Mengubah Harga Item, dan Klik Update ✅
-<img src="../frontend/image/ui-test/6-form terisi data lama.png" />
-Hasil pengujian menunjukkan bahwa form edit berhasil menampilkan data lama dari item yang dipilih, sehingga pengguna dapat melakukan perubahan pada data yang sudah ada.
-
-#
-<img src="../frontend/image/ui-test/6-update harga.png" />
-Hasil pengujian menunjukkan bahwa fitur edit berjalan dengan baik, yaitu pengguna dapat mengubah data pada bagian harga item kemudian menyimpan perubahan tersebut dengan menekan tombol Update Item.
-
-#
-<img src="../frontend/image/ui-test/6-harga terupdate.png" />
-Hasil pengujian menunjukkan bahwa fungsi update item berjalan dengan baik, yang ditandai dengan berubahnya nominal harga item pada daftar sesuai dengan data terbaru yang telah disimpan.
-
-
-## 7. Mencari Item melalui SearchBar ✅
-<img src="../frontend/image/ui-test/7-search item.png" />
-Hasil pengujian menunjukkan bahwa fitur pencarian bekerja sesuai fungsinya. Item yang dicari dapat ditemukan berdasarkan kata kunci yang dimasukkan, sehingga pengguna dapat lebih mudah menemukan data tertentu pada daftar item.
-
-## 8. Menghapus Item dan Terdapat Confirm Dialog ✅
-<img src="../frontend/image/ui-test/8-hapus item.png" />
-Hasil pengujian menunjukkan bahwa ketika tombol Hapus ditekan, sistem menampilkan dialog konfirmasi terlebih dahulu. Hal ini menunjukkan bahwa mekanisme pengamanan sebelum penghapusan data sudah berjalan dengan baik.
-
-## 9. Item Hilang dari Daftar ✅
-<img src="../frontend/image/ui-test/9-item terhapus.png" />
-Hasil pengujian menunjukkan bahwa setelah penghapusan dikonfirmasi, item yang dipilih berhasil terhapus dan tidak lagi muncul pada daftar. Ini menandakan bahwa proses delete pada sistem berjalan dengan benar.
-
-## 10. Menghapus Semua Item dan Muncul Empty State ✅
-<img src="../frontend/image/ui-test/10-empty state.png" />
-Hasil pengujian menunjukkan bahwa setelah seluruh item dihapus, aplikasi menampilkan kondisi empty state. Hal ini membuktikan bahwa sistem mampu menyesuaikan tampilan ketika tidak ada data yang tersedia, sehingga antarmuka tetap informatif bagi pengguna.
+| Kode Testing | Skenario Pengujian | Langkah Pengujian | Hasil yang Diharapkan | Hasil Aktual | Status | Bukti |
+|---|---|---|---|---|---|---|
+| TC-01 | Halaman Jadwal Imunisasi ditampilkan saat belum memilih anak | Buka halaman **Jadwal Imunisasi** tanpa memilih data anak pada daftar | Sistem menampilkan daftar anak di sisi kiri, area profil kosong, serta pesan untuk memilih anak terlebih dahulu | Halaman berhasil menampilkan daftar anak dan pesan **“Pilih anak untuk melihat profil”** pada panel utama | ✅ Berhasil | <img src="../docs/image/ui test/TC-01.png" /> |
+| TC-02 | Detail profil anak ditampilkan setelah anak dipilih | Klik salah satu data anak pada daftar anak | Sistem menampilkan profil lengkap anak yang dipilih, meliputi nama, umur, jenis kelamin, tanggal lahir, tinggi terkini, dan berat terkini | Profil anak **mark** berhasil ditampilkan lengkap pada panel utama | ✅ Berhasil | <img src="../docs/image/ui test/TC-02.png" /> |
+| TC-03 | Halaman tambah data anak ditampilkan | Klik tombol **Tambah data anak** pada panel daftar anak | Sistem mengarahkan pengguna ke halaman **Tambah Data Anak** dan menampilkan form input data anak | Halaman **Tambah Data Anak** berhasil ditampilkan beserta field data anak dan data imunisasi | ✅ Berhasil | <img src="../docs/image/ui test/TC-03.png" /> |
+| TC-04 | Menambahkan data anak baru | Isi form data anak, meliputi nama, tanggal lahir, jenis kelamin, berat badan, dan tinggi badan, lalu klik **Simpan** | Sistem menyimpan data anak baru dan menampilkannya pada daftar anak serta profil anak | Data anak baru **jisung** berhasil ditambahkan dan ditampilkan pada daftar anak serta profil data anak | ✅ Berhasil | <img src="../docs/image/ui test/TC-04 (1).png" /> |<img src="../docs/image/ui test/TC-04 (2).png" />
+| TC-05 | Form data imunisasi pada halaman tambah anak ditampilkan | Buka halaman **Tambah Data Anak** dan lihat bagian **Data Imunisasi** | Sistem menampilkan form imunisasi yang berisi jenis vaksin, tanggal vaksin, dan tombol tambah imunisasi | Form data imunisasi berhasil ditampilkan. Namun, penyimpanan data imunisasi belum dapat diuji penuh karena masih dalam tahap pengembangan | ⚠️ Dalam pengembangan | <img src="../docs/image/ui test/TC-05.png" /> |
+| TC-06 | Halaman edit data anak ditampilkan | Klik ikon **edit** pada salah satu data anak | Sistem mengarahkan pengguna ke halaman **Edit Data Anak** dengan data lama yang sudah terisi pada form | Halaman **Edit Data Anak** berhasil ditampilkan dan field berisi data anak sebelumnya | ✅ Berhasil | <img src="../docs/image/ui test/TC-06.png" /> |
+| TC-07 | Memperbarui data anak | Ubah data anak pada halaman edit lalu klik tombol **Perbarui** | Sistem menyimpan perubahan data dan menampilkan notifikasi berhasil | Data anak berhasil diperbarui dan sistem menampilkan notifikasi **“Data berhasil diperbarui!”** | ✅ Berhasil | <img src="../docs/image/ui test/TC-07.png" /> |
+| TC-08 | Menampilkan hasil data anak setelah diperbarui | Setelah proses edit berhasil, kembali ke halaman profil anak | Sistem menampilkan data terbaru sesuai hasil perubahan | Profil anak berhasil menampilkan data terbaru, seperti nama **karina karina**, jenis kelamin, tanggal lahir, tinggi, dan berat yang telah diperbarui | ✅ Berhasil | <img src="../docs/image/ui test/TC-08 (1).png" /> <img src="../docs/image/ui test/TC-08 (2).png" /> |
+| TC-09 | Menghapus data anak | Klik ikon **hapus** pada data anak, lalu konfirmasi pada dialog penghapusan dengan memilih tombol **Hapus** | Sistem menghapus data anak dari daftar, menampilkan notifikasi berhasil, dan profil anak yang dihapus tidak lagi tersedia | Sistem menampilkan dialog konfirmasi hapus, data anak **karina karina** berhasil dihapus, notifikasi berhasil muncul, dan daftar anak diperbarui | ✅ Berhasil | <img src="../docs/image/ui test/TC-09 (1).png" /> <img src="../docs/image/ui test/TC-09 (2).png" /> <img src="../docs/image/ui test/TC-09 (3).png" /> |
+| TC-10 | Navigasi ke halaman Home berhasil | Klik menu **Home** pada navbar | Sistem mengarahkan pengguna ke halaman Home dan menampilkan ringkasan imunisasi | Halaman Home berhasil ditampilkan dengan informasi sambutan, pengingat imunisasi, ringkasan imunisasi, dan jadwal imunisasi terdekat | ✅ Berhasil | <img src="../docs/image/ui test/TC-10.png" /> |
+| TC-11 | Halaman Faskes Map ditampilkan | Klik menu **Faskes Map** pada navbar | Sistem menampilkan halaman peta fasilitas kesehatan beserta daftar faskes terdekat | Halaman Faskes Map berhasil ditampilkan dengan kolom pencarian, lokasi pengguna, filter kategori, daftar faskes, dan peta | ✅ Berhasil | <img src="../docs/image/ui test/TC-11.png" /> |
+| TC-12 | Daftar faskes terdekat ditampilkan pada halaman Faskes Map | Buka halaman **Faskes Map** | Sistem menampilkan daftar fasilitas kesehatan terdekat lengkap dengan nama, jenis, alamat, nomor telepon, dan tombol aksi | Daftar faskes terdekat berhasil ditampilkan pada panel kiri dan marker lokasi tampil pada peta | ✅ Berhasil | <img src="../docs/image/ui test/TC-12.png" /> |
+| TC-13 | Pencarian faskes berdasarkan kata kunci | Masukkan kata kunci **“Sepinggan”** pada kolom pencarian lalu klik tombol **Cari** | Sistem menampilkan hasil faskes yang sesuai dengan kata kunci pencarian | Sistem berhasil menampilkan hasil pencarian dengan kata kunci **Sepinggan**, dan daftar faskes berkurang menjadi 2 hasil yang relevan | ✅ Berhasil | <img src="../docs/image/ui test/TC-13.png" /> |
+| TC-14 | Hasil pencarian ditampilkan pada daftar dan peta | Lakukan pencarian faskes lalu perhatikan daftar hasil dan marker pada peta | Sistem menampilkan hasil pencarian pada daftar faskes dan lokasi terkait pada peta | Hasil pencarian berhasil ditampilkan pada daftar sebelah kiri dan marker lokasi faskes terkait terlihat pada peta | ✅ Berhasil | <img src="../docs/image/ui test/TC-14.png" /> |
+| TC-15 | Filter kategori semua faskes | Klik filter **Semua** pada halaman Faskes Map | Sistem menampilkan seluruh kategori faskes yang tersedia | Sistem berhasil menampilkan semua kategori faskes dan daftar hasil sesuai pencarian aktif | ✅ Berhasil | <img src="../docs/image/ui test/TC-15.png" /> |
+| TC-16 | Filter kategori puskesmas | Klik filter **Puskesmas** pada halaman Faskes Map | Sistem hanya menampilkan data faskes dengan kategori puskesmas | Sistem berhasil memfilter hasil dan hanya menampilkan 1 data kategori **Puskesmas** | ✅ Berhasil | <img src="../docs/image/ui test/TC-16.png" /> |
+| TC-17 | Filter kategori rumah sakit | Klik filter **RS** pada halaman Faskes Map | Sistem hanya menampilkan data faskes dengan kategori rumah sakit | Sistem berhasil menerapkan filter kategori **RS** dan tidak menampilkan hasil karena tidak ada data yang sesuai, dengan keterangan **0 hasil** | ✅ Berhasil | <img src="../docs/image/ui test/TC-17.png" /> |
+| TC-18 | Filter kategori klinik | Klik filter **Klinik** pada halaman Faskes Map | Sistem hanya menampilkan data faskes dengan kategori klinik | Sistem berhasil memfilter hasil dan hanya menampilkan 1 data kategori **Klinik** | ✅ Berhasil | <img src="../docs/image/ui test/TC-18.png" /> |
