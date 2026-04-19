@@ -1,4 +1,4 @@
-# 🎓 UTS Demo Script 
+#  UTS Demo Script 
 
 ## 1. Setup (0–1 menit) — Lead DevOps
 - Buka terminal di root project

@@ -639,10 +639,12 @@ Halaman ini merupakan bagian dari fitur jadwal imunisasi yang menampilkan data a
 ### Data Anak
 
 <img src="./frontend/image/DataAnak.png" />
+Halaman ini menampilkan fitur Tambah Data Anak pada aplikasi ByeByeVirus yang digunakan untuk memasukkan data anak beserta informasi imunisasinya. Pada bagian atas terdapat navigation bar untuk memudahkan pengguna berpindah halaman, serta tombol Kembali untuk kembali ke halaman sebelumnya. Form utama terdiri dari input nama lengkap, tanggal lahir, dan jenis kelamin, sehingga data identitas anak dapat dicatat secara lengkap. Di sisi kanan terdapat bagian Data Imunisasi yang memuat pilihan jenis vaksin dan tanggal vaksin, serta opsi untuk menambah data imunisasi lain jika diperlukan.
 
 ### Faskes Map
 
 <img src="./frontend/image/FaskesMap.png" />
+Halaman ini menampilkan fitur Faskes Map pada aplikasi ByeByeVirus yang digunakan untuk membantu pengguna menemukan fasilitas kesehatan terdekat berdasarkan lokasi saat ini. Di sisi kiri terdapat informasi lokasi pengguna dan daftar puskesmas terdekat yang dilengkapi alamat, jarak, serta tombol navigasi dan detail. Di sisi kanan terdapat peta digital yang menampilkan persebaran fasilitas kesehatan sehingga pengguna dapat melihat lokasi layanan imunisasi secara lebih jelas. Secara keseluruhan, halaman ini dirancang untuk memudahkan pengguna dalam mencari fasilitas kesehatan terdekat dengan cepat, praktis, dan informatif.
 
 ---
 
@@ -689,7 +691,8 @@ Data tetap ada (tidak hilang)
   
 ---
 ## 📋 Dokumentasi
-- [Modul 2: dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
-- [Modul 3: dokumentasi UI testing](docs/ui-test-results.md)
-- [Modul 4: dokumentasi Auth testing](docs/auth-test-results.md)
-- [Modul 5: dokumentasi perbandingan ukuran image](docs/image-comparison.md)
+- [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
+- [Dokumentasi UI testing](docs/ui-test-results.md)
+- [Dokumentasi Auth testing](docs/auth-test-results.md)
+- [Docker Cheatsheet](docs/docker-cheatsheet.md)
+- [Setup Guide](docs/setup-guide.md)
