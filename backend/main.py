@@ -53,17 +53,26 @@ app = FastAPI(
     version="0.4.0",
 )
 
-# ==================== CORS (FIXED) ====================
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+# ==================== CORS (IMPROVED) ====================
+# Baca dari environment atau gunakan default yang comprehensive untuk semua localhost variants
+allowed_origins_str = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000,http://localhost:5173,http://127.0.0.1:5173"
+)
+origins_list = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
+
+print(f"🔐 CORS Allowed Origins: {origins_list}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+print("✅ CORS middleware configured successfully")
 
 # ==================== HEALTH CHECK ====================
 

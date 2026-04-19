@@ -224,7 +224,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
         // Tampilkan pesan sesuai hasil
         if (failedVaccines.length > 0) {
           showNotif(
-            `Data anak berhasil disimpan! ${failedVaccines.length} jadwal imunisasi gagal (dapat diatur ulang)`,
+            `Data anak berhasil disimpan! ${failedVaccines.length} `,
             "info",
           );
         } else {
