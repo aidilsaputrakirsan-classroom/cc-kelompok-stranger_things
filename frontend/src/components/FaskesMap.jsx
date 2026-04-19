@@ -1,4 +1,5 @@
 import { useState } from "react"
+import SearchBar from "../components/SearchBar"
 
 const faskesData = [
   {
@@ -84,7 +85,7 @@ export default function FaskesMap({ setActivePage, onLogout }) {
 
   return (
     <div style={s.page}>
-      {/* Navbar — sama persis dengan JadwalImunisasi & DataAnak */}
+      {/* Navbar */}
       <nav style={s.nav}>
         <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
         <a style={s.navLink} onClick={() => setActivePage?.("home")}>Home</a>
@@ -101,13 +102,12 @@ export default function FaskesMap({ setActivePage, onLogout }) {
       <div style={s.layout}>
         {/* Sidebar */}
         <div style={s.sidebar}>
-          {/* Search */}
+
+          {/* SearchBar — pakai komponen bersama, mode minimal */}
           <div style={s.searchBox}>
-            <input
-              style={s.searchInp}
-              placeholder="Cari puskesmas, klinik, RS..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <SearchBar
+              onSearch={(q) => setSearch(q)}
+              minimal
             />
           </div>
 
@@ -236,8 +236,6 @@ const s = {
     color: "#1a1a2e",
     fontSize: "14px",
   },
-
-  // Navbar — sama dengan JadwalImunisasi & DataAnak
   nav: {
     background: "white",
     borderBottom: "0.5px solid #f0c0d0",
@@ -256,16 +254,12 @@ const s = {
     background: "#fce4ec", display: "flex", alignItems: "center",
     justifyContent: "center", cursor: "pointer", marginLeft: "auto",
   },
-
-  // Map Layout
   layout: {
     display: "grid",
     gridTemplateColumns: "340px 1fr",
     height: "calc(100vh - 56px)",
     overflow: "hidden",
   },
-
-  // Sidebar
   sidebar: {
     background: "#fff",
     borderRight: "1px solid #eee",
@@ -276,16 +270,6 @@ const s = {
   searchBox: {
     padding: "14px 16px",
     borderBottom: "1px solid #f0f0f0",
-  },
-  searchInp: {
-    width: "100%",
-    padding: "8px 12px",
-    borderRadius: "10px",
-    border: "1px solid #e0e0e0",
-    fontSize: "13px",
-    background: "#f9f9f9",
-    outline: "none",
-    boxSizing: "border-box",
   },
   locBanner: {
     margin: "12px 16px 0",
@@ -320,8 +304,6 @@ const s = {
   listTitle: { fontSize: "14px", fontWeight: "700", color: "#555" },
   listCount: { marginLeft: "auto", fontSize: "12px", color: "#aaa" },
   faskesList: { overflowY: "auto", flex: 1, padding: "0 16px 16px" },
-
-  // Faskes Card
   fcard: {
     background: "#fce4ec", borderRadius: "12px",
     padding: "12px", marginBottom: "10px",
@@ -356,8 +338,6 @@ const s = {
     fontSize: "11px", background: "#fff", color: "#e91e8c",
     border: "1px solid #e91e8c", borderRadius: "6px", padding: "5px 10px", cursor: "pointer",
   },
-
-  // Map
   mapArea: { position: "relative", background: "#e8ede8", overflow: "hidden" },
   mapOverlay: {
     position: "absolute", top: "12px", right: "12px",

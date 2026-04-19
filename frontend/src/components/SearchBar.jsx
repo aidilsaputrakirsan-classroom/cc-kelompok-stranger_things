@@ -9,7 +9,7 @@ const SORT_OPTIONS = [
   { value: "name_desc",  label: "Nama Z–A",        icon: "Z" },
 ]
 
-function SearchBar({ onSearch, onSort }) {
+function SearchBar({ onSearch, onSort, minimal = false }) {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("newest")
   const [focused, setFocused] = useState(false)
@@ -28,15 +28,9 @@ function SearchBar({ onSearch, onSort }) {
     onSearch("")
   }
 
-  const handleSortChange = (e) => {
-    const value = e.target.value
-    setSort(value)
-    onSort(value)
-  }
-
   const handleSortSelect = (value) => {
     setSort(value)
-    onSort(value)
+    onSort?.(value)
     setDropdownOpen(false)
   }
 
@@ -137,24 +131,25 @@ function SearchBar({ onSearch, onSort }) {
         .sb-check { margin-left: auto; font-size: 12px; color: #1F4E79; }
       `}</style>
 
-      <div style={styles.container}>
+      <div style={minimal ? styles.containerMinimal : styles.container}>
 
         {/* SEARCH */}
         <form onSubmit={handleSubmit} style={styles.searchRow}>
           <input
             type="text"
-            placeholder="Cari item..."
+            placeholder={minimal ? "Cari puskesmas, klinik, RS..." : "Cari item..."}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             style={{
               ...styles.input,
+              ...(minimal ? styles.inputMinimal : {}),
               ...(focused ? styles.inputFocused : {}),
             }}
           />
 
-          <button type="submit" style={styles.primaryBtn}>
+          <button type="submit" style={minimal ? styles.primaryBtnMinimal : styles.primaryBtn}>
             Cari
           </button>
 
@@ -165,42 +160,43 @@ function SearchBar({ onSearch, onSort }) {
           )}
         </form>
 
-        {/* FILTER */}
-        <div style={styles.filterRow}>
-          <div style={styles.filterGroup}>
-            <span style={styles.label}>Urutkan</span>
+        {/* FILTER/SORT — hanya tampil kalau bukan minimal */}
+        {!minimal && (
+          <div style={styles.filterRow}>
+            <div style={styles.filterGroup}>
+              <span style={styles.label}>Urutkan</span>
 
-            {/* Custom dropdown */}
-            <div style={{ position: "relative" }} ref={dropdownRef}>
-              <button
-                type="button"
-                className={`sb-sort-btn${dropdownOpen ? " open" : ""}`}
-                onClick={() => setDropdownOpen((v) => !v)}
-              >
-                <span className="sb-badge">{activeOption.icon}</span>
-                {activeOption.label}
-                <span className="sb-caret">▼</span>
-              </button>
+              <div style={{ position: "relative" }} ref={dropdownRef}>
+                <button
+                  type="button"
+                  className={`sb-sort-btn${dropdownOpen ? " open" : ""}`}
+                  onClick={() => setDropdownOpen((v) => !v)}
+                >
+                  <span className="sb-badge">{activeOption.icon}</span>
+                  {activeOption.label}
+                  <span className="sb-caret">▼</span>
+                </button>
 
-              {dropdownOpen && (
-                <div className="sb-dropdown">
-                  {SORT_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`sb-option${sort === opt.value ? " active" : ""}`}
-                      onClick={() => handleSortSelect(opt.value)}
-                    >
-                      <span className="sb-opt-icon">{opt.icon}</span>
-                      {opt.label}
-                      {sort === opt.value && <span className="sb-check">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
+                {dropdownOpen && (
+                  <div className="sb-dropdown">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`sb-option${sort === opt.value ? " active" : ""}`}
+                        onClick={() => handleSortSelect(opt.value)}
+                      >
+                        <span className="sb-opt-icon">{opt.icon}</span>
+                        {opt.label}
+                        {sort === opt.value && <span className="sb-check">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
       </div>
     </>
@@ -211,10 +207,13 @@ const styles = {
   container: {
     marginBottom: "28px",
   },
+  containerMinimal: {
+    marginBottom: "0",
+  },
   searchRow: {
     display: "flex",
-    gap: "10px",
-    marginBottom: "12px",
+    gap: "8px",
+    marginBottom: "0",
   },
   input: {
     flex: 1,
@@ -227,9 +226,16 @@ const styles = {
     transition: "border-color 0.18s, box-shadow 0.18s",
     color: "#111827",
   },
+  inputMinimal: {
+    padding: "8px 12px",
+    borderRadius: "10px",
+    fontSize: "13px",
+    background: "#f9f9f9",
+    border: "1px solid #e0e0e0",
+  },
   inputFocused: {
-    borderColor: "#1F4E79",
-    boxShadow: "0 0 0 3px rgba(31,78,121,0.1)",
+    borderColor: "#e91e8c",
+    boxShadow: "0 0 0 3px rgba(233,30,140,0.1)",
   },
   primaryBtn: {
     padding: "12px 18px",
@@ -239,24 +245,33 @@ const styles = {
     color: "white",
     fontWeight: 600,
     cursor: "pointer",
-    transition: "all 0.2s ease",
-    boxShadow: "0 4px 14px rgba(31,78,121,0.3)",
+    fontSize: "14px",
+  },
+  primaryBtnMinimal: {
+    padding: "8px 14px",
+    borderRadius: "10px",
+    border: "none",
+    background: "#e91e8c",
+    color: "white",
+    fontWeight: 600,
+    cursor: "pointer",
+    fontSize: "13px",
   },
   secondaryBtn: {
-    padding: "12px 16px",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
-    background: "#f9fafb",
+    padding: "8px 12px",
+    borderRadius: "10px",
+    border: "1px solid #e0e0e0",
+    background: "#f9f9f9",
     cursor: "pointer",
-    transition: "all 0.2s ease",
     color: "#6b7280",
     fontWeight: 600,
-    fontSize: "14px",
+    fontSize: "13px",
   },
   filterRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: "12px",
   },
   filterGroup: {
     display: "flex",
