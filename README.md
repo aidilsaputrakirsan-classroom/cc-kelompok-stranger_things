@@ -155,44 +155,6 @@ cc-kelompok-stranger_things/
 └── README.md
 ```
 
-
-## 🚀 Getting Started
-
-### Prasyarat
-
-#### 1. Python 3.10+
-
-Python digunakan untuk menjalankan backend yang dibangun menggunakan FastAPI. Versi minimal 3.10+ diperlukan karena kompatibel dengan dependensi modern FastAPI.
-Digunakan untuk:
-
-- Menjalankan server API dengan `uvicorn`
-- Mengelola dependensi menggunakan `pip`
-- Menjalankan logika backend aplikasi
-
-Tanpa Python, backend tidak dapat dijalankan.
-
-#### 2. Node.js 18+
-
-Node.js digunakan untuk menjalankan frontend berbasis React. Versi minimal 18+ direkomendasikan karena mendukung fitur JavaScript modern dan kompatibel dengan Vite.
-Digunakan untuk:
-
-- Menginstall dependencies dengan `npm install`
-- Menjalankan development server dengan `npm run dev`
-- Mengelola package frontend
-
-Tanpa Node.js, frontend tidak dapat dijalankan.
-
-#### 3. Git
-
-Git digunakan sebagai sistem version control dalam pengembangan proyek. Berfungsi untuk:
-
-- Meng-clone repository
-- Mengelola perubahan kode
-- Mendukung kolaborasi tim
-- Integrasi dengan GitHub dan CI/CD
-
-Walaupun aplikasi tetap bisa dijalankan tanpa Git (jika file sudah tersedia), Git sangat penting dalam proses pengembangan dan deployment.
-
 ## 📖 Quick Start
 
 Pastikan **Docker Desktop** sudah terpasang dan sedang berjalan.
