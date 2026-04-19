@@ -218,39 +218,16 @@ docker compose down
 
 ## 🐳 Docker Compose Commands
 
-###  Lifecycle Commands
+Berikut perintah dasar Docker Compose yang digunakan:
 
-| Command | Fungsi |
-|--------|--------|
-| `docker compose up` | Build (jika perlu) dan menjalankan semua services |
-| `docker compose up -d` | Menjalankan semua services di background (detached) |
-| `docker compose up --build` | Force rebuild image lalu menjalankan services |
-| `docker compose down` | Menghentikan dan menghapus container serta network |
-| `docker compose down -v` | Menghapus container + volume (⚠️ data akan hilang) |
-| `docker compose restart` | Restart semua services |
-| `docker compose stop` | Menghentikan service tanpa menghapus container |
-
----
-
-###  Monitoring Commands
-
-| Command | Fungsi |
-|--------|--------|
-| `docker compose ps` | Menampilkan status semua services |
-| `docker compose logs` | Menampilkan log semua services |
-| `docker compose logs -f backend` | Menampilkan log backend secara real-time |
-| `docker compose exec backend bash` | Masuk ke dalam container backend |
-| `docker compose top` | Menampilkan proses yang berjalan di container |
-
----
-
-###  Build Commands
-
-| Command | Fungsi |
-|--------|--------|
-| `docker compose build` | Build semua image |
-| `docker compose build backend` | Build image backend saja |
-| `docker compose pull` | Mengambil image dari registry |
+| Command | Keterangan |
+|---------|------------|
+| `docker compose up` | Menjalankan semua service |
+| `docker compose up -d` | Menjalankan di background (detached) |
+| `docker compose down` | Menghentikan dan menghapus container |
+| `docker compose logs` | Menampilkan log semua service |
+| `docker compose ps` | Menampilkan status container |
+| `docker compose up -d --build` | Build ulang image lalu menjalankan service |
 
 
 ## 📦 Modul Aplikasi
@@ -666,25 +643,25 @@ Berikut adalah detail arsitektur database PostgreSQL yang digunakan oleh aplikas
 
 ## 📱 Mockup Sistem
 
-- Splash Screen
+### Splash Screen
 
 <img src="./frontend//image//SplashScreen.png" alt="Halaman sebelum daftar" />
 
 Pada halaman ini ialah tampilan awala dimana sebelum pengguna login atau regristrasi di arahkan halaman ini  yang menyajikan profil perusahaan secara singkat dan informatif. Di halaman ini, pengguna akan menemukan menu navigasi utama seperti Home, Jadwal Imunisasi, Faskes Map, serta pilihan Sign In dan Sign Up, yang memudahkan akses ke berbagai layanan yang tersedia. Bagian tengah menampilkan tagline "Temukan jadwal imunisasi yang tepat untuk anak Anda" yang memperkuat tujuan sistem dalam membantu orang tua memantau serta mengatur jadwal vaksinasi anak. Dilengkapi dengan deskripsi singkat mengenai fitur lengkap, seperti informasi terkait vaksin, pengingat jadwal, dan rekomendasi layanan kesehatan yang dapat dipercaya, serta tombol aksi "Jadwalkan Sekarang" yang menawarkan pengguna untuk segera memulai. Dengan demikian, halaman splash screen ini tidak hanya berfungsi sebagai pintu masuk ke dalam sistem, tetapi juga memberikan gambaran mengenai identitas, manfaat, serta ajakan untuk bertindak yang khas dari solusi kesehatan digital Bye Bye Virus.
 
-- Daftar Akun
+### Daftar Akun
 
 <img src="./frontend/image/DaftarAkun.png" alt="Halaman Daftar Akun" />
 
 Halaman Daftar Akun ini merupakan tahap pendaftaran pengguna baru dalam sistem Bye Bye Virus. Pengguna diminta mengisi empat kolom: Nama Lengkap, Nama Pengguna, Password (dengan ketentuan minimal 8 karakter), serta Konfirmasi Password untuk memastikan kesesuaian. Di bawah formulir, tersedia tombol Kembali Sekarang yang berfungsi untuk kembali ke halaman sebelumnya. Bagi yang sudah memiliki akun, disediakan tautan "Sudah punya akun?" yang mengarahkan ke halaman masuk. 
 
-- Masuk Akun
+### Masuk Akun
 
 <img src="./frontend/image/MasukAkun.png" alt="Halaman Masuk Akun" />
 
 Halaman Masuk Akun ini merupakan akses yang digunakan oleh pengguna yang telah memiliki akun untuk memasuki sistem Bye Bye Virus. Ada dua kolom input yang wajib diisi, yaitu Nama Pengguna dengan ketentuan maksimal 8 karakter, serta Password yang memiliki panjang 5 karakter. Setelah kedua kolom tersebut diisi, pengguna dapat mengklik tombol "Masuk" untuk melanjutkan ke halaman utama sistem. Di bawah tombol tersebut terdapat opsi "Atau masuk dengan" yang memungkinkan pengguna untuk memilih metode login alternatif, seperti menggunakan akun media sosial atau email. Bagi pengguna yang belum memiliki akun, tersedia kalimat "Belum punya akun?" yang diikuti oleh tautan "Daftar sekarang" yang mengarah ke halaman pendaftaran. Oleh karena itu, halaman ini dirancang sederhana agar pengguna, khususnya orang tua, dapat dengan mudah mengakses layanan imunisasi tanpa mengalami kesulitan.
 
-- Beranda
+### Beranda
 
 <img src="./frontend/image/Home.png" alt="Halaman Beranda" />
 
@@ -692,18 +669,20 @@ Halaman Beranda ini muncul setelah pengguna berhasil masuk ke sistem. Di sini, s
 
 Di bawah ringkasan, terdapat daftar Jadwal Imunisasi Terdekat yang semuanya jatuh pada tanggal 6 April 2026 dengan keterangan "3 hari lagi". Nama vaksin yang tercantum antara lain BCG, POLIO 2, Hepatitis B, DPT 1, menunjukkan jadwal yang akan datang. Bagian paling bawah adalah EduHealth yang berisi tiga artikel singkat seputar imunisasi, yaitu tentang kelengkapan jadwal imunisasi, tips agar anak tidak takut saat imunisasi, serta penjelasan mengapa imunisasi penting untuk kesehatan anak. Dengan demikian, halaman beranda ini menjadi pusat kendali bagi orang tua untuk memantau jadwal, melihat ringkasan, serta membaca informasi edukatif sekaligus.
 
-- Jadwal Imunisasi
+### Jadwal Imunisasi
 <img src="./frontend/image/jadwal imunisasi.png" alt="Halaman Jadwal Imunisasi" />
 
 Halaman ini merupakan bagian dari fitur jadwal imunisasi yang menampilkan data anak dan riwayat imunisasi masing-masing. Di bagian atas, terdapat Daftar anak yang berisi dua nama, yaitu Cintya Widhi Astuti dan Ahmad Daffa Alfattah, serta tombol + Tambah anak untuk menambahkan anak baru ke dalam sistem. Ketika salah satu anak dipilih, misalnya Cintya Widhi Astuti, maka di sebelah kanan akan muncul Profil Data Anak yang mencakup umur (2 bulan), jenis kelamin (perempuan), tanggal lahir (15 November 2024), serta daftar imunisasi sebelumnya yaitu Hepatitis B dan DPT. Di bawah profil, terdapat data Tinggi Terkini sebesar 105 cm dengan kenaikan +5 cm bulan ini, serta Berat Terkini sebesar 11,5 kg dengan kenaikan +0,5 kg bulan ini. Dengan demikian, halaman ini tidak hanya membantu orang tua melihat jadwal imunisasi yang akan datang, tetapi juga memantau pertumbuhan anak secara berkala dalam satu tampilan yang ringkas.
 
-- Data Anak
+### Data Anak
 
 <img src="./frontend/image/DataAnak.png" />
 
-- Faskes Map
+### Faskes Map
 
 <img src="./frontend/image/FaskesMap.png" />
+
+---
 
 ## ✅ UTS Demo Preparation Checklist
 
@@ -745,7 +724,8 @@ Data tetap ada (tidak hilang)
 ### 📄 API Demo
  - [ ] Endpoint terlihat di Swagger
  - [ ] Bisa testing endpoint dari /docs
-
+  
+---
 ## 📋 Dokumentasi
 - [Modul 2: dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
 - [Modul 3: dokumentasi UI testing](docs/ui-test-results.md)
