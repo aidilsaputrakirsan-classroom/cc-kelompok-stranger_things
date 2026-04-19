@@ -161,8 +161,8 @@ def create_child(db: Session, child_data: ChildCreate, parent_id: int):
         birth_date=child_data.birth_date,
         gender=child_data.gender,
         blood_type=child_data.blood_type,
-        height_at_birth=child_data.height_at_birth,
-        weight_at_birth=child_data.weight_at_birth,
+        height=child_data.height,
+        weight=child_data.weight,
         notes=child_data.notes
     )
     db.add(db_child)

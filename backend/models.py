@@ -40,8 +40,8 @@ class Child(Base):
     birth_date = Column(Date, nullable=False, index=True)
     gender = Column(String(10), nullable=False)  # 'male' or 'female'
     blood_type = Column(String(5), nullable=True)
-    height_at_birth = Column(Float, nullable=True)
-    weight_at_birth = Column(Float, nullable=True)
+    height = Column(Float, nullable=True)
+    weight = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

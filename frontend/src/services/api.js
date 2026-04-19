@@ -212,7 +212,10 @@ export async function deleteChild(id) {
   console.log("🗑️ Deleting child:", id)
   const response = await fetch(`${API_URL}/children/${id}`, {
     method: "DELETE",
-    headers: authHeaders(),
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
   })
   return handleResponse(response)
 }

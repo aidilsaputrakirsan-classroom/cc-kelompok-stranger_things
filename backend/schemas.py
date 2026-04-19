@@ -146,8 +146,8 @@ class ChildCreate(BaseModel):
     birth_date: date = Field(..., title="Tanggal Lahir", description="Format: YYYY-MM-DD")
     gender: str = Field(..., title="Jenis Kelamin", description="Isi dengan: male atau female")
     blood_type: Optional[str] = Field(None, title="Golongan Darah", description="Contoh: A, B, AB, O")
-    height_at_birth: Optional[float] = Field(None, title="Tinggi Saat Lahir (cm)")
-    weight_at_birth: Optional[float] = Field(None, title="Berat Saat Lahir (kg)")
+    height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
+    weight: Optional[float] = Field(None, title="Berat Badan (kg)")
     notes: Optional[str] = Field(None, title="Catatan Khusus")
 
     model_config = {
@@ -157,8 +157,8 @@ class ChildCreate(BaseModel):
                 "birth_date": "2024-05-10",
                 "gender": "male",
                 "blood_type": "A",
-                "height_at_birth": 50.0,
-                "weight_at_birth": 3.2,
+                "height": 50.0,
+                "weight": 3.2,
                 "notes": "Lahir normal"
             }
         }
@@ -179,8 +179,8 @@ class ChildUpdate(BaseModel):
     birth_date: Optional[date] = Field(None, title="Tanggal Lahir", description="Format: YYYY-MM-DD")
     gender: Optional[str] = Field(None, title="Jenis Kelamin", description="Isi dengan: male atau female")
     blood_type: Optional[str] = Field(None, title="Golongan Darah")
-    height_at_birth: Optional[float] = Field(None, title="Tinggi Saat Lahir (cm)")
-    weight_at_birth: Optional[float] = Field(None, title="Berat Saat Lahir (kg)")
+    height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
+    weight: Optional[float] = Field(None, title="Berat Badan (kg)")
     notes: Optional[str] = Field(None, title="Catatan Khusus")
 
     model_config = {
