@@ -1,72 +1,72 @@
 services:
   # ==================== DATABASE ====================
   db:
-    image: postgres:16-alpine
-    container_name: bye_virus-db
-    restart: unless-stopped
+    image: postgres:16-alpine                        # Menggunakan image PostgresSQL
+    container_name: bye_virus-db                     # Nama container database
+    restart: unless-stopped                          # Container akan otomatis restart kecuali dihentikan manual
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: bye_virus
+      POSTGRES_USER: postgres                        # Username database
+      POSTGRES_PASSWORD: postgres                    # Password database
+      POSTGRES_DB: bye_virus                         # Nama database yang dibuat otomatis saat container start
     ports:
-      - "5432:5432"
+      - "5432:5432"                                  # Port laptop:container (akses DB dari localhost:5432)
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data              # Menyimpan data DB agar tidak hilang saat container mati
     networks:
-      - cloudnet
+      - cloudnet                                     # Masuk ke network agar bisa diakses backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"] # Cek apakah DB siap digunakan
+      interval: 10s                                              # Cek setiap 10 detik
+      timeout: 5s                                                # Maksimal waktu tunggu
+      retries: 5                                                 # Percobaan sebelum dianggap gagal
 
   # ==================== BACKEND ====================
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: bye_virus-backend
-    container_name: bye_virus-backend
-    restart: unless-stopped
+      context: ./backend                             # Folder sumber untuk build image backend
+      dockerfile: Dockerfile                         # File Dockerfile yang digunakan
+    image: bye_virus-backend                         # Nama image hasil build
+    container_name: bye_virus-backend                # Nama container backend
+    restart: unless-stopped # Auto restart jika error
     env_file:
-      - ./backend/.env.docker
+      - ./backend/.env.docker                        # File environment (config seperti DATABASE_URL)
     ports:
-      - "8000:8000"
+      - "8000:8000"                                  # Akses API di localhost:8000
     networks:
-      - cloudnet
+      - cloudnet                                     # Terhubung ke network yang sama dengan DB
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy                    # Backend hanya jalan jika DB sudah siap
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 30s                                   # Cek API tiap 30 detik
+      timeout: 10s                                    # Waktu tunggu maksimal
+      retries: 3                                      # Percobaan sebelum dianggap gagal
 
   # ==================== FRONTEND ====================
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: ./frontend                            # Folder frontend
+      dockerfile: Dockerfile                         # Dockerfile frontend
       args:
-        VITE_API_URL: http://localhost:8000
-    image: bye_virus-frontend
-    container_name: frontend
-    restart: unless-stopped
+        VITE_API_URL: http://localhost:8000          # URL backend yang dipakai frontend
+    image: bye_virus-frontend                        # Nama image frontend
+    container_name: frontend                         # Nama container frontend
+    restart: unless-stopped                          # Auto restart jika error
     ports:
-      - "3000:80"
+      - "3000:80"                                    # Akses web di localhost:3000
     networks:
-      - cloudnet
+      - cloudnet                                     # Terhubung ke network
     depends_on:
-      - backend
+      - backend                                      # Frontend dijalankan setelah backend
 
 # ==================== VOLUMES ====================
 volumes:
   pgdata:
-    name: bye_virus
+    name: bye_virus                                   # Nama volume untuk menyimpan data database
 
 # ==================== NETWORKS ====================
 networks:
   cloudnet:
-    name: cloudnet
-    driver: bridge
+    name: cloudnet                                    # Nama network yang digunakan semua container
+    driver: bridge                                    # Tipe network default untuk komunikasi antar container
