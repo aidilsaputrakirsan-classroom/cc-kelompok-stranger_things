@@ -1,101 +1,50 @@
-# Setup Guide — Full-Stack Cloud App
+````md
+# 🐳 Setup Guide — Full-Stack bye bye virus 
 
-Dokumen ini merupakan panduan lengkap untuk menjalankan project dari awal (clone repository) hingga aplikasi dapat berjalan dengan baik (backend & frontend). Panduan ini disusun berdasarkan pengembangan Modul 1–4, namun telah dirapikan agar dapat diikuti oleh pengguna baru.
+Dokumen ini merupakan panduan lengkap untuk menjalankan project menggunakan **Docker & Docker Compose**, sehingga seluruh aplikasi (backend, frontend, dan database) dapat berjalan otomatis tanpa perlu install manual Node.js, Python, atau PostgreSQL.
 
 ---
 
-### 1. Clone Repository
+## 1. Clone Repository
 
 ```bash
 git clone https://github.com/stranger_things/Bye_virus.git
-cd Bye_virus
-```
+cd bye_virus
+````
 
 ---
 
-### 2. Persiapan Awal
+## 2. Persiapan
 
 **Pastikan sudah menginstall:**
 
-* Node.js
-* Python 3.10+
-* PostgreSQL
-* Git
+* Docker Desktop
 
-**Cek versi:**
+**Cek instalasi:**
 
 ```bash
-node -v
-python --version
-psql --version
+docker --version
+docker compose version
 ```
 
 ---
 
-### 3. Setup Backend
+## 3. Konfigurasi Environment
 
-#### 3.1 Masuk ke folder backend
+Masuk ke folder backend:
 
 ```bash
 cd backend
 ```
 
-#### 3.2 Buat Virtual Environment
-
-```bash
-python -m venv venv
-```
-
-**Aktifkan:**
-
-* ***Windows:***
-
-```bash
-venv\Scripts\activate
-```
-
-* ***Mac/Linux:***
-
-```bash
-source venv/bin/activate
-```
-
----
-
-#### 3.3 Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-### 4. Setup Database
-
-**Masuk ke PostgreSQL:**
-
-```bash
-psql -U postgres
-```
-
-**Buat database:**
-
-```sql
-CREATE DATABASE bye_virus;
-```
-
----
-
-### 5. Konfigurasi Environment (.env)
-
-**Buat file `.env` di folder backend:**
+Buat file `.env.docker`:
 
 ```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/bye_virus
+DATABASE_URL=postgresql://postgres:postgres@db:5432/bye_virus
 SECRET_KEY=isi-random-string
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-ALLOWED_ORIGINS=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:3000
 ```
 
 **Generate SECRET_KEY:**
@@ -104,114 +53,150 @@ ALLOWED_ORIGINS=http://localhost:5173
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
+**Catatan:**
+
+* Gunakan `db` sebagai host database (bukan localhost)
+* Karena koneksi terjadi antar container dalam Docker network
+
 ---
 
-### 6. Menjalankan Backend
+## 4. Kembali ke Root Project
 
 ```bash
-uvicorn main:app --reload
+cd ..
 ```
 
-**Akses:**
+---
+
+## 5. Menjalankan Semua Service
+
+```bash
+docker compose up -d --build
+```
+
+Perintah ini akan:
+
+* Build backend & frontend
+* Menjalankan PostgreSQL
+* Membuat network & volume
+* Menjalankan semua container
+
+---
+
+## 6. Cek Status Container
+
+```bash
+docker compose ps
+```
+
+---
+
+## 7. Akses Aplikasi
+
+**Frontend:**
+
+```
+http://localhost:3000
+```
+
+**Backend API:**
 
 ```
 http://localhost:8000
+```
+
+**API Documentation:**
+
+```
 http://localhost:8000/docs
 ```
 
 ---
 
-### 7. Setup Frontend
+## 8. Alur Menjalankan Aplikasi
 
-#### 7.1 Masuk ke folder frontend
-
-```bash
-cd ../frontend
-```
-
-#### 7.2 Install Dependencies
-
-```bash
-npm install
-```
-
-#### 7.3 Konfigurasi .env
-
-**Buat file `.env`:**
-
-```
-VITE_API_URL=http://localhost:8000
-```
+1. Jalankan Docker Compose
+2. Tunggu semua container berjalan
+3. Buka frontend di browser
+4. Frontend akan terhubung ke backend
+5. Backend terhubung ke database
 
 ---
 
-### 8. Menjalankan Frontend
-
-```bash
-npm run dev
-```
-
-**Akses**:
-
-```
-http://localhost:5173
-```
-
----
-
-### 9. Alur Menjalankan Aplikasi
-
-1. Jalankan backend
-2. Jalankan frontend
-3. Buka browser ke [http://localhost:5173](http://localhost:5173)
-
----
-
-### 10. Fitur Aplikasi
-
-* Registrasi user
-* Login (JWT Authentication)
-* CRUD data
-* Proteksi endpoint
-
----
-
-### 11. Struktur Project
+## 9. Struktur Project
 
 ```
 project/
 ├── backend/
+│   ├── Dockerfile
+│   └── .env.docker
 ├── frontend/
-└── docs/
+│   └── Dockerfile
+├── docker-compose.yml
 ```
 
 ---
 
-### 12. Troubleshooting
+## 10. Perintah Penting Docker Compose
 
-**CORS Error**
-
-* Pastikan ALLOWED_ORIGINS sesuai
-
-**Database tidak terkoneksi**
-
-* Cek PostgreSQL aktif
-* Cek DATABASE_URL
-
-**401 Unauthorized**
-
-* Pastikan token dikirim di header
+```bash
+docker compose up -d            # Jalankan semua container
+docker compose up -d --build   # Build ulang + jalankan
+docker compose down             # Stop semua container
+docker compose down -v          # Stop + hapus volume (data DB hilang)
+docker compose logs -f          # Lihat log
+docker compose ps               # Cek status container
+```
 
 ---
 
-### 13. Catatan
+## 11. Troubleshooting
 
-* Jangan commit file `.env`
-* Gunakan `.env.example`
-* Pastikan semua dependency terinstall
+**Container tidak berjalan:**
+
+```bash
+docker compose logs -f
+```
+
+**Database tidak terkoneksi:**
+
+* Pastikan `DATABASE_URL` menggunakan:
+
+```
+db:5432
+```
+
+**Port bentrok:**
+
+* Ubah port di `docker-compose.yml`
+
+**Build error (TLS timeout):**
+
+```bash
+docker pull node:20-alpine
+```
+
+* Cek koneksi internet atau ganti jaringan
+
+**Container conflict:**
+
+```bash
+docker rm -f db backend frontend
+```
 
 ---
 
-### Kesimpulan
+## 12. Catatan Penting
 
-Dengan mengikuti langkah-langkah di atas, pengguna dapat menjalankan aplikasi dari nol hingga berjalan sempurna tanpa perlu memahami proses pengembangan sebelumnya.
+* Jangan commit file `.env.docker`
+* Gunakan `.gitignore`
+* Gunakan `db` sebagai host database
+* Data database disimpan di volume (`pgdata`)
+
+---
+
+## 13. Kesimpulan
+
+Dengan Docker, seluruh aplikasi dapat dijalankan dengan satu perintah tanpa perlu install manual dependency. Docker Compose mempermudah pengelolaan frontend, backend, dan database dalam satu sistem yang terintegrasi.
+
+```
