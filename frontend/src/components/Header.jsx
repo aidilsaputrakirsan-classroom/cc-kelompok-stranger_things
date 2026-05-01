@@ -1,13 +1,17 @@
 function Header({ totalItems, isConnected, user, onLogout }) {
+  const { theme, toggleTheme } = useTheme(); // 👈 tambah ini
+
   return (
     <header style={styles.header}>
       <div>
         <h1 style={styles.title}>☁️ Cloud App</h1>
         <p style={styles.subtitle}>Komputasi Awan — SI ITK</p>
       </div>
+
       <div style={styles.right}>
         <div style={styles.stats}>
           <span style={styles.badge}>{totalItems} items</span>
+
           <span style={{
             ...styles.status,
             backgroundColor: isConnected ? "#E2EFDA" : "#FBE5D6",
@@ -15,7 +19,14 @@ function Header({ totalItems, isConnected, user, onLogout }) {
           }}>
             {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
           </span>
+
+          {/* 🔥 TAMBAH INI (toggle button) */}
+          <button onClick={toggleTheme} style={styles.btnToggle}>
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+
         </div>
+
         {user && (
           <div style={styles.user}>
             <span style={styles.userName}>👤 {user.name}</span>
@@ -92,6 +103,16 @@ const styles = {
     cursor: "pointer",
     fontSize: "0.8rem",
   },
+
+  btnToggle: {
+    padding: "0.3rem 0.6rem",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    color: "white",
+    border: "1px solid rgba(255,255,255,0.3)",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+},
 }
 
 export default Header;

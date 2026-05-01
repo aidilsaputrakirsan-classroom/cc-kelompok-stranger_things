@@ -111,4 +111,12 @@ em {
   color: #64b5f6;
 }
 
+body.light {
+  background-color: #f5f7fb;
+  color: #1a1a1a;
+}
 
+body.dark {
+  background-color: #121212;
+  color: #ffffff;
+}
