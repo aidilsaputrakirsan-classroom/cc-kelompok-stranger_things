@@ -688,6 +688,26 @@ Data tetap ada (tidak hilang)
 ### 📄 API Demo
  - [ ] Endpoint terlihat di Swagger
  - [ ] Bisa testing endpoint dari /docs
+
+## Developer Workflow (Modul 9)
+
+Mulai dari modul 9 ini, kita menggunakan **Github Flow**. Setiap anggota tim wajib menjalankan pengecekan lokal menggunakan 'Makefile' sebelum melakukan push kode ke branch fitur.
+
+### Perintah Makefile
+
+Gunakan perintah berikut di terminal:
+
+*   `make lint` : Menjalankan linter (flake8) untuk mengecek kerapian dan standar penulisan kode di backend.
+*   `make test` : Menjalankan unit testing (saat ini masih berupa placeholder).
+*   `make pr-check` : **Wajib dijalankan sebelum push!** Perintah ini akan membangun ulang (build) Docker container, lalu menjalankan linting dan testing secara otomatis.
+
+### Cara Berkontribusi
+1. Ambil update terbaru dari main: `git checkout main && git pull origin main`.
+2. Buat branch baru: `git checkout -b tipe/nama-fitur`.
+3. Lakukan perubahan kode.
+4. **Verifikasi kode** dengan menjalankan `make pr-check`.
+5. Jika berhasil (muncul ✅), lakukan commit dan push.
+6. Buat Pull Request di GitHub dan minta review dari teman tim.
   
 ---
 ## 📋 Dokumentasi
