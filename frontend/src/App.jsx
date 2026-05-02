@@ -4,6 +4,8 @@ import SplashPage from "./components/SplashPage";
 import JadwalImunisasi from "./components/JadwalImunisasi";
 import FaskesMap from "./components/FaskesMap";
 import DataAnak from "./components/DataAnak";
+import DetailJadwal from "./components/DetailJadwal";
+import Navbar from "./components/Navbar";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -59,44 +61,20 @@ const eduArticles = [
 const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" };
 
 // ── HomePage Component ──
-function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }) {
+function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
   const isDark = theme === "dark";
   const summary = { selesai: 7, total: 12, mendatang: 3, belumTerjadwal: 2 };
 
-  // Dynamic styles based on theme
   const dynPage = {
     ...homeStyles.page,
     background: isDark ? "#0f0f1a" : "#fff5f8",
     color: isDark ? "#f0f0f0" : "#1a1a2e",
   };
 
-  const dynNav = {
-    ...homeStyles.nav,
-    background: isDark ? "#16213e" : "white",
-    borderBottom: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f0c0d0",
-  };
-
-  const dynLogo = {
-    ...homeStyles.logo,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
-  const dynNavLink = {
-    ...homeStyles.navLink,
-    color: isDark ? "#aaa" : "#888",
-  };
-
-  const dynAvatarWrap = {
-    ...homeStyles.avatarWrap,
-    background: isDark ? "#2a1a2e" : "#fce4ec",
-  };
-
   const dynWelcomeCard = {
     ...homeStyles.welcomeCard,
     background: isDark ? "#16213e" : "#fce4ec",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
 
   const dynWelcomeTitle = {
@@ -113,9 +91,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
     ...homeStyles.reminder,
     background: isDark ? "#1a1a2e" : "#fff0f5",
     border: isDark ? "1px solid #2a2a4a" : "1px solid #f9a8d4",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
 
   const dynReminderText = {
@@ -132,9 +108,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
     ...homeStyles.schedCard,
     background: isDark ? "#16213e" : "white",
     border: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f9c0d0",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
 
   const dynSchedName = {
@@ -158,75 +132,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
     color: isDark ? "#f0f0f0" : "#1a1a2e",
   };
 
-  const dynToggleBtn = {
-    background: isDark ? "#2a2a4a" : "#fce4ec",
-    border: "none",
-    borderRadius: "50%",
-    width: "36px",
-    height: "36px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "16px",
-    flexShrink: 0,
-    transition: "background 0.2s ease",
-  };
-
   return (
     <div style={dynPage}>
-      {/* Navbar */}
-      <nav style={dynNav}>
-        {/* Logo - kiri */}
-        <span style={dynLogo}>
-          ByeBye<span style={homeStyles.logoPink}>Virus</span>
-        </span>
+      {/* Navbar bersama */}
+      <Navbar activePage={activePage} setActivePage={onNavigate} onLogout={onLogout} />
 
-        {/* Nav links - tengah */}
-        <div style={homeStyles.navCenter}>
-          <a
-            style={{
-              ...dynNavLink,
-              ...(activePage === "home" ? homeStyles.navLinkActive : {}),
-            }}
-            onClick={() => onNavigate("home")}
-          >
-            Home
-          </a>
-          <a
-            style={{
-              ...dynNavLink,
-              ...(activePage === "jadwal" ? homeStyles.navLinkActive : {}),
-            }}
-            onClick={() => onNavigate("jadwal")}
-          >
-            Jadwal Imunisasi
-          </a>
-          <a
-            style={{
-              ...dynNavLink,
-              ...(activePage === "faskes" ? homeStyles.navLinkActive : {}),
-            }}
-            onClick={() => onNavigate("faskes")}
-          >
-            Faskes Map
-          </a>
-        </div>
-
-        {/* Kanan: toggle + avatar */}
-        <div style={homeStyles.navRight}>
-          <button onClick={toggleTheme} title="Toggle Dark Mode" style={dynToggleBtn}>
-            {isDark ? "☀️" : "🌙"}
-          </button>
-          <div style={dynAvatarWrap} onClick={onLogout} title="Logout">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
-              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-            </svg>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
       <div style={homeStyles.main}>
         {/* Left Column */}
         <div style={homeStyles.left}>
@@ -238,13 +148,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
                 <circle cx="40" cy="30" r="14" fill="#fce4ec" />
                 <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
                 <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
-                <path
-                  d="M35 36 Q40 40 45 36"
-                  stroke="#e91e8c"
-                  strokeWidth="1.5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
+                <path d="M35 36 Q40 40 45 36" stroke="#e91e8c" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 <rect x="28" y="16" width="24" height="12" rx="6" fill="#e91e8c" />
                 <circle cx="40" cy="55" r="14" fill="#f48fb1" />
                 <path d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z" fill="#e91e8c" />
@@ -254,8 +158,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
             </div>
             <div>
               <h2 style={dynWelcomeTitle}>
-                Selamat Datang,{" "}
-                {user?.name || user?.email?.split("@")[0] || "Andin"}!
+                Selamat Datang, {user?.name || user?.email?.split("@")[0] || "Andin"}!
               </h2>
               <p style={dynWelcomeSubtitle}>
                 Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.
@@ -302,12 +205,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
             <div style={homeStyles.scheduleGrid}>
               {scheduleData.map((item) => (
                 <div key={item.id} style={dynSchedCard}>
-                  <div
-                    style={{
-                      ...homeStyles.dot,
-                      background: dotColors[item.status],
-                    }}
-                  />
+                  <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
                   <div style={{ flex: 1 }}>
                     <div style={dynSchedName}>{item.name}</div>
                     <div style={homeStyles.schedDate}>{item.date}</div>
@@ -322,7 +220,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
         {/* Right Column */}
         <div style={homeStyles.right}>
           <h3 style={dynEduTitle}>EduHealth</h3>
-
           {eduArticles.map((article) => (
             <a
               key={article.id}
@@ -339,7 +236,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              {/* Image Background */}
               <div
                 style={{
                   ...homeStyles.eduImgBox,
@@ -348,26 +244,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
                   backgroundPosition: "center",
                 }}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(0,0,0,0.35)",
-                  }}
-                />
-                <span
-                  style={{
-                    ...homeStyles.eduTag,
-                    background: article.tagColor,
-                    position: "relative",
-                    zIndex: 2,
-                  }}
-                >
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} />
+                <span style={{ ...homeStyles.eduTag, background: article.tagColor, position: "relative", zIndex: 2 }}>
                   {article.tag}
                 </span>
               </div>
-
-              {/* Text */}
               <div style={homeStyles.eduBody}>
                 <p style={dynEduBodyText}>{article.title}</p>
                 <p style={homeStyles.eduReadMore}>Baca selengkapnya →</p>
@@ -382,7 +263,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, toggleTheme }
 
 // ── Main App ──
 function App() {
-  const { theme, toggleTheme } = useTheme(); // ← aktifkan hook
+  const { theme, toggleTheme } = useTheme();
 
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -394,7 +275,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [toast, setToast] = useState(null);
@@ -412,14 +292,8 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    checkHealth().then(setIsConnected);
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) loadItems();
-  }, [isAuthenticated, loadItems]);
-
+  useEffect(() => { checkHealth().then(setIsConnected); }, []);
+  useEffect(() => { if (isAuthenticated) loadItems(); }, [isAuthenticated, loadItems]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3000);
@@ -466,11 +340,6 @@ function App() {
     }
   };
 
-  const handleEdit = (item) => {
-    setEditingItem(item);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleDelete = async (id) => {
     const item = items.find((i) => i.id === id);
     if (!window.confirm(`Hapus "${item?.name}" ?`)) return;
@@ -491,22 +360,15 @@ function App() {
 
   const sortedItems = [...items].sort((a, b) => {
     switch (sortBy) {
-      case "price_asc":
-        return a.price - b.price;
-      case "price_desc":
-        return b.price - a.price;
-      case "name_asc":
-        return a.name.localeCompare(b.name);
-      case "name_desc":
-        return b.name.localeCompare(a.name);
-      case "oldest":
-        return a.id - b.id;
-      default:
-        return b.id - a.id;
+      case "price_asc": return a.price - b.price;
+      case "price_desc": return b.price - a.price;
+      case "name_asc": return a.name.localeCompare(b.name);
+      case "name_desc": return b.name.localeCompare(a.name);
+      case "oldest": return a.id - b.id;
+      default: return b.id - a.id;
     }
   });
 
-  // Belum login
   if (!isAuthenticated) {
     if (showSplash) {
       return (
@@ -525,7 +387,6 @@ function App() {
     );
   }
 
-  // ── Sudah login → render halaman berdasarkan activePage ──
   return (
     <>
       {activePage === "home" && (
@@ -535,7 +396,6 @@ function App() {
           activePage={activePage}
           onNavigate={setActivePage}
           theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
 
@@ -544,8 +404,6 @@ function App() {
           onLogout={handleLogout}
           activePage={activePage}
           setActivePage={setActivePage}
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
 
@@ -553,8 +411,6 @@ function App() {
         <DataAnak
           setActivePage={setActivePage}
           onLogout={() => setActivePage("login")}
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
 
@@ -563,85 +419,39 @@ function App() {
           onLogout={handleLogout}
           activePage={activePage}
           setActivePage={setActivePage}
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
 
-      {/* Toast notification */}
+      {activePage === "detailJadwal" && (
+        <DetailJadwal
+          onLogout={handleLogout}
+          setActivePage={setActivePage}
+        />
+      )}
+
       {toast && (
-        <div
-          style={{
-            ...toastStyles.base,
-            ...(toast.type === "success" ? toastStyles.success : toastStyles.error),
-          }}
-        >
+        <div style={{
+          ...toastStyles.base,
+          ...(toast.type === "success" ? toastStyles.success : toastStyles.error),
+        }}>
           <div style={toastStyles.iconWrap(toast.type)}>
             {toast.type === "success" ? "✓" : "!"}
           </div>
           <span style={toastStyles.message}>{toast.message}</span>
-          <button style={toastStyles.close} onClick={() => setToast(null)}>
-            ✕
-          </button>
+          <button style={toastStyles.close} onClick={() => setToast(null)}>✕</button>
         </div>
       )}
     </>
   );
 }
 
-// ── HomePage Base Styles (tema-independen) ──
+// ── HomePage Styles ──
 const homeStyles = {
   page: {
     minHeight: "100vh",
     fontFamily: "'Segoe UI', Arial, sans-serif",
     fontSize: "14px",
     transition: "background 0.3s ease, color 0.3s ease",
-  },
-  nav: {
-    padding: "0 2rem",
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
-    height: "56px",
-    transition: "background 0.3s ease, border-color 0.3s ease",
-  },
-  logo: {
-    fontSize: "18px",
-    fontWeight: "700",
-    transition: "color 0.3s ease",
-    justifySelf: "start",
-  },
-  navCenter: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1.5rem",
-  },
-  navRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
-    justifySelf: "end",
-  },
-  logoPink: { color: "#e91e8c" },
-  navLink: {
-    fontSize: "14px",
-    cursor: "pointer",
-    textDecoration: "none",
-    transition: "color 0.2s ease",
-  },
-  navLinkActive: {
-    color: "#e91e8c",
-    fontWeight: "600",
-  },
-  avatarWrap: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    transition: "background 0.3s ease",
   },
   main: {
     display: "grid",
@@ -651,258 +461,252 @@ const homeStyles = {
     maxWidth: "1200px",
     margin: "0 auto",
   },
-  left: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
+  left: { 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: "1rem" 
   },
   welcomeCard: {
-    borderRadius: "16px",
+    borderRadius: "16px", 
     padding: "1.5rem",
-    display: "flex",
-    alignItems: "center",
+    display: "flex", 
+    alignItems: "center", 
     gap: "1.25rem",
     transition: "background 0.3s ease, box-shadow 0.3s ease",
   },
   welcomeAvatarWrap: {
-    width: "72px",
-    height: "72px",
+    width: "72px", 
+    height: "72px", 
     borderRadius: "50%",
-    background: "white",
+    background: "white", 
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center", 
+    justifyContent: "center", 
     flexShrink: 0,
   },
-  welcomeTitle: {
-    fontSize: "20px",
-    fontWeight: "700",
-    marginBottom: "6px",
-    transition: "color 0.3s ease",
+  welcomeTitle: { 
+    fontSize: "20px", 
+    fontWeight: "700", 
+    marginBottom: "6px", 
+    transition: "color 0.3s ease" 
   },
-  welcomeSubtitle: {
-    fontSize: "13px",
-    lineHeight: "1.6",
-    margin: 0,
-    transition: "color 0.3s ease",
+  welcomeSubtitle: { 
+    fontSize: "13px", 
+    lineHeight: "1.6", 
+    margin: 0, 
+    transition: "color 0.3s ease" 
   },
   reminder: {
-    borderRadius: "12px",
-    padding: "0.85rem 1.25rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
+    borderRadius: "12px", padding: "0.85rem 1.25rem",
+    display: "flex", alignItems: "center", gap: "12px",
     transition: "background 0.3s ease, border-color 0.3s ease",
   },
   reminderIcon: {
-    width: "32px",
-    height: "32px",
+    width: "32px", 
+    height: "32px", 
     borderRadius: "50%",
-    background: "#e91e8c",
-    display: "flex",
+    background: "#e91e8c", 
+    display: "flex", 
     alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    color: "white",
-    fontWeight: "800",
+    justifyContent: "center", 
+    flexShrink: 0, 
+    color: "white", 
+    fontWeight: "800", 
     fontSize: "15px",
   },
-  reminderText: {
-    flex: 1,
-    fontSize: "13px",
-    margin: 0,
-    transition: "color 0.3s ease",
+  reminderText: { 
+    flex: 1, 
+    fontSize: "13px", 
+    margin: 0, 
+    transition: "color 0.3s ease" 
   },
   reminderBadge: {
-    background: "#c2185b",
-    color: "white",
+    background: "#c2185b", 
+    color: "white", 
     borderRadius: "20px",
-    padding: "5px 14px",
-    fontSize: "12px",
-    fontWeight: "600",
+    padding: "5px 14px", 
+    fontSize: "12px", 
+    fontWeight: "600", 
     whiteSpace: "nowrap",
   },
-  sectionTitle: {
-    fontSize: "15px",
-    fontWeight: "700",
-    marginBottom: "0.6rem",
-    transition: "color 0.3s ease",
+  sectionTitle: { 
+    fontSize: "15px", 
+    fontWeight: "700", 
+    marginBottom: "0.6rem", 
+    transition: "color 0.3s ease" 
   },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "0.75rem",
+  statsGrid: { 
+    display: "grid", 
+    gridTemplateColumns: "repeat(3, 1fr)", 
+    gap: "0.75rem" 
   },
-  statCard: {
-    borderRadius: "14px",
-    padding: "1rem 1.25rem",
-    color: "white",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+  statCard: { 
+    borderRadius: "14px", 
+    padding: "1rem 1.25rem", 
+    color: "white", 
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)" 
   },
-  statLabel: {
-    fontSize: "13px",
-    fontWeight: "500",
-    opacity: 0.9,
-    marginBottom: "6px",
+  statLabel: { 
+    fontSize: "13px", 
+    fontWeight: "500", 
+    opacity: 0.9, 
+    marginBottom: "6px" 
   },
-  statNumber: {
-    fontSize: "32px",
-    fontWeight: "700",
-    lineHeight: 1,
-    marginBottom: "4px",
+  statNumber: { 
+    fontSize: "32px", 
+    fontWeight: "700", 
+    lineHeight: 1, 
+    marginBottom: "4px" 
   },
-  statSub: {
-    fontSize: "12px",
-    opacity: 0.85,
+  statSub: { 
+    fontSize: "12px", 
+    opacity: 0.85 
   },
-  scheduleGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "0.6rem",
+  scheduleGrid: { 
+    display: "grid", 
+    gridTemplateColumns: "repeat(3, 1fr)", 
+    gap: "0.6rem" 
   },
   schedCard: {
-    borderRadius: "12px",
+    borderRadius: "12px", 
     padding: "0.75rem 1rem",
-    display: "flex",
-    alignItems: "center",
+    display: "flex", 
+    alignItems: "center", 
     gap: "10px",
     transition: "background 0.3s ease, border-color 0.3s ease",
   },
-  dot: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-    flexShrink: 0,
+  dot: { 
+    width: "10px", 
+    height: "10px", 
+    borderRadius: "50%", 
+    flexShrink: 0 
   },
-  schedName: {
-    fontSize: "13px",
-    fontWeight: "600",
-    transition: "color 0.3s ease",
+  schedName: { 
+    fontSize: "13px", 
+    fontWeight: "600", 
+    transition: "color 0.3s ease" 
   },
-  schedDate: {
-    fontSize: "11px",
-    color: "#888",
-    marginTop: "2px",
+  schedDate: { 
+    fontSize: "11px", 
+    color: "#888", 
+    marginTop: "2px" 
   },
   schedBadge: {
-    background: "#c2185b",
-    color: "white",
+    background: "#c2185b", 
+    color: "white", 
     borderRadius: "20px",
-    padding: "4px 10px",
-    fontSize: "11px",
-    fontWeight: "600",
+    padding: "4px 10px", 
+    fontSize: "11px", 
+    fontWeight: "600", 
     whiteSpace: "nowrap",
   },
-  right: {
-    display: "flex",
-    flexDirection: "column",
+  right: { 
+    display: "flex", 
+    flexDirection: "column" 
   },
-  eduTitle: {
-    fontSize: "16px",
-    fontWeight: "700",
-    marginBottom: "1rem",
-    transition: "color 0.3s ease",
+  eduTitle: { 
+    fontSize: "16px", 
+    fontWeight: "700", 
+    marginBottom: "1rem", 
+    transition: "color 0.3s ease" 
   },
   eduCard: {
-    borderRadius: "12px",
-    overflow: "hidden",
+    borderRadius: "12px", 
+    overflow: "hidden", 
     marginBottom: "0.75rem",
-    cursor: "pointer",
-    display: "block",
+    cursor: "pointer", 
+    display: "block", 
     transition: "all 0.25s ease",
   },
   eduImgBox: {
-    width: "100%",
+    width: "100%", 
     height: "120px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center", 
     position: "relative",
   },
   eduTag: {
-    position: "absolute",
-    padding: "3px 10px",
+    position: "absolute", 
+    padding: "3px 10px", 
     borderRadius: "20px",
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "white",
+    fontSize: "11px", 
+    fontWeight: "600", 
+    color: "white", 
     boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
-  eduBody: {
-    padding: "0.6rem 0.85rem 0.75rem",
+  eduBody: { 
+    padding: "0.6rem 0.85rem 0.75rem" 
   },
-  eduBodyText: {
-    fontSize: "13px",
-    fontWeight: "600",
-    lineHeight: "1.4",
-    margin: 0,
-    transition: "color 0.3s ease",
-  },
-  eduReadMore: {
-    fontSize: "11px",
-    color: "#e91e8c",
-    marginTop: "6px",
-    marginBottom: 0,
-    fontWeight: "500",
+  eduBodyText: { 
+    fontSize: "13px", 
+    fontWeight: "600", 
+    lineHeight: "1.4", 
+    margin: 0, 
+    transition: "color 0.3s ease" },
+  eduReadMore: { 
+    fontSize: "11px", 
+    color: "#e91e8c", 
+    marginTop: "6px", 
+    marginBottom: 0, 
+    fontWeight: "500" 
   },
 };
 
 // ── Toast Styles ──
 const toastStyles = {
   base: {
-    position: "fixed",
-    top: 24,
+    position: "fixed", 
+    top: 24, 
     right: 24,
-    display: "flex",
-    alignItems: "center",
+    display: "flex", 
+    alignItems: "center", 
     gap: "12px",
-    padding: "14px 18px",
-    borderRadius: "14px",
+    padding: "14px 18px", 
+    borderRadius: "14px", 
     zIndex: 999,
-    minWidth: "260px",
+    minWidth: "260px", 
     maxWidth: "360px",
-    backdropFilter: "blur(12px)",
+    backdropFilter: "blur(12px)", 
     WebkitBackdropFilter: "blur(12px)",
     boxShadow: "0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)",
     fontFamily: "'Segoe UI', Arial, sans-serif",
   },
-  success: {
-    background: "rgba(240,253,244,0.95)",
-    border: "1px solid rgba(22,163,74,0.2)",
-  },
-  error: {
-    background: "rgba(254,242,242,0.95)",
-    border: "1px solid rgba(220,38,38,0.2)",
-  },
+  success: { 
+    background: "rgba(240,253,244,0.95)", 
+    border: "1px solid rgba(22,163,74,0.2)" },
+  error: { 
+    background: "rgba(254,242,242,0.95)", 
+    border: "1px solid rgba(220,38,38,0.2)" },
   iconWrap: (type) => ({
-    width: "28px",
-    height: "28px",
-    borderRadius: "50%",
+    width: "28px", 
+    height: "28px", 
+    borderRadius: "50%", 
     flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
+    display: "flex", 
+    alignItems: "center", 
     justifyContent: "center",
-    fontWeight: "800",
+    fontWeight: "800", 
     fontSize: "13px",
-    background: type === "success" ? "#16a34a" : "#dc2626",
+    background: type === "success" ? "#16a34a" : "#dc2626", 
     color: "#fff",
   }),
-  message: {
-    flex: 1,
-    fontSize: "0.9rem",
-    fontWeight: "600",
-    color: "#1e293b",
-    lineHeight: "1.4",
+  message: { 
+    flex: 1, 
+    fontSize: "0.9rem", 
+    fontWeight: "600", 
+    color: "#1e293b", 
+    lineHeight: "1.4" 
   },
   close: {
-    background: "none",
-    border: "none",
+    background: "none", 
+    border: "none", 
     cursor: "pointer",
-    fontSize: "12px",
-    color: "#94a3b8",
+    fontSize: "12px", 
+    color: "#94a3b8", 
     padding: "2px 4px",
-    borderRadius: "4px",
-    flexShrink: 0,
+    borderRadius: "4px", 
+    flexShrink: 0, 
     lineHeight: 1,
   },
 };
