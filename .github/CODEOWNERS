@@ -1,24 +1,26 @@
-# =============================================
-# CODEOWNERS — Cloud Team XX
-# =============================================
+# ===================================================
+# CODEOWNERS — Stranger_things Project
+# ===================================================
+
 # Setiap baris: pola file → username GitHub reviewer
 # Reviewer otomatis ditambahkan saat PR mengubah file terkait
 
-# Backend — Lead Backend
-/backend/                @AhmadDaffaAlfattah
+# ================= BACKEND =================
+# Penanggung jawab: Lead Backend
+/backend/    @AhmadDaffaAlfattah
 
-# Frontend — Lead Frontend
-/frontend/               @NazwaAmeliaZahra
+# ================= FRONTEND =================
+# Penanggung jawab: Lead Frontend
+/frontend/   @NazwaAmeliaZahra
 
-# Docker & Infrastructure — Lead DevOps
-docker-compose.yml       @Cintya1026
-/backend/Dockerfile      @Cintya1026
-/frontend/Dockerfile     @Cintya1026
-Makefile                 @Cintya1026
+# ========== DOCKER & INFRASTRUCTURE ==========
+# Penanggung jawab: Lead DevOps
+docker-compose.yml    @Cintya1026
+/backend/Dockerfile   @Cintya1026
+/frontend/Dockerfile  @Cintya1026
+Makefile              @Cintya1026
 
-# Documentation — Lead QA & Docs
-README.md                @verinaaaa
-/docs/                   @verinaaaa
-
-# CI/CD (jika 5 orang) — Lead CI/CD
-# /.github/workflows/   @username-lead-cicd
+# ================= DOCUMENTATION =================
+# Penanggung jawab: QA & Documentation
+README.md   @verinaaaa
+/docs/      @verinaaaa
