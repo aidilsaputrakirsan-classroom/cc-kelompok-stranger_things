@@ -1,10 +1,14 @@
 # ==============================================
-# CI Pipeline — Cloud Team XX (FIXED VERSION)
+# CI Pipeline — stranger_things
 # ==============================================
-# - Aman tanpa .env
-# - Backend pakai env dari GitHub Actions
-# - Frontend tidak crash jika test belum tersedia
-# - Docker build tetap berjalan
+# Pipeline ini berjalan otomatis saat:
+# - Push ke branch main
+# - Pull Request ke branch main
+# 
+# Jobs:
+# 1. test-backend: Install deps + run pytest
+# 2. test-frontend: Install deps + run vitest
+# 3. build-docker: Build Docker images (pastikan Dockerfile valid)
 
 name: CI Pipeline
 
@@ -15,9 +19,8 @@ on:
     branches: [main]
 
 jobs:
-
   # ================================
-  # JOB 1: Backend Test (FastAPI)
+  # JOB 1: Test Backend (Python/FastAPI)
   # ================================
   test-backend:
     name: 🐍 Test Backend
@@ -36,7 +39,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: 📦 Cache pip
+      - name: 📦 Cache pip packages
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -49,16 +52,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🔥 FIX: ENV untuk menggantikan .env
-      - name: 🧪 Run backend tests
-        env:
-          DATABASE_URL: sqlite:///./test.db
+      - name: 🧪 Run tests with coverage
         run: |
           pytest --cov=. --cov-report=term-missing --cov-fail-under=50
 
-
   # ================================
-  # JOB 2: Frontend Test (React/Vite)
+  # JOB 2: Test Frontend (React/Vitest)
   # ================================
   test-frontend:
     name: ⚛️ Test Frontend
@@ -82,26 +81,19 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
-      # 🔥 FIX: tidak crash kalau test belum ada
-      - name: 🧪 Run frontend tests (safe mode)
-        run: |
-          if npm run | grep -q "test"; then
-            npm test
-          else
-            echo "⚠️ No test script found, skipping tests"
-          fi
+      - name: 🧪 Run tests
+        run: npm test -- --reporter=verbose
 
       - name: 🏗️ Build frontend
         run: npm run build
 
-
   # ================================
-  # JOB 3: Docker Build
+  # JOB 3: Build Docker Images
   # ================================
   build-docker:
-    name: 🐳 Build Docker Images
+    name: 🐳 Build Docker
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
+    needs: [test-backend, test-frontend]    # Hanya jalan jika kedua test PASS
 
     steps:
       - name: 📥 Checkout code
@@ -113,7 +105,7 @@ jobs:
       - name: 🐳 Build frontend image
         run: docker build -t cloudapp-frontend:ci ./frontend
 
-      - name: ✅ Success message
+      - name: ✅ Build success
         run: |
-          echo "✅ CI SUCCESS: All builds completed"
-          docker images | grep cloudapp || true
+          echo "✅ All Docker images built successfully!"
+          docker images | grep cloudapp
