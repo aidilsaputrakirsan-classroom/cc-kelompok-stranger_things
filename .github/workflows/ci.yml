@@ -20,11 +20,15 @@ on:
 
 jobs:
   # ================================
-  # JOB 1: Test Backend (Python/FastAPI)
+  # JOB 1: Test Backend
   # ================================
   test-backend:
     name: 🐍 Test Backend
     runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: sqlite:///./test.db
+      PYTHONPATH: .
 
     defaults:
       run:
@@ -56,8 +60,9 @@ jobs:
         run: |
           pytest --cov=. --cov-report=term-missing --cov-fail-under=50
 
+
   # ================================
-  # JOB 2: Test Frontend (React/Vitest)
+  # JOB 2: Test Frontend
   # ================================
   test-frontend:
     name: ⚛️ Test Frontend
@@ -81,19 +86,20 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
-       - name: 🧪 Run frontend tests 
-      run: npm run test --if-present
+      - name: 🧪 Run frontend tests
+        run: npm run test --if-present
 
       - name: 🏗️ Build frontend
         run: npm run build
 
+
   # ================================
-  # JOB 3: Build Docker Images
+  # JOB 3: Build Docker
   # ================================
   build-docker:
     name: 🐳 Build Docker
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]    # Hanya jalan jika kedua test PASS
+    needs: [test-backend, test-frontend]
 
     steps:
       - name: 📥 Checkout code
