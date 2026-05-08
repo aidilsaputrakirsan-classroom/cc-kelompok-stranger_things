@@ -1,30 +1,18 @@
-# ==============================================
-# CI Pipeline — stranger_things
-# ==============================================
-# Pipeline ini berjalan otomatis saat:
-# - Push ke branch main
-# - Pull Request ke branch main
-# 
-# Jobs:
-# 1. test-backend: Install deps + run pytest
-# 2. test-frontend: Install deps + run vitest
-# 3. build-docker: Build Docker images (pastikan Dockerfile valid)
-
 name: CI Pipeline
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+# ================================
+# Prevent duplicate runs
+# ================================
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-  # ================================
-  # BACKEND
-  # ================================
-  
 jobs:
   test-backend:
     name: 🐍 Test Backend
@@ -58,14 +46,11 @@ jobs:
       - name: Run tests
         run: pytest --cov=. --cov-report=term-missing --cov-fail-under=50
 
-
-  # ================================
-  # FRONTEND
-  # ================================
   test-frontend:
     name: ⚛️ Test Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     defaults:
       run:
         working-directory: ./frontend
@@ -75,7 +60,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"   
+          node-version: "20"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -88,10 +73,6 @@ jobs:
       - name: Build
         run: npm run build
 
-
-  # ================================
-  # DOCKER
-  # ================================
   build-docker:
     name: 🐳 Build Docker
     runs-on: ubuntu-latest
@@ -106,25 +87,21 @@ jobs:
 
       - name: Build frontend
         run: docker build -t cloudapp-frontend:ci ./frontend
-# ================================
-  # JOB 4: Notify on Failure
-  # ================================
+
   notify-failure:
     name: 📢 Notify Failure
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend, build-docker] # Menunggu semua job selesai
-    if: failure() && github.event_name == 'pull_request' # Jalan HANYA jika ada yang gagal & ini di PR
+    needs: [test-backend, test-frontend, build-docker]
+    if: failure() && github.event_name == 'pull_request'
     timeout-minutes: 10
 
     permissions:
-      pull-requests: write # Izin untuk menulis komentar di PR
+      pull-requests: write
 
     steps:
-      - name: 📝 Post Comment to PR
+      - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            ## ❌ CI Pipeline Failed!
-            Halo @${{ github.actor }}, sepertinya ada yang salah dengan perubahanmu.
-            Silakan cek log detail di tab [Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-            Segera diperbaiki ya! 🚀
+            ❌ CI Pipeline Failed!
+            Cek log Actions untuk detail error.
