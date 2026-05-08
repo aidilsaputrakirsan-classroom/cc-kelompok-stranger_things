@@ -114,7 +114,7 @@ Setelah diperbaiki, jalankan ulang:
 pytest
 ```
 
-## 5. Cara Tambah Test Baru
+## 5. Cara Menambah Test Baru
 Test backend dapat ditambahkan di folder:
 ```bash
 backend/tests/
