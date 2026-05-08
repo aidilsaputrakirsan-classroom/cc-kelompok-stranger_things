@@ -12,4 +12,6 @@ def test_health_check(client):
 def test_intentional_failure(client):
     """Test ini sengaja gagal — untuk latihan debug CI."""
     response = client.get("/health")
+feature/ci-optimization
+    assert response.status_code == 200  # Sengaja salah!
     assert response.status_code == 200  # Sengaja salah!

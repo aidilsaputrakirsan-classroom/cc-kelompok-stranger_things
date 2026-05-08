@@ -18,6 +18,11 @@ on:
   pull_request:
     branches: [main]
 
+  concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+# ----------------------
+
 jobs:
   # ================================
   # BACKEND
@@ -25,6 +30,7 @@ jobs:
   test-backend:
     name: 🐍 Test Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     env:
       DATABASE_URL: sqlite:///./test.db
@@ -60,7 +66,7 @@ jobs:
   test-frontend:
     name: ⚛️ Test Frontend
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./frontend
@@ -91,6 +97,7 @@ jobs:
     name: 🐳 Build Docker
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -100,3 +107,25 @@ jobs:
 
       - name: Build frontend
         run: docker build -t cloudapp-frontend:ci ./frontend
+# ================================
+  # JOB 4: Notify on Failure
+  # ================================
+  notify-failure:
+    name: 📢 Notify Failure
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, build-docker] # Menunggu semua job selesai
+    if: failure() && github.event_name == 'pull_request' # Jalan HANYA jika ada yang gagal & ini di PR
+    timeout-minutes: 10
+
+    permissions:
+      pull-requests: write # Izin untuk menulis komentar di PR
+
+    steps:
+      - name: 📝 Post Comment to PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ## ❌ CI Pipeline Failed!
+            Halo @${{ github.actor }}, sepertinya ada yang salah dengan perubahanmu.
+            Silakan cek log detail di tab [Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            Segera diperbaiki ya! 🚀
