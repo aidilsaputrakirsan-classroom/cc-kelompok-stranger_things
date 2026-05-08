@@ -18,15 +18,13 @@ on:
   pull_request:
     branches: [main]
 
-  concurrency:
+# --- POSISI CONCURRENCY HARUS DI SINI ---
+# Tidak boleh menjorok ke dalam (harus rata kiri)
+concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-# ----------------------
-
+  
 jobs:
-  # ================================
-  # BACKEND
-  # ================================
   test-backend:
     name: 🐍 Test Backend
     runs-on: ubuntu-latest
