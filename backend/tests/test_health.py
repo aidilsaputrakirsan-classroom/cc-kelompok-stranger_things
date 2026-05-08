@@ -13,3 +13,4 @@ def test_intentional_failure(client):
     """Test ini sengaja gagal — untuk latihan debug CI."""
     response = client.get("/health")
     assert response.status_code == 999  # Sengaja salah!
+    assert response.status_code == 200  # Sengaja salah!
