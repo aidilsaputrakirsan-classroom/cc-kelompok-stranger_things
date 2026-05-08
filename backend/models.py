@@ -181,6 +181,7 @@ class Item(Base):
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False, default=0)
+    category = Column(String(100), nullable=True, index=True)  # Opsional — contoh: electronics, medical, office
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
