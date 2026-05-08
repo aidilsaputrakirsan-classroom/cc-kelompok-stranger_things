@@ -21,12 +21,8 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-# ----------------------
 
 jobs:
-  # ================================
-  # BACKEND
-  # ================================
   test-backend:
     name: 🐍 Test Backend
     runs-on: ubuntu-latest
