@@ -1,5 +1,7 @@
 # ☁️ Cloud App - [Bye bye virus]
 
+![CI](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-stranger_things/actions/workflows/ci.yml/badge.svg)
+
 Bye bye Virus adalah aplikasi yang dirancang untuk memantau dan mengelola imunisasi orang tua serta tumbuh kembang anak. Aplikasi ini menyediakan solusi komperehensif yang bertujuan untuk memastikan bahwa setiap anak menerima perlindungan kesehatan yang memadai dan mencapai potensi perkembangannya secara maksimal.
 
 Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan sedang bekerja, biasanya sering terlewat jadwal imunisasi dikarenakan tidak adanya informasi atau pengingat secara berkala. Aplikasi ini hadir untuk memudahkan para orang tua (ibu rumah tangga maupun yang sedang bekerja) dalam merencanakan dan menjadwalkan imunisasi anak mereka.

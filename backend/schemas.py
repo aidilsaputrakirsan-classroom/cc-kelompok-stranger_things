@@ -57,10 +57,8 @@ class ItemListResponse(BaseModel):
     total: int
     items: list[ItemResponse]
     
-# === USER SCHEMAS ===
-from pydantic import BaseModel, Field, field_validator
-import re
 
+# === USER SCHEMAS ===
 class UserCreate(BaseModel):
     """Schema untuk register user baru."""
     name: str = Field(..., min_length=1, max_length=100)
