@@ -1,5 +1,7 @@
 # ☁️ Cloud App - [Bye bye virus]
 
+![CI](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-stranger_things/actions/workflows/ci.yml/badge.svg)
+
 Bye bye Virus adalah aplikasi yang dirancang untuk memantau dan mengelola imunisasi orang tua serta tumbuh kembang anak. Aplikasi ini menyediakan solusi komperehensif yang bertujuan untuk memastikan bahwa setiap anak menerima perlindungan kesehatan yang memadai dan mencapai potensi perkembangannya secara maksimal.
 
 Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan sedang bekerja, biasanya sering terlewat jadwal imunisasi dikarenakan tidak adanya informasi atau pengingat secara berkala. Aplikasi ini hadir untuk memudahkan para orang tua (ibu rumah tangga maupun yang sedang bekerja) dalam merencanakan dan menjadwalkan imunisasi anak mereka.
@@ -688,6 +690,26 @@ Data tetap ada (tidak hilang)
 ### 📄 API Demo
  - [ ] Endpoint terlihat di Swagger
  - [ ] Bisa testing endpoint dari /docs
+
+## Developer Workflow (Modul 9)
+
+Mulai dari modul 9 ini, kita menggunakan **Github Flow**. Setiap anggota tim wajib menjalankan pengecekan lokal menggunakan 'Makefile' sebelum melakukan push kode ke branch fitur.
+
+### Perintah Makefile
+
+Gunakan perintah berikut di terminal:
+
+*   `make lint` : Menjalankan linter (flake8) untuk mengecek kerapian dan standar penulisan kode di backend.
+*   `make test` : Menjalankan unit testing (saat ini masih berupa placeholder).
+*   `make pr-check` : **Wajib dijalankan sebelum push!** Perintah ini akan membangun ulang (build) Docker container, lalu menjalankan linting dan testing secara otomatis.
+
+### Cara Berkontribusi
+1. Ambil update terbaru dari main: `git checkout main && git pull origin main`.
+2. Buat branch baru: `git checkout -b tipe/nama-fitur`.
+3. Lakukan perubahan kode.
+4. **Verifikasi kode** dengan menjalankan `make pr-check`.
+5. Jika berhasil (muncul ✅), lakukan commit dan push.
+6. Buat Pull Request di GitHub dan minta review dari teman tim.
   
 ---
 ## 📋 Dokumentasi

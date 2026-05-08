@@ -19,15 +19,17 @@ def get_items(
     skip: int = 0,
     limit: int = 20,
     search: str = None,
+    category: str = None,
     sort_by: str = "created_at",
     sort_dir: str = "desc",
 ):
     """
-    Ambil daftar items dengan pagination, search, dan sorting.
+    Ambil daftar items dengan pagination, search, filter kategori, dan sorting.
     
     - skip: jumlah data yang di-skip
     - limit: jumlah data per halaman
     - search: kata kunci untuk nama/deskripsi
+    - category: filter berdasarkan kategori (contoh: electronics, medical, office)
     - sort_by: kolom untuk sorting ("name", "price", "created_at")
     - sort_dir: arah sorting ("asc" atau "desc")
     """
@@ -40,6 +42,10 @@ def get_items(
                 Item.description.ilike(f"%{search}%"),
             )
         )
+
+    # Filter berdasarkan kategori (case-insensitive)
+    if category:
+        query = query.filter(Item.category.ilike(category))
 
     # Tentukan kolom sorting
     order_column = {

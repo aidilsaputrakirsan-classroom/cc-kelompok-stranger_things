@@ -1,5 +1,6 @@
 import { useState } from "react"
 import SearchBar from "../components/SearchBar"
+import Navbar from "../components/Navbar"
 
 const faskesData = [
   {
@@ -66,7 +67,7 @@ const HomeIcon = () => (
   </svg>
 )
 
-export default function FaskesMap({ setActivePage, onLogout }) {
+export default function FaskesMap({ setActivePage, onLogout, activePage }) {
   const [selected, setSelected] = useState(0)
   const [search, setSearch] = useState("")
   const [activeFilter, setActiveFilter] = useState("Semua")
@@ -85,33 +86,15 @@ export default function FaskesMap({ setActivePage, onLogout }) {
 
   return (
     <div style={s.page}>
-      {/* Navbar */}
-      <nav style={s.nav}>
-        <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
-        <a style={s.navLink} onClick={() => setActivePage?.("home")}>Home</a>
-        <a style={s.navLink} onClick={() => setActivePage?.("jadwal")}>Jadwal Imunisasi</a>
-        <a style={{ ...s.navLink, ...s.navActive }}>Faskes Map</a>
-        <div style={s.avatar} onClick={onLogout} title="Logout">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-          </svg>
-        </div>
-      </nav>
+      <Navbar activePage={activePage} setActivePage={setActivePage} onLogout={onLogout} />
 
-      {/* Map Layout */}
       <div style={s.layout}>
         {/* Sidebar */}
         <div style={s.sidebar}>
-
-          {/* SearchBar — pakai komponen bersama, mode minimal */}
           <div style={s.searchBox}>
-            <SearchBar
-              onSearch={(q) => setSearch(q)}
-              minimal
-            />
+            <SearchBar onSearch={(q) => setSearch(q)} minimal />
           </div>
 
-          {/* Location Banner */}
           <div style={s.locBanner}>
             <div style={s.locDot} />
             <div>
@@ -122,7 +105,6 @@ export default function FaskesMap({ setActivePage, onLogout }) {
             </div>
           </div>
 
-          {/* Filter Chips */}
           <div style={s.filterRow}>
             {filters.map((f) => (
               <span
@@ -135,14 +117,12 @@ export default function FaskesMap({ setActivePage, onLogout }) {
             ))}
           </div>
 
-          {/* List Header */}
           <div style={s.listHeader}>
             <div style={s.listBar} />
             <span style={s.listTitle}>Faskes Terdekat</span>
             <span style={s.listCount}>{filtered.length} hasil</span>
           </div>
 
-          {/* Faskes List */}
           <div style={s.faskesList}>
             {filtered.map((d) => (
               <div
@@ -151,9 +131,7 @@ export default function FaskesMap({ setActivePage, onLogout }) {
                 onClick={() => setSelected(d.id)}
               >
                 <div style={s.fcardHead}>
-                  <div style={s.fcardIcon}>
-                    <HomeIcon />
-                  </div>
+                  <div style={s.fcardIcon}><HomeIcon /></div>
                   <div style={s.fcardName}>
                     {d.name}
                     <span style={{ ...s.badge, ...(d.status === "Tutup" ? s.badgeTutup : s.badgeBuka) }}>
@@ -235,24 +213,6 @@ const s = {
     fontFamily: "'Segoe UI', Arial, sans-serif",
     color: "#1a1a2e",
     fontSize: "14px",
-  },
-  nav: {
-    background: "white",
-    borderBottom: "0.5px solid #f0c0d0",
-    padding: "0 2rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "1.5rem",
-    height: "56px",
-  },
-  logo: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
-  logoPink: { color: "#e91e8c" },
-  navLink: { fontSize: "14px", color: "#888", cursor: "pointer", textDecoration: "none" },
-  navActive: { color: "#e91e8c", fontWeight: "600" },
-  avatar: {
-    width: "36px", height: "36px", borderRadius: "50%",
-    background: "#fce4ec", display: "flex", alignItems: "center",
-    justifyContent: "center", cursor: "pointer", marginLeft: "auto",
   },
   layout: {
     display: "grid",

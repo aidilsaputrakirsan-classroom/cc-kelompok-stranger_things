@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { fetchChildren, deleteChild } from "../services/api"
+import Navbar from "../components/Navbar"
 
 function GirlAvatar() {
   return (
@@ -51,7 +52,6 @@ function formatTanggal(dateStr) {
   })
 }
 
-// ── Notification (inline) ─────────────────────────────────────────
 function useNotification() {
   const [notif, setNotif] = useState({ message: "", type: "success" })
   const showNotif = (message, type = "success") => setNotif({ message, type })
@@ -85,20 +85,15 @@ function Notification({ message, type = "success", onClose }) {
       `}</style>
       <div style={{
         position: "fixed", top: "24px", right: "24px", zIndex: 9999,
-        background: c.bg,
-        border: `1.5px solid ${c.border}`,
-        borderRadius: "16px",
-        padding: "14px 18px",
+        background: c.bg, border: `1.5px solid ${c.border}`,
+        borderRadius: "16px", padding: "14px 18px",
         display: "flex", alignItems: "center", gap: "12px",
         boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
         animation: "slideInNotif 0.3s ease",
         minWidth: "280px", maxWidth: "380px",
       }}>
         <span style={{ fontSize: "22px", flexShrink: 0 }}>{c.icon}</span>
-        <span style={{
-          flex: 1, fontSize: "14px", fontWeight: "600",
-          color: c.text, lineHeight: 1.4,
-        }}>
+        <span style={{ flex: 1, fontSize: "14px", fontWeight: "600", color: c.text, lineHeight: 1.4 }}>
           {message}
         </span>
         <button onClick={onClose} style={{
@@ -111,7 +106,6 @@ function Notification({ message, type = "success", onClose }) {
   )
 }
 
-// ── Confirm Dialog (pengganti window.confirm) ─────────────────────
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   if (!message) return null
   return (
@@ -131,14 +125,10 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
           background: "white", borderRadius: "20px",
           padding: "2rem 2.5rem", maxWidth: "360px", width: "90%",
           boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
-          animation: "fadeInDialog 0.2s ease",
-          textAlign: "center",
+          animation: "fadeInDialog 0.2s ease", textAlign: "center",
         }}>
           <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🗑️</div>
-          <p style={{
-            fontSize: "15px", fontWeight: "600",
-            color: "#1a1a2e", marginBottom: "1.5rem", lineHeight: 1.5,
-          }}>
+          <p style={{ fontSize: "15px", fontWeight: "600", color: "#1a1a2e", marginBottom: "1.5rem", lineHeight: 1.5 }}>
             {message}
           </p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
@@ -146,23 +136,18 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
               flex: 1, padding: "10px", borderRadius: "12px",
               border: "1px solid #e0e0e0", background: "white",
               color: "#666", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-            }}>
-              Batal
-            </button>
+            }}>Batal</button>
             <button onClick={onConfirm} style={{
               flex: 1, padding: "10px", borderRadius: "12px",
               border: "none", background: "linear-gradient(135deg, #e91e8c, #f48fb1)",
               color: "white", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-            }}>
-              Hapus
-            </button>
+            }}>Hapus</button>
           </div>
         </div>
       </div>
     </>
   )
 }
-// ─────────────────────────────────────────────────────────────────
 
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
   const [childrenList, setChildrenList] = useState([])
@@ -172,9 +157,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
   const { notif, showNotif, closeNotif } = useNotification()
   const [confirmDialog, setConfirmDialog] = useState({ message: "", child: null })
 
-  useEffect(() => {
-    loadChildren()
-  }, [])
+  useEffect(() => { loadChildren() }, [])
 
   const loadChildren = async () => {
     setLoading(true)
@@ -205,41 +188,22 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
 
   return (
     <div style={s.page}>
-      {/* Notification */}
       <Notification message={notif.message} type={notif.type} onClose={closeNotif} />
-
-      {/* Confirm Dialog */}
       <ConfirmDialog
         message={confirmDialog.message}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDialog({ message: "", child: null })}
       />
 
-      {/* Navbar */}
-      <nav style={s.nav}>
-        <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
-        <a style={s.navLink} onClick={() => setActivePage?.("home")}>Home</a>
-        <a style={{ ...s.navLink, ...s.navActive }}>Jadwal Imunisasi</a>
-        <a style={s.navLink} onClick={() => setActivePage?.("faskes")}>Faskes Map</a>
-        <div style={s.avatar} onClick={onLogout} title="Logout">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-          </svg>
-        </div>
-      </nav>
+      <Navbar activePage={activePage} setActivePage={setActivePage} onLogout={onLogout} />
 
-      {/* Main Layout */}
       <div style={s.main}>
-
         {/* Left: Daftar Anak */}
         <div style={s.leftPanel}>
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
-
             {loading && <p style={s.emptyText}>Memuat data...</p>}
-            {!loading && error && (
-              <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>
-            )}
+            {!loading && error && <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>}
             {!loading && !error && childrenList.length === 0 && (
               <p style={s.emptyText}>Belum ada data anak.</p>
             )}
@@ -259,7 +223,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                 <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
                   {child.name}
                 </span>
-
                 <div style={{ display: "flex", gap: "4px" }} onClick={e => e.stopPropagation()}>
                   <button
                     style={{
@@ -273,7 +236,6 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                       setActivePage?.("dataAnak")
                     }}
                   >✏️</button>
-
                   <button
                     style={{
                       ...s.iconBtn,
@@ -281,10 +243,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                       color: selectedChild?.id === child.id ? "white" : "#e53935",
                     }}
                     title="Hapus"
-                    onClick={() => setConfirmDialog({
-                      message: `Hapus data ${child.name}?`,
-                      child,
-                    })}
+                    onClick={() => setConfirmDialog({ message: `Hapus data ${child.name}?`, child })}
                   >🗑️</button>
                 </div>
               </div>
@@ -310,10 +269,18 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
             <>
               <div style={s.profileHeader}>
                 <h2 style={s.profileTitle}>Profil Data Anak</h2>
-                <button style={s.jadwalBtn}>
+                <button
+                  style={s.jadwalBtn}
+                  onClick={() => {
+                    if (selectedChild) {
+                      localStorage.setItem("selectedChild", JSON.stringify(selectedChild))
+                    }
+                    setActivePage?.("detailJadwal")
+                  }}
+                >
                   <div>
                     <div style={{ fontWeight: 700, fontSize: "14px" }}>Jadwal Imunisasi</div>
-                    <div style={{ fontSize: "11px", opacity: 0.85 }}>Buat jadwal imunisasi</div>
+                    <div style={{ fontSize: "11px", opacity: 0.85 }}>Lihat detail jadwal</div>
                   </div>
                   <span style={s.jadwalChevron}>›</span>
                 </button>
@@ -378,24 +345,6 @@ const s = {
     color: "#1a1a2e",
     fontSize: "14px",
   },
-  nav: {
-    background: "white",
-    borderBottom: "0.5px solid #f0c0d0",
-    padding: "0 2rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "1.5rem",
-    height: "56px",
-  },
-  logo: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
-  logoPink: { color: "#e91e8c" },
-  navLink: { fontSize: "14px", color: "#888", cursor: "pointer", textDecoration: "none" },
-  navActive: { color: "#e91e8c", fontWeight: "600" },
-  avatar: {
-    width: "36px", height: "36px", borderRadius: "50%",
-    background: "#fce4ec", display: "flex", alignItems: "center",
-    justifyContent: "center", cursor: "pointer", marginLeft: "auto",
-  },
   main: {
     display: "grid",
     gridTemplateColumns: "280px 1fr 200px",
@@ -425,20 +374,13 @@ const s = {
     gap: "0.6rem",
   },
   emptyText: {
-    color: "#aaa",
-    fontSize: "13px",
-    textAlign: "center",
-    padding: "1rem 0",
-    margin: 0,
+    color: "#aaa", fontSize: "13px",
+    textAlign: "center", padding: "1rem 0", margin: 0,
   },
   childRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "0.6rem 0.75rem",
-    borderRadius: "24px",
-    cursor: "pointer",
-    transition: "background 0.2s",
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "0.6rem 0.75rem", borderRadius: "24px",
+    cursor: "pointer", transition: "background 0.2s",
   },
   childRowActive: { background: "#e91e8c" },
   childRowInactive: { background: "#f0f0f0" },
@@ -448,88 +390,51 @@ const s = {
   },
   childName: { flex: 1, fontWeight: "600", fontSize: "13px" },
   tambahAnakBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    width: "100%",
-    padding: "0.7rem 1rem",
-    marginTop: "0.25rem",
-    borderRadius: "24px",
-    border: "2px dashed #f48fb1",
-    background: "transparent",
-    color: "#e91e8c",
-    fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    gap: "8px", width: "100%", padding: "0.7rem 1rem", marginTop: "0.25rem",
+    borderRadius: "24px", border: "2px dashed #f48fb1",
+    background: "transparent", color: "#e91e8c",
+    fontWeight: "600", fontSize: "14px", cursor: "pointer",
   },
   tambahAnakPlus: { fontSize: "18px", fontWeight: "700", lineHeight: 1 },
   centerPanel: {
-    background: "#fce4ec",
-    borderRadius: "16px",
-    padding: "1.5rem",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    background: "#fce4ec", borderRadius: "16px",
+    padding: "1.5rem", boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
     minHeight: "300px",
   },
   emptyCenter: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "260px",
+    display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", minHeight: "260px",
   },
   profileHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "1rem",
+    display: "flex", alignItems: "center",
+    justifyContent: "space-between", marginBottom: "1rem",
   },
   profileTitle: { fontSize: "18px", fontWeight: "700", color: "#e91e8c", margin: 0 },
   jadwalBtn: {
-    background: "#e91e8c",
-    color: "white",
-    border: "none",
-    borderRadius: "24px",
-    padding: "0.6rem 1rem 0.6rem 1.25rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    cursor: "pointer",
-    textAlign: "left",
+    background: "#e91e8c", color: "white", border: "none",
+    borderRadius: "24px", padding: "0.6rem 1rem 0.6rem 1.25rem",
+    display: "flex", alignItems: "center", gap: "10px",
+    cursor: "pointer", textAlign: "left",
   },
   jadwalChevron: { fontSize: "22px", fontWeight: "700", lineHeight: 1 },
   childFullName: { fontSize: "20px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 0.75rem 0" },
   infoRow: {
-    background: "white",
-    borderRadius: "24px",
-    padding: "0.7rem 1.1rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "0.5rem",
-    fontSize: "14px",
-    color: "#333",
+    background: "white", borderRadius: "24px",
+    padding: "0.7rem 1.1rem", display: "flex",
+    alignItems: "center", gap: "10px",
+    marginBottom: "0.5rem", fontSize: "14px", color: "#333",
   },
   infoIcon: { fontSize: "16px" },
   rightPanel: { display: "flex", flexDirection: "column", gap: "1rem" },
   statCard: {
-    background: "white",
-    borderRadius: "16px",
-    padding: "1.25rem 1.5rem",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+    background: "white", borderRadius: "16px",
+    padding: "1.25rem 1.5rem", boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
   },
   iconBtn: {
-    border: "none",
-    borderRadius: "50%",
-    width: "28px",
-    height: "28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "13px",
-    padding: 0,
-    flexShrink: 0,
+    border: "none", borderRadius: "50%", width: "28px", height: "28px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", fontSize: "13px", padding: 0, flexShrink: 0,
   },
   statCardTitle: { fontSize: "16px", fontWeight: "700", color: "#1a1a2e", marginBottom: "8px" },
   statCardValue: { fontSize: "28px", fontWeight: "700", color: "#2196f3", marginBottom: "8px" },
