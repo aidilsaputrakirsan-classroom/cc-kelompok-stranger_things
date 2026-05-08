@@ -11,7 +11,6 @@
 # 3. build-docker: Build Docker images (pastikan Dockerfile valid)
 
 name: CI Pipeline
-
 on:
   push:
     branches: [main]
@@ -22,6 +21,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+  # ================================
+  # BACKEND
+  # ================================
+  
 jobs:
   test-backend:
     name: 🐍 Test Backend
