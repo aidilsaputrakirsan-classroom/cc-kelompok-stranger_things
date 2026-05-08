@@ -18,7 +18,7 @@ on:
   pull_request:
     branches: [main]
 
-  concurrency:
+concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 # ----------------------
