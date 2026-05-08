@@ -92,28 +92,37 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
         {error && <div style={styles.error}>⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.row}>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="📦 Nama Item"
-              style={inputStyle("name")}
-              onFocus={() => setFocused("name")}
-              onBlur={() => setFocused("")}
-            />
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="💰 Harga"
-              style={inputStyle("price")}
-              onFocus={() => setFocused("price")}
-              onBlur={() => setFocused("")}
-            />
-          </div>
+        <div style={styles.row}>
+  <div style={{ flex: 1 }}>
+    <label htmlFor="name">Name</label>
+    <input
+      id="name"
+      type="text"
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      placeholder="📦 Nama Item"
+      style={inputStyle("name")}
+      onFocus={() => setFocused("name")}
+      onBlur={() => setFocused("")}
+    />
+  </div>
+
+  <div style={{ flex: 1 }}>
+    <label htmlFor="price">Price</label>
+    <input
+      id="price"
+      type="number"
+      name="price"
+      value={formData.price}
+      onChange={handleChange}
+      placeholder="💰 Harga"
+      style={inputStyle("price")}
+      onFocus={() => setFocused("price")}
+      onBlur={() => setFocused("")}
+    />
+  </div>
+</div>
 
           <div style={styles.row}>
             <input
@@ -140,17 +149,17 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
 
           <div style={styles.actions}>
             <button type="submit" disabled={loading} style={styles.btnSubmit}>
-              {loading ? (
-                <>
-                  <span className="btn-spinner" />
-                  Menyimpan...
-                </>
-              ) : editingItem ? (
-                "💾 Update Item"
-              ) : (
-                "➕ Tambah Item"
-              )}
-            </button>
+  {loading ? (
+    <>
+      <span className="btn-spinner" />
+      Saving...
+    </>
+  ) : editingItem ? (
+    "Save Item"
+  ) : (
+  "Tambah Item"
+)}
+</button>
 
             {editingItem && (
               <button type="button" onClick={onCancelEdit} style={styles.btnCancel}>
