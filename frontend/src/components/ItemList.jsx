@@ -18,25 +18,28 @@ function ItemList({ items, onEdit, onDelete, loading }) {
   }
 
   return (
-    <div style={styles.grid}>
-      {items.map((item) => (
-        <ItemCard
-          key={item.id}
-          item={item}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ))}
-    </div>
+    <ul style={styles.grid}>
+  {items.map((item) => (
+    <li key={item.id} style={styles.listItem}>
+      <ItemCard
+        item={item}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </li>
+  ))}
+</ul>
   )
 }
 
 const styles = {
   grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-    gap: "1rem",
-  },
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+  gap: "1rem",
+  padding: 0,
+  margin: 0,
+},
   message: {
     textAlign: "center",
     color: "#888",
@@ -64,6 +67,9 @@ const styles = {
     color: "#888",
     margin: 0,
   },
+  listItem: {
+  listStyle: "none",
+},
 }
 
 export default ItemList
