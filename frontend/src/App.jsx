@@ -6,6 +6,7 @@ import FaskesMap from "./components/FaskesMap";
 import DataAnak from "./components/DataAnak";
 import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
+import AboutPage from "./components/AboutPage"
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -428,6 +429,10 @@ function App() {
           setActivePage={setActivePage}
         />
       )}
+
+      {activePage === "about" && (
+        <AboutPage onBack={() => setActivePage("home")} />
+     )}
 
       {toast && (
         <div style={{
