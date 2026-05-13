@@ -1,4 +1,4 @@
-name: CD — Deploy ke DeployCC
+name: CD — Deploy ke DeployCCC
 
 on:
   workflow_run:
