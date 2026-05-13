@@ -279,7 +279,128 @@ jobs:
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "✓ Repo name: $name"
 
-      # ── Bangun ZIP (exclude file yang tidak perlu) ────────────────
+      # ─────────────────────────────────────────────────────────────
+      # BUILD FRONTEND DI RUNNER (offload dari STB)
+      # ─────────────────────────────────────────────────────────────
+      # Alasan: STB shared dengan web lain, npm build berat (RAM/CPU).
+      # GitHub runner gratis, 4-core, 16GB RAM → build 30-60 detik.
+      # Hasil build dikirim ke STB sebagai folder `dist/` atau `build/`,
+      # STB tidak akan jalankan npm sama sekali.
+      # ─────────────────────────────────────────────────────────────
+
+      - name: Detect Node version & package manager
+        id: nodemeta
+        run: |
+          set -e
+          cd frontend
+
+          # Deteksi package manager dari lockfile
+          if [ -f "pnpm-lock.yaml" ]; then
+            pm="pnpm"
+            install_cmd="pnpm install --frozen-lockfile"
+            build_cmd="pnpm run build"
+            cache_path="$HOME/.local/share/pnpm/store"
+          elif [ -f "yarn.lock" ]; then
+            pm="yarn"
+            install_cmd="yarn install --frozen-lockfile"
+            build_cmd="yarn build"
+            cache_path="$HOME/.cache/yarn"
+          else
+            pm="npm"
+            install_cmd="npm ci"
+            build_cmd="npm run build"
+            cache_path="$HOME/.npm"
+          fi
+
+          # Deteksi Node version dari package.json engines, fallback ke 20
+          node_ver=$(node -e "
+            try {
+              const p = require('./package.json');
+              const v = p.engines && p.engines.node;
+              if (v) console.log(v.replace(/[^0-9.]/g,'').split('.')[0] || '20');
+              else console.log('20');
+            } catch(e) { console.log('20'); }
+          " 2>/dev/null || echo "20")
+          # Sanitize: cuma angka
+          node_ver=$(echo "$node_ver" | grep -oE '^[0-9]+' | head -1)
+          [ -z "$node_ver" ] && node_ver="20"
+
+          echo "pm=$pm"                   >> "$GITHUB_OUTPUT"
+          echo "install_cmd=$install_cmd" >> "$GITHUB_OUTPUT"
+          echo "build_cmd=$build_cmd"     >> "$GITHUB_OUTPUT"
+          echo "node_ver=$node_ver"       >> "$GITHUB_OUTPUT"
+
+          echo "✓ Package manager : $pm"
+          echo "✓ Node version    : $node_ver"
+          echo "✓ Install command : $install_cmd"
+          echo "✓ Build command   : $build_cmd"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nodemeta.outputs.node_ver }}
+          # Cache npm/yarn/pnpm dependencies otomatis
+          cache: ${{ steps.nodemeta.outputs.pm }}
+          cache-dependency-path: |
+            frontend/package-lock.json
+            frontend/yarn.lock
+            frontend/pnpm-lock.yaml
+
+      - name: Install pnpm (kalau perlu)
+        if: steps.nodemeta.outputs.pm == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          set -e
+          echo "::group::Install dependencies"
+          ${{ steps.nodemeta.outputs.install_cmd }}
+          echo "::endgroup::"
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+          # Env var dari secrets bisa dipakai di build (mis. VITE_API_URL)
+          # User bisa add VITE_*/REACT_APP_* di repo secrets, akan auto-injected
+          # ke build process. Lihat env block step ini.
+        run: |
+          set -e
+          echo "::group::Build production"
+          ${{ steps.nodemeta.outputs.build_cmd }}
+          echo "::endgroup::"
+
+          # Verifikasi output build ada
+          if [ -d "dist" ]; then
+            outdir="dist"
+          elif [ -d "build" ]; then
+            outdir="build"
+          else
+            echo "::error::Build selesai tapi folder dist/ atau build/ tidak ada"
+            echo "Cek script 'build' di package.json"
+            ls -la
+            exit 1
+          fi
+
+          file_count=$(find "$outdir" -type f | wc -l)
+          size=$(du -sh "$outdir" | cut -f1)
+
+          if [ "$file_count" -lt 2 ]; then
+            echo "::error::Folder $outdir kosong atau cuma 1 file — build gagal?"
+            exit 1
+          fi
+
+          # Pastikan index.html ada (sanity check untuk React SPA)
+          if [ ! -f "$outdir/index.html" ]; then
+            echo "::warning::index.html tidak ditemukan di $outdir/ — pastikan ini build React"
+          fi
+
+          echo "✓ Build berhasil: $outdir/ ($file_count file, $size)"
+
+      # ── Bangun ZIP (kirim source backend + build frontend) ────────
       - name: Build deploy package
         id: pkg
         run: |
@@ -289,21 +410,24 @@ jobs:
 
           echo "::group::Membangun ZIP"
 
-          # Exclude pattern — tidak perlu di-upload, akan dibuat di server
-          # Catatan: script PHP juga punya rsync exclude, tapi lebih baik
-          # tidak upload sama sekali biar transfer cepat.
-          zip -r "$zipfile" frontend backend \
-            -x "frontend/node_modules/*" \
-            -x "frontend/node_modules/**" \
-            -x "frontend/.next/*" \
-            -x "frontend/.next/**" \
-            -x "frontend/dist/*" \
-            -x "frontend/dist/**" \
-            -x "frontend/build/*" \
-            -x "frontend/build/**" \
-            -x "frontend/.cache/*" \
-            -x "frontend/.parcel-cache/*" \
-            -x "frontend/coverage/*" \
+          # Strategi ZIP (mode prebuilt_fe):
+          # - frontend/ → CUMA folder dist/build + package.json (untuk metadata)
+          #   Source code React (src/, public/) TIDAK dikirim, karena sudah di-build.
+          # - backend/ → seluruh source Python (pip install masih di STB)
+          # Hasilnya: ZIP jauh lebih kecil + STB tidak punya akses ke source code FE.
+
+          # Deteksi folder build (dist atau build) hasil step sebelumnya
+          if [ -d "frontend/dist" ]; then
+            fe_build="frontend/dist"
+          elif [ -d "frontend/build" ]; then
+            fe_build="frontend/build"
+          else
+            echo "::error::Folder build frontend tidak ada — step build gagal?"
+            exit 1
+          fi
+          echo "Frontend build dir: $fe_build"
+
+          zip -r "$zipfile" "$fe_build" frontend/package.json backend \
             -x "backend/venv/*" \
             -x "backend/venv/**" \
             -x "backend/.venv/*" \
@@ -332,7 +456,6 @@ jobs:
           # Hard limit 512 MB (sesuai script PHP)
           if [ "$size_bytes" -gt 536870912 ]; then
             echo "::error::ZIP terlalu besar ($size). Limit DeployCC = 512 MB."
-            echo "Tip: cek apakah ada file besar yang tidak perlu (model, dataset, dll)"
             exit 1
           fi
 
@@ -363,15 +486,28 @@ jobs:
           echo "::group::Kirim ke ${{ env.DEPLOY_ENDPOINT }}"
           echo "  repo            : $repo"
           echo "  zip size        : ${{ steps.pkg.outputs.size }}"
+          echo "  prebuilt_fe     : 1 (frontend sudah di-build di runner)"
           echo "  skip_fe_build   : $skip_fe"
           echo "  skip_be_install : $skip_be"
           echo "::endgroup::"
 
           response_file="/tmp/deploy-response.txt"
+          # Catatan teknis:
+          # --http1.1            → wajib, hindari HTTP/2 INTERNAL_ERROR dari Cloudflare
+          #                        (streaming response PHP dengan flush() rentan
+          #                         ke-cut di HTTP/2 framing layer)
+          # --retry-all-errors   → retry untuk SEMUA error, bukan cuma HTTP 5xx
+          # --no-keepalive       → connection fresh tiap retry
+          # --expect100-timeout  → kurangi delay handshake untuk multipart
           http_code=$(curl -sS \
+            --http1.1 \
+            --no-keepalive \
             --max-time 1200 \
-            --retry 2 \
-            --retry-delay 10 \
+            --connect-timeout 30 \
+            --expect100-timeout 5 \
+            --retry 3 \
+            --retry-delay 15 \
+            --retry-all-errors \
             --retry-connrefused \
             -o "$response_file" \
             -w "%{http_code}" \
@@ -379,10 +515,12 @@ jobs:
             -F "key=$DEPLOY_KEY" \
             -F "repo=$repo" \
             -F "mode=full" \
+            -F "prebuilt_fe=1" \
             -F "skip_fe_build=$skip_fe" \
             -F "skip_be_install=$skip_be" \
             -F "file=@$zipfile" \
-            -A "GitHub-Actions-DeployCC")
+            -A "GitHub-Actions-DeployCC" \
+            -H "Expect:")
 
           echo "::group::Response dari DeployCC (HTTP $http_code)"
           cat "$response_file"
