@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import EditJadwalPage from "../components/EditJadwal"
 
 // ── Helpers ────────────────────────────────────────────────────────
 function hitungUmur(birthDate) {
@@ -67,105 +68,30 @@ function Notification({ message, type = "success", onClose }) {
         }
       `}</style>
       <div style={{
-        position: "fixed", top: "24px", right: "24px", zIndex: 9999,
-        background: c.bg, border: `1.5px solid ${c.border}`,
-        borderRadius: "16px", padding: "14px 18px",
-        display: "flex", alignItems: "center", gap: "12px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
-        animation: "slideInNotif 0.3s ease",
-        minWidth: "280px", maxWidth: "380px",
+        ...s.notifWrapper,
+        background: c.bg,
+        border: `1.5px solid ${c.border}`,
       }}>
-        <span style={{ fontSize: "22px", flexShrink: 0 }}>{c.icon}</span>
-        <span style={{ flex: 1, fontSize: "14px", fontWeight: "600", color: c.text, lineHeight: 1.4 }}>
-          {message}
-        </span>
-        <button onClick={onClose} style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontSize: "20px", color: c.text, padding: "0 2px",
-          lineHeight: 1, flexShrink: 0, opacity: 0.7,
-        }}>×</button>
+        <span style={s.notifWrapperIcon}>{c.icon}</span>
+        <span style={{ ...s.notifWrapperText, color: c.text }}>{message}</span>
+        <button
+          onClick={onClose}
+          style={{ ...s.notifCloseBtn, color: c.text }}
+        >×</button>
       </div>
     </>
-  )
-}
-
-// ── Edit Jadwal Modal ───────────────────────────────────────────────
-function EditJadwalModal({ jadwal, onSave, onClose }) {
-  const [form, setForm] = useState({ ...jadwal })
-
-  const handleChange = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9998,
-      background: "rgba(0,0,0,0.35)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{
-        background: "white", borderRadius: "20px",
-        padding: "2rem", maxWidth: "440px", width: "90%",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
-      }}>
-        <h3 style={{ margin: "0 0 1.25rem", color: "#e91e8c", fontSize: "18px", fontWeight: "700" }}>
-          ✏️ Edit Jadwal Imunisasi
-        </h3>
-
-        {[
-          { label: "Nama Vaksin", key: "vaccine_name", type: "text" },
-          { label: "Tanggal", key: "scheduled_date", type: "date" },
-          { label: "Jam Mulai", key: "time_start", type: "time" },
-          { label: "Jam Selesai", key: "time_end", type: "time" },
-          { label: "Lokasi", key: "location_name", type: "text" },
-          { label: "Alamat", key: "address", type: "text" },
-        ].map(({ label, key, type }) => (
-          <div key={key} style={{ marginBottom: "0.85rem" }}>
-            <label style={{ fontSize: "12px", fontWeight: "600", color: "#888", display: "block", marginBottom: "4px" }}>
-              {label}
-            </label>
-            <input
-              type={type}
-              value={form[key] ?? ""}
-              onChange={e => handleChange(key, e.target.value)}
-              style={{
-                width: "100%", padding: "8px 12px",
-                borderRadius: "10px", border: "1.5px solid #f0c0d0",
-                fontSize: "14px", outline: "none",
-                fontFamily: "inherit", boxSizing: "border-box",
-              }}
-            />
-          </div>
-        ))}
-
-        <div style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
-          <button onClick={onClose} style={{
-            flex: 1, padding: "10px", borderRadius: "12px",
-            border: "1px solid #e0e0e0", background: "white",
-            color: "#666", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-          }}>Batal</button>
-          <button onClick={() => onSave(form)} style={{
-            flex: 1, padding: "10px", borderRadius: "12px",
-            border: "none", background: "linear-gradient(135deg, #e91e8c, #f48fb1)",
-            color: "white", fontWeight: "600", fontSize: "14px", cursor: "pointer",
-          }}>Simpan</button>
-        </div>
-      </div>
-    </div>
   )
 }
 
 // ── Main Component ──────────────────────────────────────────────────
 export default function DetailJadwal({ onLogout, setActivePage, selectedChild, scheduleData }) {
   const { notif, showNotif, closeNotif } = useNotification()
-  const [showEdit, setShowEdit] = useState(false)
+  const [showEditPage, setShowEditPage] = useState(false)
   const [jadwal, setJadwal] = useState(null)
   const [reminderSet, setReminderSet] = useState(false)
 
   useEffect(() => {
-    if (scheduleData) {
-      setJadwal(scheduleData)
-      return
-    }
-    // Fallback dari localStorage 
+    if (scheduleData) { setJadwal(scheduleData); return }
     const stored = localStorage.getItem("activeSchedule")
     if (stored) {
       try { setJadwal(JSON.parse(stored)) } catch { setJadwal(dummyJadwal) }
@@ -174,7 +100,6 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
     setJadwal(dummyJadwal)
   }, [scheduleData])
 
-  // Data anak: dari props atau localStorage
   const child = selectedChild ?? (() => {
     try { return JSON.parse(localStorage.getItem("selectedChild")) } catch { return null }
   })()
@@ -182,7 +107,7 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
   const handleSaveEdit = (updated) => {
     setJadwal(updated)
     localStorage.setItem("activeSchedule", JSON.stringify(updated))
-    setShowEdit(false)
+    setShowEditPage(false)
     showNotif("Jadwal berhasil diperbarui", "success")
   }
 
@@ -191,9 +116,20 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
     showNotif("Pengingat berhasil dipasang! 🔔", "success")
   }
 
+  // Tampilkan halaman edit jika tombol ditekan
+  if (showEditPage && jadwal) {
+    return (
+      <EditJadwalPage
+        jadwal={jadwal}
+        onSave={handleSaveEdit}
+        onBack={() => setShowEditPage(false)}
+      />
+    )
+  }
+
   if (!jadwal) return (
-    <div style={{ ...s.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#e91e8c", fontWeight: "600" }}>Memuat data jadwal...</p>
+    <div style={s.loadingWrapper}>
+      <p style={s.loadingText}>Memuat data jadwal...</p>
     </div>
   )
 
@@ -203,19 +139,12 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
   return (
     <div style={s.page}>
       <Notification message={notif.message} type={notif.type} onClose={closeNotif} />
-      {showEdit && (
-        <EditJadwalModal
-          jadwal={jadwal}
-          onSave={handleSaveEdit}
-          onClose={() => setShowEdit(false)}
-        />
-      )}
 
       {/* Navbar */}
       <nav style={s.nav}>
         <span style={s.logo}>ByeBye<span style={s.logoPink}>Virus</span></span>
         <a style={s.navLink} onClick={() => setActivePage?.("home")}>Home</a>
-        <a style={{ ...s.navLink }} onClick={() => setActivePage?.("jadwal")}>Jadwal Imunisasi</a>
+        <a style={s.navLink} onClick={() => setActivePage?.("jadwal")}>Jadwal Imunisasi</a>
         <a style={s.navLink} onClick={() => setActivePage?.("faskes")}>Faskes Map</a>
         <div style={s.avatarBtn} onClick={onLogout} title="Logout">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
@@ -227,14 +156,13 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
       {/* Main Content */}
       <div style={s.main}>
 
-        {/* Left Panel: Jadwal Card */}
+        {/* Left Panel */}
         <div style={s.leftPanel}>
           <div style={s.leftCard}>
             <div style={s.leftCardHeader}>
               <span style={s.leftCardTitle}>Jadwal Imunisasi</span>
             </div>
             <div style={s.leftCardBody}>
-              {/* Vaccine Card */}
               <div style={s.vaccineCard}>
                 <div style={s.vaccineCardTop}>
                   <div style={s.vaccineNameRow}>
@@ -250,10 +178,12 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
                   <span>📅</span>
                   <span>
                     {jadwal.scheduled_date
-                      ? new Date(jadwal.scheduled_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                      ? new Date(jadwal.scheduled_date).toLocaleDateString("id-ID", {
+                          day: "numeric", month: "short", year: "numeric",
+                        })
                       : "-"}
                     {jadwal.time_start && (
-                      <span style={{ color: "#2196f3", fontWeight: "600" }}>
+                      <span style={s.vaccineTimeHighlight}>
                         {" "}| {jadwal.time_start}{jadwal.time_end ? ` - ${jadwal.time_end}` : ""}
                       </span>
                     )}
@@ -261,7 +191,7 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
                 </div>
                 <div style={s.vaccineInfoRow}>
                   <span>📍</span>
-                  <span style={{ fontSize: "12px", color: "#555" }}>
+                  <span style={s.vaccineAddress}>
                     {jadwal.address ?? "Jl. Ruhui Rahayu II No. 789, Balikpapan Selatan"}
                   </span>
                 </div>
@@ -273,7 +203,7 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
           </div>
         </div>
 
-        {/* Right Panel: Detail Jadwal */}
+        {/* Right Panel */}
         <div style={s.rightPanel}>
           <div style={s.detailCard}>
 
@@ -285,7 +215,7 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
               </div>
             </div>
 
-            {/* Notifikasi Imunisasi Berikutnya */}
+            {/* Notifikasi Banner */}
             {isUpcoming && (
               <div style={s.notifBanner}>
                 <span style={s.notifBell}>🔔</span>
@@ -304,19 +234,19 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
             {/* Two Columns */}
             <div style={s.columnsRow}>
 
-              {/* Kolom Kiri: Info Anak & Jadwal */}
+              {/* Kolom Kiri */}
               <div style={s.column}>
                 <div style={s.columnDotLine}>
-                  <div style={s.columnDot} />
+                  <div style={s.columnDotPink} />
                   <div style={s.columnLine} />
                 </div>
                 <div style={s.columnContent}>
                   <h3 style={s.columnTitle}>{jadwal.vaccine_name ?? "BCG"}</h3>
                   <div style={s.infoBox}>
                     {[
-                      { label: "Nama", value: child?.name ?? "—" },
-                      { label: "Usia", value: hitungUmur(child?.birth_date) },
-                      { label: "Vaksin", value: jadwal.vaccine_name ?? "—" },
+                      { label: "Nama",    value: child?.name ?? "—" },
+                      { label: "Usia",    value: hitungUmur(child?.birth_date) },
+                      { label: "Vaksin",  value: jadwal.vaccine_name ?? "—" },
                       { label: "Tanggal", value: formatTanggal(jadwal.scheduled_date) },
                       {
                         label: "Waktu",
@@ -337,10 +267,10 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
                 </div>
               </div>
 
-              {/* Kolom Kanan: Informasi Tambahan */}
+              {/* Kolom Kanan */}
               <div style={s.column}>
                 <div style={s.columnDotLine}>
-                  <div style={{ ...s.columnDot, background: "#e91e8c" }} />
+                  <div style={s.columnDotRed} />
                   <div style={s.columnLine} />
                 </div>
                 <div style={s.columnContent}>
@@ -355,8 +285,8 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
                     </ul>
                     {jadwal.notes && (
                       <>
-                        <p style={{ ...s.persiapanTitle, marginTop: "0.75rem" }}>Catatan :</p>
-                        <p style={{ fontSize: "13px", color: "#555", margin: 0 }}>{jadwal.notes}</p>
+                        <p style={s.catatanTitle}>Catatan :</p>
+                        <p style={s.catatanText}>{jadwal.notes}</p>
                       </>
                     )}
                   </div>
@@ -367,16 +297,13 @@ export default function DetailJadwal({ onLogout, setActivePage, selectedChild, s
             {/* Action Buttons */}
             <div style={s.actionRow}>
               <button
-                style={{
-                  ...s.btnSecondary,
-                  ...(reminderSet ? s.btnReminderActive : {}),
-                }}
+                style={reminderSet ? s.btnReminderActive : s.btnSecondary}
                 onClick={handlePasangPengingat}
                 disabled={reminderSet}
               >
                 🔔 {reminderSet ? "Pengingat Terpasang" : "Pasang pengingat"}
               </button>
-              <button style={s.btnPrimary} onClick={() => setShowEdit(true)}>
+              <button style={s.btnPrimary} onClick={() => setShowEditPage(true)}>
                 ✏️ Edit jadwal
               </button>
             </div>
@@ -402,6 +329,21 @@ const dummyJadwal = {
 
 // ── Styles ──────────────────────────────────────────────────────────
 const s = {
+  // Loading state
+  loadingWrapper: {
+    background: "#fff5f8",
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+  },
+  loadingText: {
+    color: "#e91e8c",
+    fontWeight: "600",
+  },
+
+  // Page
   page: {
     background: "#fff5f8",
     minHeight: "100vh",
@@ -409,6 +351,8 @@ const s = {
     color: "#1a1a2e",
     fontSize: "14px",
   },
+
+  // Navbar
   nav: {
     background: "white",
     borderBottom: "0.5px solid #f0c0d0",
@@ -421,13 +365,19 @@ const s = {
   logo: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", marginRight: "auto" },
   logoPink: { color: "#e91e8c" },
   navLink: { fontSize: "14px", color: "#888", cursor: "pointer", textDecoration: "none" },
-  navActive: { color: "#e91e8c", fontWeight: "600" },
   avatarBtn: {
-    width: "36px", height: "36px", borderRadius: "50%",
-    background: "#fce4ec", display: "flex", alignItems: "center",
-    justifyContent: "center", cursor: "pointer", marginLeft: "auto",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    background: "#fce4ec",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    marginLeft: "auto",
   },
 
+  // Layout
   main: {
     display: "grid",
     gridTemplateColumns: "300px 1fr",
@@ -437,9 +387,10 @@ const s = {
     margin: "0 auto",
     alignItems: "start",
   },
-
-  // Left panel
   leftPanel: {},
+  rightPanel: {},
+
+  // Left Card
   leftCard: {
     background: "white",
     borderRadius: "20px",
@@ -458,6 +409,7 @@ const s = {
   },
   leftCardBody: { padding: "1rem" },
 
+  // Vaccine Card
   vaccineCard: {
     background: "white",
     border: "1px solid #fce4ec",
@@ -497,6 +449,8 @@ const s = {
     color: "#555",
     marginBottom: "6px",
   },
+  vaccineTimeHighlight: { color: "#2196f3", fontWeight: "600" },
+  vaccineAddress: { fontSize: "12px", color: "#555" },
   lihatDetailBtn: {
     marginTop: "10px",
     width: "100%",
@@ -510,8 +464,7 @@ const s = {
     cursor: "pointer",
   },
 
-  // Right panel
-  rightPanel: {},
+  // Detail Card
   detailCard: {
     background: "white",
     borderRadius: "20px",
@@ -535,6 +488,7 @@ const s = {
     margin: 0,
   },
 
+  // Notification Banner (in-card)
   notifBanner: {
     background: "#f0fdf4",
     border: "1px solid #86efac",
@@ -548,13 +502,13 @@ const s = {
   notifBell: { fontSize: "20px", flexShrink: 0 },
   notifText: { fontSize: "14px", fontWeight: "600", color: "#166534" },
 
+  // Two-column layout
   columnsRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "1.25rem",
     marginBottom: "1.5rem",
   },
-
   column: { display: "flex", gap: "10px", alignItems: "flex-start" },
   columnDotLine: {
     display: "flex",
@@ -563,11 +517,20 @@ const s = {
     paddingTop: "6px",
     flexShrink: 0,
   },
-  columnDot: {
+  columnDotPink: {
     width: "14px",
     height: "14px",
     borderRadius: "50%",
     background: "#f48fb1",
+    border: "2px solid #e91e8c",
+    flexShrink: 0,
+    zIndex: 1,
+  },
+  columnDotRed: {
+    width: "14px",
+    height: "14px",
+    borderRadius: "50%",
+    background: "#e91e8c",
     border: "2px solid #e91e8c",
     flexShrink: 0,
     zIndex: 1,
@@ -587,6 +550,7 @@ const s = {
     margin: "0 0 0.75rem 0",
   },
 
+  // Info Box
   infoBox: {
     background: "#fff5f8",
     borderRadius: "12px",
@@ -606,6 +570,7 @@ const s = {
   infoSep: { color: "#ccc", flexShrink: 0 },
   infoValue: { color: "#1a1a2e", flex: 1 },
 
+  // Persiapan
   persiapanTitle: {
     fontSize: "13px",
     fontWeight: "600",
@@ -619,7 +584,15 @@ const s = {
     color: "#555",
     lineHeight: 1.7,
   },
+  catatanTitle: {
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#444",
+    margin: "0.75rem 0 8px 0",
+  },
+  catatanText: { fontSize: "13px", color: "#555", margin: 0 },
 
+  // Action Row
   actionRow: {
     display: "flex",
     justifyContent: "flex-end",
@@ -639,10 +612,17 @@ const s = {
     gap: "6px",
   },
   btnReminderActive: {
-    background: "#e8f5e9",
+    padding: "10px 20px",
+    borderRadius: "12px",
     border: "1.5px solid #4caf50",
+    background: "#e8f5e9",
     color: "#2e7d32",
+    fontWeight: "600",
+    fontSize: "14px",
     cursor: "default",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
   },
   btnPrimary: {
     padding: "10px 22px",
@@ -656,5 +636,39 @@ const s = {
     display: "flex",
     alignItems: "center",
     gap: "6px",
+  },
+
+  // Floating notification (toast)
+  notifWrapper: {
+    position: "fixed",
+    top: "24px",
+    right: "24px",
+    zIndex: 9999,
+    borderRadius: "16px",
+    padding: "14px 18px",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
+    animation: "slideInNotif 0.3s ease",
+    minWidth: "280px",
+    maxWidth: "380px",
+  },
+  notifWrapperIcon: { fontSize: "22px", flexShrink: 0 },
+  notifWrapperText: {
+    flex: 1,
+    fontSize: "14px",
+    fontWeight: "600",
+    lineHeight: 1.4,
+  },
+  notifCloseBtn: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "20px",
+    padding: "0 2px",
+    lineHeight: 1,
+    flexShrink: 0,
+    opacity: 0.7,
   },
 }

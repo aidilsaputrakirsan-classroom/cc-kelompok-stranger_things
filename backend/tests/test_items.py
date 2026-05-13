@@ -95,4 +95,80 @@ def test_search_items(client, auth_headers):
     data = response.json()
     assert data["total"] >= 1
     assert any("laptop" in item["name"].lower() for item in data["items"])
-    
+
+
+def test_create_item_with_category(client, auth_headers):
+    """Test membuat item dengan field category."""
+    response = client.post("/items", json={
+        "name": "Laptop Gaming",
+        "description": "Laptop untuk gaming",
+        "price": 20000000,
+        "quantity": 2,
+        "category": "electronics"
+    }, headers=auth_headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["category"] == "electronics"
+
+
+def test_create_item_without_category(client, auth_headers):
+    """Test membuat item tanpa category (field opsional)."""
+    response = client.post("/items", json={
+        "name": "Buku Catatan",
+        "price": 25000,
+        "quantity": 10
+    }, headers=auth_headers)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["category"] is None
+
+
+def test_filter_items_by_category(client, auth_headers):
+    """Test filter GET /items?category=electronics."""
+    # Buat item dengan kategori berbeda
+    client.post("/items", json={
+        "name": "Laptop Pro", "price": 18000000, "quantity": 1, "category": "electronics"
+    }, headers=auth_headers)
+    client.post("/items", json={
+        "name": "Stetoskop", "price": 500000, "quantity": 5, "category": "medical"
+    }, headers=auth_headers)
+    client.post("/items", json={
+        "name": "Pena Ballpoint", "price": 5000, "quantity": 50, "category": "office"
+    }, headers=auth_headers)
+
+    # Filter hanya electronics
+    response = client.get("/items?category=electronics", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] >= 1
+    for item in data["items"]:
+        assert item["category"].lower() == "electronics"
+
+
+def test_filter_items_category_no_match(client, auth_headers):
+    """Test filter category yang tidak ada itemnya → total 0."""
+    client.post("/items", json={
+        "name": "Laptop", "price": 15000000, "quantity": 1, "category": "electronics"
+    }, headers=auth_headers)
+
+    response = client.get("/items?category=furniture", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+def test_update_item_category(client, auth_headers):
+    """Test update category pada item yang sudah ada."""
+    # Buat item tanpa category
+    create_resp = client.post("/items", json={
+        "name": "Mouse", "price": 200000, "quantity": 3
+    }, headers=auth_headers)
+    item_id = create_resp.json()["id"]
+
+    # Update category
+    response = client.put(f"/items/{item_id}", json={
+        "category": "electronics"
+    }, headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["category"] == "electronics"
