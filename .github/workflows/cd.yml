@@ -84,21 +84,37 @@ jobs:
           echo "head_sha=$sha" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout (commit yang di-CI-kan)
+      - name: Checkout (commit yang lulus CI)
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.ctx.outputs.head_sha }}
-          fetch-depth: 2 # perlu parent untuk diff
+          # fetch-depth: 0 = full history. Wajib untuk workflow_run karena
+          # paths-filter butuh git merge-base, dan shallow clone sering gagal
+          # dengan exit code 128 (parent commit tidak ada di local history).
+          fetch-depth: 0
+
+      # Hitung base SHA dengan aman: kalau parent ada → pakai HEAD~1,
+      # kalau tidak ada (initial commit) → set base=ref biar paths-filter
+      # otomatis treat SEMUA file sebagai changed (deploy penuh).
+      - name: Resolve diff base
+        id: base
+        run: |
+          head="${{ steps.ctx.outputs.head_sha }}"
+          if git rev-parse "${head}~1" >/dev/null 2>&1; then
+            base=$(git rev-parse "${head}~1")
+            echo "✓ Parent commit ditemukan: $base"
+          else
+            base="$head"
+            echo "⚠ Initial commit (tidak ada parent) → semua file dianggap berubah"
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
 
       - name: Filter changed paths
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          # Wajib eksplisit untuk workflow_run — action tidak bisa autodetect base.
-          # Pakai parent commit (HEAD~1) sebagai base diff.
-          # Untuk first commit (tidak ada parent), action otomatis treat semua sebagai changed.
           ref: ${{ steps.ctx.outputs.head_sha }}
-          base: ${{ steps.ctx.outputs.head_sha }}~1
+          base: ${{ steps.base.outputs.base }}
           filters: |
             frontend:
               - 'frontend/**'
