@@ -1,3 +1,17 @@
+# ═══════════════════════════════════════════════════════════════════
+#   DeployCC v1.1 — Continuous Deployment
+#   Stack: React (frontend/) + Python Uvicorn (backend/) + PostgreSQL
+#
+#   Cara kerja:
+#   1. Deteksi path mana yang berubah (frontend/ vs backend/ vs requirements)
+#   2. Kalau cuma frontend yang berubah  → skip_be_install=1 (backend tidak di-restart)
+#   3. Kalau cuma backend yang berubah   → skip_fe_build=1   (React tidak di-build ulang)
+#   4. Kalau requirements.txt tidak berubah → skip_be_install=1 (pip install dilewati)
+#   5. Kalau cuma docs/README berubah    → skip semua (super ringan)
+#   6. Zip hanya file yang perlu (exclude node_modules, venv, .git, dll)
+#   7. POST ke endpoint DeployCC dengan flag yang sesuai
+# ═══════════════════════════════════════════════════════════════════
+
 name: CD — Deploy ke DeployCC
 
 on:
@@ -6,102 +20,431 @@ on:
       - "CI Pipeline"
     types:
       - completed
-
   workflow_dispatch:
+    inputs:
+      force_full_rebuild:
+        description: "Paksa build ulang frontend & backend (abaikan deteksi perubahan)"
+        type: boolean
+        default: false
+
+# Hindari deploy paralel untuk repo yang sama
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+# Cuma jalan kalau CI sukses (atau manual dispatch).
+# Tanpa filter ini, CD juga jalan saat CI failure.
+permissions:
+  contents: read
+  actions: read
+
+env:
+  DEPLOY_ENDPOINT: https://deploycc.akhzafachrozy.my.id
+  REPO_NAME: ${{ github.event.repository.name }}
 
 jobs:
-  deploy:
-    # Jalan hanya jika CI sukses
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
-
-    name: Build & Deploy
+  # ─────────────────────────────────────────────────────────────────
+  #  STEP 1 — Deteksi file mana yang berubah
+  # ─────────────────────────────────────────────────────────────────
+  detect-changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Gate: kalau di-trigger dari workflow_run, CI harus sukses dulu.
+    # Manual dispatch selalu lolos.
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    outputs:
+      frontend_changed: ${{ steps.filter.outputs.frontend }}
+      backend_changed: ${{ steps.filter.outputs.backend }}
+      requirements_changed: ${{ steps.filter.outputs.requirements }}
+      package_changed: ${{ steps.filter.outputs.package }}
+      deployable: ${{ steps.filter.outputs.deployable }}
+      head_sha: ${{ steps.ctx.outputs.head_sha }}
 
     steps:
-      # 1. Checkout source
-      - name: Checkout kode
+      # Resolve SHA yang benar:
+      # - workflow_run: pakai SHA commit yang men-trigger CI (BUKAN github.sha,
+      #   karena di workflow_run github.sha = default branch HEAD, bisa beda)
+      # - workflow_dispatch: pakai github.sha (HEAD branch yang dipilih user)
+      - name: Resolve commit SHA
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            sha="${{ github.event.workflow_run.head_sha }}"
+            branch="${{ github.event.workflow_run.head_branch }}"
+            echo "Trigger: workflow_run dari CI (conclusion=${{ github.event.workflow_run.conclusion }})"
+          else
+            sha="${{ github.sha }}"
+            branch="${{ github.ref_name }}"
+            echo "Trigger: workflow_dispatch (manual)"
+          fi
+          echo "  SHA    : $sha"
+          echo "  Branch : $branch"
+          echo "head_sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout (commit yang di-CI-kan)
         uses: actions/checkout@v4
-
-      # 2. Setup Node
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          ref: ${{ steps.ctx.outputs.head_sha }}
+          fetch-depth: 2 # perlu parent untuk diff
 
-      # 3. Install frontend deps
-      - name: Install dependencies frontend
-        working-directory: frontend
-        run: npm ci
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          # Wajib eksplisit untuk workflow_run — action tidak bisa autodetect base.
+          # Pakai parent commit (HEAD~1) sebagai base diff.
+          # Untuk first commit (tidak ada parent), action otomatis treat semua sebagai changed.
+          ref: ${{ steps.ctx.outputs.head_sha }}
+          base: ${{ steps.ctx.outputs.head_sha }}~1
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            requirements:
+              - 'backend/requirements.txt'
+              - 'backend/pyproject.toml'
+              - 'backend/setup.py'
+              - 'backend/Pipfile'
+              - 'backend/Pipfile.lock'
+            package:
+              - 'frontend/package.json'
+              - 'frontend/package-lock.json'
+              - 'frontend/pnpm-lock.yaml'
+              - 'frontend/yarn.lock'
+            deployable:
+              - 'frontend/**'
+              - 'backend/**'
 
-      # 4. Build frontend
-      - name: Build React
-        working-directory: frontend
-        run: npm run build
-        env:
-          NODE_ENV: production
+  # ─────────────────────────────────────────────────────────────────
+  #  STEP 2 — Bangun ZIP & deploy
+  # ─────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    # Skip kalau tidak ada perubahan di frontend/ atau backend/ (mis. cuma README)
+    # KECUALI user manual trigger via workflow_dispatch
+    if: |
+      needs.detect-changes.outputs.deployable == 'true' ||
+      github.event_name == 'workflow_dispatch'
 
-      # 5. Buat ZIP deploy
-      - name: Buat deploy.zip
+    steps:
+      # ── Checkout commit yang sama dengan yang lulus CI ────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect-changes.outputs.head_sha }}
+
+      # ── Validasi struktur folder ──────────────────────────────────
+      - name: Validate repo structure
         run: |
-          zip -r deploy.zip . \
-            -x "frontend/node_modules/*" \
-            -x "frontend/.next/*" \
-            -x "frontend/dist/*" \
-            -x "frontend/build/*" \
-            -x "backend/venv/*" \
-            -x "backend/__pycache__/*" \
-            -x "backend/*.pyc" \
-            -x ".git/*" \
-            -x ".github/*" \
-            -x "*.zip"
+          set -e
+          echo "::group::Struktur repo"
+          ls -la
+          echo "::endgroup::"
 
-          echo "ZIP berhasil dibuat"
-          ls -lh deploy.zip
+          missing=()
+          [ -d "frontend" ] || missing+=("frontend/")
+          [ -d "backend" ]  || missing+=("backend/")
 
-      # 6. Deploy ke DeployCC
-      - name: Deploy ke server
-        run: |
-          echo "Mulai deploy..."
-
-          RESPONSE=$(curl -sS --max-time 300 \
-            -X POST "https://deploycc.akhzafachrozy.my.id" \
-            -F "key=RAHASIA123" \
-            -F "repo=fsti-itk-clone" \
-            -F "mode=full" \
-            -F "file=@deploy.zip" \
-            -A "GitHub-Actions/deploycc" \
-            -w "\nHTTP_CODE:%{http_code}")
-
-          echo "$RESPONSE"
-
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Deploy gagal"
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Folder wajib tidak ada: ${missing[*]}"
+            echo "Repo harus punya struktur:"
+            echo "  ./frontend/   (React app, ada package.json)"
+            echo "  ./backend/    (Python app, ada main.py/app.py)"
             exit 1
           fi
 
-          echo "✅ Deploy sukses"
+          if [ ! -f "frontend/package.json" ]; then
+            echo "::error::frontend/package.json tidak ditemukan"
+            exit 1
+          fi
 
-      # 7. Summary success
-      - name: Ringkasan berhasil
-        if: success()
-        run: |
-          echo "## ✅ Deploy berhasil" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Repo: fsti-itk-clone" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          # Backend harus ada salah satu entry point
+          if ! ls backend/{main,app,server,asgi,api}.py >/dev/null 2>&1; then
+            echo "::warning::Tidak ditemukan entry point standar di backend/"
+            echo "DeployCC akan default ke main:app — pastikan main.py ada"
+          fi
 
-      # 8. Summary failed
-      - name: Ringkasan gagal
-        if: failure()
+          echo "✓ Struktur repo valid"
+
+      # ── Hitung flag skip berdasarkan diff ─────────────────────────
+      - name: Compute deploy flags
+        id: flags
         run: |
-          echo "## ❌ Deploy gagal" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Cek log step deploy." >> $GITHUB_STEP_SUMMARY
+          set -e
+
+          # Default: ikuti deteksi paths-filter
+          fe_changed="${{ needs.detect-changes.outputs.frontend_changed }}"
+          be_changed="${{ needs.detect-changes.outputs.backend_changed }}"
+          req_changed="${{ needs.detect-changes.outputs.requirements_changed }}"
+          pkg_changed="${{ needs.detect-changes.outputs.package_changed }}"
+
+          # Manual trigger dengan force → rebuild semuanya
+          if [ "${{ github.event.inputs.force_full_rebuild }}" = "true" ]; then
+            echo "↻ force_full_rebuild=true → rebuild semua"
+            fe_changed="true"
+            be_changed="true"
+            req_changed="true"
+          fi
+
+          # ── Aturan skip_fe_build ──
+          # Skip kalau frontend/ tidak berubah sama sekali
+          if [ "$fe_changed" = "true" ]; then
+            skip_fe_build="0"
+            fe_status="🔨 BUILD (frontend berubah)"
+          else
+            skip_fe_build="1"
+            fe_status="⏭  SKIP (frontend tidak berubah)"
+          fi
+
+          # ── Aturan skip_be_install ──
+          # Skip pip install kalau requirements.txt tidak berubah
+          # (kode Python tetap dideploy, cuma pip install yang dilewati)
+          if [ "$req_changed" = "true" ]; then
+            skip_be_install="0"
+            be_status="📦 INSTALL (requirements.txt berubah)"
+          else
+            skip_be_install="1"
+            be_status="⏭  SKIP pip install (requirements tidak berubah)"
+          fi
+
+          # ── Restart info (hanya info, dihitung script PHP) ──
+          if [ "$be_changed" = "true" ]; then
+            restart_status="🔄 RESTART Uvicorn (backend code berubah)"
+          else
+            restart_status="✋ NO restart (backend tidak berubah, zero downtime)"
+          fi
+
+          echo "skip_fe_build=$skip_fe_build" >> "$GITHUB_OUTPUT"
+          echo "skip_be_install=$skip_be_install" >> "$GITHUB_OUTPUT"
+          echo "fe_changed=$fe_changed" >> "$GITHUB_OUTPUT"
+          echo "be_changed=$be_changed" >> "$GITHUB_OUTPUT"
+
+          # Summary
+          {
+            echo "## 📋 Deploy Plan"
+            echo ""
+            echo "| Komponen | Status |"
+            echo "|----------|--------|"
+            echo "| Frontend | $fe_status |"
+            echo "| Python deps | $be_status |"
+            echo "| Backend service | $restart_status |"
+            echo ""
+            echo "**Flags ke DeployCC:**"
+            echo "- \`skip_fe_build=$skip_fe_build\`"
+            echo "- \`skip_be_install=$skip_be_install\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Normalisasi nama repo (huruf kecil, hapus karakter aneh) ──
+      - name: Normalize repo name
+        id: repo
+        run: |
+          name=$(echo "${{ env.REPO_NAME }}" \
+                  | tr '[:upper:]' '[:lower:]' \
+                  | sed 's/[^a-z0-9-]//g' \
+                  | cut -c1-40)
+
+          if [ ${#name} -lt 3 ]; then
+            echo "::error::Nama repo terlalu pendek setelah dinormalisasi: '$name'"
+            exit 1
+          fi
+
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "✓ Repo name: $name"
+
+      # ── Bangun ZIP (exclude file yang tidak perlu) ────────────────
+      - name: Build deploy package
+        id: pkg
+        run: |
+          set -e
+          repo="${{ steps.repo.outputs.name }}"
+          zipfile="/tmp/${repo}-deploy.zip"
+
+          echo "::group::Membangun ZIP"
+
+          # Exclude pattern — tidak perlu di-upload, akan dibuat di server
+          # Catatan: script PHP juga punya rsync exclude, tapi lebih baik
+          # tidak upload sama sekali biar transfer cepat.
+          zip -r "$zipfile" frontend backend \
+            -x "frontend/node_modules/*" \
+            -x "frontend/node_modules/**" \
+            -x "frontend/.next/*" \
+            -x "frontend/.next/**" \
+            -x "frontend/dist/*" \
+            -x "frontend/dist/**" \
+            -x "frontend/build/*" \
+            -x "frontend/build/**" \
+            -x "frontend/.cache/*" \
+            -x "frontend/.parcel-cache/*" \
+            -x "frontend/coverage/*" \
+            -x "backend/venv/*" \
+            -x "backend/venv/**" \
+            -x "backend/.venv/*" \
+            -x "backend/.venv/**" \
+            -x "backend/__pycache__/*" \
+            -x "backend/**/__pycache__/*" \
+            -x "backend/**/__pycache__/**" \
+            -x "backend/*.pyc" \
+            -x "backend/**/*.pyc" \
+            -x "backend/.pytest_cache/*" \
+            -x "backend/.mypy_cache/*" \
+            -x "backend/htmlcov/*" \
+            -x "backend/.env" \
+            -x "backend/.env.local" \
+            -x "**/.DS_Store" \
+            -x "**/.git/*" \
+            -x "**/.gitignore" \
+            > /dev/null
+
+          size=$(du -h "$zipfile" | cut -f1)
+          size_bytes=$(stat -c%s "$zipfile")
+
+          echo "✓ ZIP siap: $zipfile ($size)"
+          echo "  File count: $(unzip -l "$zipfile" | tail -1 | awk '{print $2}')"
+
+          # Hard limit 512 MB (sesuai script PHP)
+          if [ "$size_bytes" -gt 536870912 ]; then
+            echo "::error::ZIP terlalu besar ($size). Limit DeployCC = 512 MB."
+            echo "Tip: cek apakah ada file besar yang tidak perlu (model, dataset, dll)"
+            exit 1
+          fi
+
+          echo "::endgroup::"
+
+          echo "path=$zipfile" >> "$GITHUB_OUTPUT"
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+
+      # ── Kirim ke endpoint DeployCC ────────────────────────────────
+      - name: Deploy to DeployCC
+        id: deploy
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_API_KEY }}
+        run: |
+          set -e
+          repo="${{ steps.repo.outputs.name }}"
+          zipfile="${{ steps.pkg.outputs.path }}"
+          skip_fe="${{ steps.flags.outputs.skip_fe_build }}"
+          skip_be="${{ steps.flags.outputs.skip_be_install }}"
+
+          # Fallback ke 'deploycc-classroom' kalau secret tidak diset
+          # (mode classroom hanya jalan dari GitHub Actions, sesuai script PHP)
+          if [ -z "$DEPLOY_KEY" ]; then
+            echo "::warning::DEPLOY_API_KEY tidak diset → pakai mode classroom"
+            DEPLOY_KEY="deploycc-classroom"
+          fi
+
+          echo "::group::Kirim ke ${{ env.DEPLOY_ENDPOINT }}"
+          echo "  repo            : $repo"
+          echo "  zip size        : ${{ steps.pkg.outputs.size }}"
+          echo "  skip_fe_build   : $skip_fe"
+          echo "  skip_be_install : $skip_be"
+          echo "::endgroup::"
+
+          response_file="/tmp/deploy-response.txt"
+          http_code=$(curl -sS \
+            --max-time 1200 \
+            --retry 2 \
+            --retry-delay 10 \
+            --retry-connrefused \
+            -o "$response_file" \
+            -w "%{http_code}" \
+            -X POST "${{ env.DEPLOY_ENDPOINT }}" \
+            -F "key=$DEPLOY_KEY" \
+            -F "repo=$repo" \
+            -F "mode=full" \
+            -F "skip_fe_build=$skip_fe" \
+            -F "skip_be_install=$skip_be" \
+            -F "file=@$zipfile" \
+            -A "GitHub-Actions-DeployCC")
+
+          echo "::group::Response dari DeployCC (HTTP $http_code)"
+          cat "$response_file"
+          echo ""
+          echo "::endgroup::"
+
+          # Cek error
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Deploy gagal dengan HTTP $http_code"
+            exit 1
+          fi
+
+          if grep -q "DEPLOYCC_ERROR" "$response_file"; then
+            echo "::error::DeployCC mengembalikan error — lihat response di atas"
+            exit 1
+          fi
+
+          if ! grep -q "DEPLOYCC_START" "$response_file"; then
+            echo "::error::Response tidak valid (tidak ada marker DEPLOYCC_START)"
+            exit 1
+          fi
+
+          # Extract info penting untuk summary
+          domain=$(grep "^ADPL:domain=" "$response_file" | cut -d= -f2- | head -1)
+          backend_live=$(grep "^ADPL:backend_live=" "$response_file" | cut -d= -f2- | head -1)
+          srv_status=$(grep "^ADPL:srv_status=" "$response_file" | cut -d= -f2- | head -1)
+          infra_rebuilt=$(grep "^ADPL:infra_rebuilt=" "$response_file" | cut -d= -f2- | head -1)
+          port=$(grep "^ADPL:port=" "$response_file" | awk -F'[= ]' '{print $2}' | head -1)
+
+          echo "domain=$domain" >> "$GITHUB_OUTPUT"
+          echo "backend_live=$backend_live" >> "$GITHUB_OUTPUT"
+          echo "srv_status=$srv_status" >> "$GITHUB_OUTPUT"
+          echo "infra_rebuilt=$infra_rebuilt" >> "$GITHUB_OUTPUT"
+          echo "port=$port" >> "$GITHUB_OUTPUT"
+
+      # ── Summary di GitHub Actions UI ──────────────────────────────
+      - name: Write deploy summary
+        if: always() && steps.deploy.outcome == 'success'
+        run: |
+          {
+            echo ""
+            echo "## ✅ Deploy Berhasil"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| 🌐 URL | ${{ steps.deploy.outputs.domain }} |"
+            echo "| 🐍 Backend live | ${{ steps.deploy.outputs.backend_live }} |"
+            echo "| ⚙️ Service status | \`${{ steps.deploy.outputs.srv_status }}\` |"
+            echo "| 🔌 Uvicorn port | ${{ steps.deploy.outputs.port }} |"
+            echo "| 🏗 Infra rebuilt | ${{ steps.deploy.outputs.infra_rebuilt }} |"
+            echo "| 📦 ZIP size | ${{ steps.pkg.outputs.size }} |"
+            echo ""
+
+            if [ "${{ steps.deploy.outputs.backend_live }}" != "YES" ]; then
+              echo "### ⚠️ Backend belum live"
+              echo ""
+              echo "Kalau ini deploy pertama, kamu perlu setup \`.env\` & database PostgreSQL via SSH."
+              echo "Detail langkah ada di log job ini (cari section **LANGKAH SETUP WAJIB**)."
+              echo ""
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt || true
+
+  # ─────────────────────────────────────────────────────────────────
+  #  STEP 3 — Skip notifier (kalau cuma docs/README yang berubah)
+  # ─────────────────────────────────────────────────────────────────
+  skipped:
+    name: Skip deploy (no app changes)
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.deployable != 'true' &&
+      github.event_name != 'workflow_dispatch'
+    steps:
+      - name: Notify skip
+        run: |
+          {
+            echo "## ⏭ Deploy dilewati"
+            echo ""
+            echo "Tidak ada perubahan di \`frontend/\` atau \`backend/\`."
+            echo "Kemungkinan cuma update README/docs/CI config."
+            echo ""
+            echo "Untuk paksa deploy: **Actions → CD - Deploy to DeployCC → Run workflow → ✓ force_full_rebuild**"
+          } >> "$GITHUB_STEP_SUMMARY"
