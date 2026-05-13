@@ -2,177 +2,106 @@ name: CD — Deploy ke DeployCC
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows:
+      - "CI Pipeline"
     types:
       - completed
 
   workflow_dispatch:
-    inputs:
-      mode:
-        description: 'Deploy mode'
-        required: false
-        default: 'full'
-        type: choice
-        options:
-          - full
-
-# ─────────────────────────────────────────────
-# REQUIRED SECRETS:
-#
-# DEPLOY_URL
-# contoh:
-# https://deploycc.akhzafachrozy.my.id
-#
-# DEPLOY_KEY
-# API key deploycc
-#
-# DEPLOY_REPO
-# nama repo / slug
-# ─────────────────────────────────────────────
 
 jobs:
   deploy:
-    # hanya jalan kalau CI sukses
-    if: |
+    # Jalan hanya jika CI sukses
+    if: >
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
 
-    name: Deploy ke DeployCC
+    name: Build & Deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
-      # ── 1. Checkout ─────────────────────────
-      - name: Checkout repository
+      # 1. Checkout source
+      - name: Checkout kode
         uses: actions/checkout@v4
 
-      # ── 2. Setup Node ──────────────────────
+      # 2. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # ── 3. Install dependency ──────────────
+      # 3. Install frontend deps
       - name: Install dependencies frontend
         working-directory: frontend
         run: npm ci
 
-      # ── 4. Build frontend ──────────────────
-      - name: Build React production
+      # 4. Build frontend
+      - name: Build React
         working-directory: frontend
         run: npm run build
         env:
           NODE_ENV: production
 
-      # ── 5. Create ZIP ──────────────────────
-      - name: Buat ZIP deploy
+      # 5. Buat ZIP deploy
+      - name: Buat deploy.zip
         run: |
           zip -r deploy.zip . \
-            --exclude "frontend/node_modules/*" \
-            --exclude "frontend/.next/*" \
-            --exclude "frontend/dist/*" \
-            --exclude "frontend/build/*" \
-            --exclude "backend/venv/*" \
-            --exclude "backend/__pycache__/*" \
-            --exclude "backend/*.pyc" \
-            --exclude ".git/*" \
-            --exclude ".github/*" \
-            --exclude "*.zip"
+            -x "frontend/node_modules/*" \
+            -x "frontend/.next/*" \
+            -x "frontend/dist/*" \
+            -x "frontend/build/*" \
+            -x "backend/venv/*" \
+            -x "backend/__pycache__/*" \
+            -x "backend/*.pyc" \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "*.zip"
 
-          echo "────────────────────────────"
-          echo "Ukuran ZIP:"
-          du -sh deploy.zip
-          echo "────────────────────────────"
+          echo "ZIP berhasil dibuat"
+          ls -lh deploy.zip
 
-      # ── 6. Debug secrets ───────────────────
-      - name: Debug deploy config
-        run: |
-          echo "Checking deploy secrets..."
-
-          if [ -z "${{ secrets.DEPLOY_URL }}" ]; then
-            echo "❌ DEPLOY_URL kosong"
-            exit 1
-          fi
-
-          if [ -z "${{ secrets.DEPLOY_KEY }}" ]; then
-            echo "❌ DEPLOY_KEY kosong"
-            exit 1
-          fi
-
-          if [ -z "${{ secrets.DEPLOY_REPO }}" ]; then
-            echo "❌ DEPLOY_REPO kosong"
-            exit 1
-          fi
-
-          echo "✅ Semua secrets tersedia"
-
-          echo "Deploy URL:"
-          echo "${{ secrets.DEPLOY_URL }}"
-
-      # ── 7. Deploy ──────────────────────────
+      # 6. Deploy ke DeployCC
       - name: Deploy ke server
         run: |
-          RESPONSE=$(curl -v -sS --max-time 300 \
-            -X POST "${{ secrets.DEPLOY_URL }}" \
-            -F "key=${{ secrets.DEPLOY_KEY }}" \
-            -F "repo=${{ secrets.DEPLOY_REPO }}" \
+          echo "Mulai deploy..."
+
+          RESPONSE=$(curl -sS --max-time 300 \
+            -X POST "https://deploycc.akhzafachrozy.my.id" \
+            -F "key=RAHASIA123" \
+            -F "repo=fsti-itk-clone" \
             -F "mode=full" \
             -F "file=@deploy.zip" \
             -A "GitHub-Actions/deploycc" \
-            -w "\n---HTTP_CODE:%{http_code}")
+            -w "\nHTTP_CODE:%{http_code}")
 
-          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_CODE:[0-9]*' | cut -d: -f2)
-          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
+          echo "$RESPONSE"
 
-          echo "──────────────────────────────────"
-          echo "HTTP Status: $HTTP_CODE"
-          echo "──────────────────────────────────"
-          echo "$BODY"
-          echo "──────────────────────────────────"
-
-          if echo "$BODY" | grep -q "DEPLOYCC_ERROR"; then
-            echo "❌ Deploy GAGAL — server error"
-            exit 1
-          fi
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
 
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Deploy GAGAL — HTTP $HTTP_CODE"
+            echo "❌ Deploy gagal"
             exit 1
           fi
 
-          if echo "$BODY" | grep -q "DEPLOYCC_END"; then
-            echo "✅ Deploy BERHASIL"
-          else
-            echo "⚠️ Response tidak lengkap"
-            exit 1
-          fi
+          echo "✅ Deploy sukses"
 
-      # ── 8. Summary sukses ──────────────────
-      - name: Ringkasan deploy sukses
+      # 7. Summary success
+      - name: Ringkasan berhasil
         if: success()
         run: |
-          echo "## ✅ Deploy Berhasil" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Deploy berhasil" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Repo | \`${{ secrets.DEPLOY_REPO }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Workflow | CD Deploy |" >> $GITHUB_STEP_SUMMARY
-          echo "| Trigger | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Waktu | $(date +'%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "- Repo: fsti-itk-clone" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
 
-      # ── 9. Summary gagal ───────────────────
-      - name: Ringkasan deploy gagal
+      # 8. Summary failed
+      - name: Ringkasan gagal
         if: failure()
         run: |
-          echo "## ❌ Deploy Gagal" >> $GITHUB_STEP_SUMMARY
+          echo "## ❌ Deploy gagal" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Kemungkinan penyebab:" >> $GITHUB_STEP_SUMMARY
-          echo "- DEPLOY_URL salah format" >> $GITHUB_STEP_SUMMARY
-          echo "- DEPLOY_KEY salah" >> $GITHUB_STEP_SUMMARY
-          echo "- Endpoint deploy tidak menerima POST" >> $GITHUB_STEP_SUMMARY
-          echo "- deploy.zip tidak ditemukan" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Pastikan DEPLOY_URL benar:" >> $GITHUB_STEP_SUMMARY
-          echo "\`https://domain.com\`" >> $GITHUB_STEP_SUMMARY
+          echo "Cek log step deploy." >> $GITHUB_STEP_SUMMARY
