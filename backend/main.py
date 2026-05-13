@@ -164,11 +164,12 @@ def list_items(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     search: str = Query(None),
+    category: str = Query(None, description="Filter berdasarkan kategori, contoh: electronics, medical, office"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ambil daftar items. **Membutuhkan autentikasi.**"""
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
+    """Ambil daftar items dengan filter opsional. **Membutuhkan autentikasi.**"""
+    return crud.get_items(db=db, skip=skip, limit=limit, search=search, category=category)
 
 
 @app.get("/items/stats")
