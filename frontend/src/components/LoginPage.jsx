@@ -135,7 +135,7 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           {/* Full Name — Register only */}
           {isRegister && (
             <div style={styles.field}>
-              <label style={styles.label}>Nama Lengkap</label>
+              <label style={styles.label}>Nama Lengkapp</label>
               <div style={styles.inputWrapper}>
                 <input
                   type="text"
