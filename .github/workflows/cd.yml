@@ -59,7 +59,6 @@ jobs:
       backend_changed: ${{ steps.filter.outputs.backend }}
       requirements_changed: ${{ steps.filter.outputs.requirements }}
       package_changed: ${{ steps.filter.outputs.package }}
-      deployable: ${{ steps.filter.outputs.deployable }}
       head_sha: ${{ steps.ctx.outputs.head_sha }}
 
     steps:
@@ -131,22 +130,23 @@ jobs:
               - 'frontend/package-lock.json'
               - 'frontend/pnpm-lock.yaml'
               - 'frontend/yarn.lock'
-            deployable:
-              - 'frontend/**'
-              - 'backend/**'
 
   # ─────────────────────────────────────────────────────────────────
-  #  STEP 2 — Bangun ZIP & deploy
+  #  STEP 2 — Bangun ZIP & deploy (SELALU jalan)
+  #
+  #  Kenapa selalu jalan?
+  #  - CD tidak tahu apakah ini deploy pertama di server atau bukan.
+  #    Yang tahu adalah script PHP DeployCC (`$isFirstDeploy`).
+  #  - Kalau commit cuma update README, ZIP tetap dikirim dengan
+  #    skip_fe_build=1 & skip_be_install=1 → server cuma rsync ~2-5 detik
+  #    (super ringan, tidak ada build, tidak ada restart service).
+  #  - Kalau ini deploy pertama, server abaikan flag skip dan build penuh.
+  #  - Kalau commit ada perubahan app, flag dihitung dari diff seperti biasa.
   # ─────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     needs: detect-changes
-    # Skip kalau tidak ada perubahan di frontend/ atau backend/ (mis. cuma README)
-    # KECUALI user manual trigger via workflow_dispatch
-    if: |
-      needs.detect-changes.outputs.deployable == 'true' ||
-      github.event_name == 'workflow_dispatch'
 
     steps:
       # ── Checkout commit yang sama dengan yang lulus CI ────────────
@@ -245,6 +245,12 @@ jobs:
           {
             echo "## 📋 Deploy Plan"
             echo ""
+            if [ "$fe_changed" != "true" ] && [ "$be_changed" != "true" ]; then
+              echo "> ℹ️ Tidak ada perubahan di \`frontend/\` atau \`backend/\` (mis. cuma update docs)."
+              echo "> Deploy tetap dijalankan untuk handle case \"first deploy\" — kalau infra sudah ada,"
+              echo "> server cuma rsync file (~3 detik, no build, no restart)."
+              echo ""
+            fi
             echo "| Komponen | Status |"
             echo "|----------|--------|"
             echo "| Frontend | $fe_status |"
@@ -442,25 +448,3 @@ jobs:
       - name: Cleanup
         if: always()
         run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt || true
-
-  # ─────────────────────────────────────────────────────────────────
-  #  STEP 3 — Skip notifier (kalau cuma docs/README yang berubah)
-  # ─────────────────────────────────────────────────────────────────
-  skipped:
-    name: Skip deploy (no app changes)
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: |
-      needs.detect-changes.outputs.deployable != 'true' &&
-      github.event_name != 'workflow_dispatch'
-    steps:
-      - name: Notify skip
-        run: |
-          {
-            echo "## ⏭ Deploy dilewati"
-            echo ""
-            echo "Tidak ada perubahan di \`frontend/\` atau \`backend/\`."
-            echo "Kemungkinan cuma update README/docs/CI config."
-            echo ""
-            echo "Untuk paksa deploy: **Actions → CD - Deploy to DeployCC → Run workflow → ✓ force_full_rebuild**"
-          } >> "$GITHUB_STEP_SUMMARY"
