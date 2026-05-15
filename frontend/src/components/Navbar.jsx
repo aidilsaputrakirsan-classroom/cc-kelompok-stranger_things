@@ -49,7 +49,7 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
     flexShrink: 0,
   }
 
-  const avatarStyle = {
+  const profileAvatarStyle = {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
@@ -58,6 +58,21 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+  }
+
+  const logoutBtnStyle = {
+    background: isDark ? "#2a2a4a" : "#fce4ec",
+    border: "none",
+    borderRadius: "50%",
+    width: "36px",
+    height: "36px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "16px",
+    flexShrink: 0,
+    color: isDark ? "#f0f0f0" : "#1a1a2e",
   }
 
   const links = [
@@ -95,11 +110,18 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
         <button onClick={toggleTheme} title="Toggle Dark Mode" style={toggleBtnStyle}>
           {isDark ? "☀️" : "🌙"}
         </button>
-        <div style={avatarStyle} onClick={onLogout} title="Logout">
+        <div
+          style={profileAvatarStyle}
+          onClick={() => setActivePage?.("profile")}
+          title="Lihat Profil"
+        >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#e91e8c">
             <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
           </svg>
         </div>
+        <button onClick={onLogout} title="Logout" style={logoutBtnStyle}>
+          ⏻
+        </button>
       </div>
     </nav>
   )
