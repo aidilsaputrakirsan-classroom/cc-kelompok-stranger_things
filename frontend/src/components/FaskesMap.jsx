@@ -1,6 +1,7 @@
 import { useState } from "react"
 import SearchBar from "../components/SearchBar"
 import Navbar from "../components/Navbar"
+import DetailFaskeMap from "./DetailFaskeMap"
 
 const faskesData = [
   {
@@ -71,6 +72,8 @@ export default function FaskesMap({ setActivePage, onLogout, activePage }) {
   const [selected, setSelected] = useState(0)
   const [search, setSearch] = useState("")
   const [activeFilter, setActiveFilter] = useState("Semua")
+  const [showDetail, setShowDetail] = useState(false)
+  const [selectedFaskes, setSelectedFaskes] = useState(null)
 
   const filters = ["Semua", "Puskesmas", "RS", "Klinik"]
 
@@ -123,6 +126,22 @@ export default function FaskesMap({ setActivePage, onLogout, activePage }) {
           <text x={d.markerX} y={d.markerY + 4} textAnchor="middle" fontSize="12" fill="#fff" fontFamily="sans-serif">⌂</text>
         )}
       </g>
+    )
+  }
+
+  // Jika sedang menampilkan detail, render DetailFaskeMap
+  if (showDetail && selectedFaskes) {
+    return (
+      <DetailFaskeMap
+        faskes={selectedFaskes}
+        onBack={() => {
+          setShowDetail(false)
+          setSelectedFaskes(null)
+        }}
+        setActivePage={setActivePage}
+        activePage={activePage}
+        onLogout={onLogout}
+      />
     )
   }
 
@@ -188,8 +207,11 @@ export default function FaskesMap({ setActivePage, onLogout, activePage }) {
                 <div style={s.fcardAddr}>📍 {d.address}</div>
                 <div style={s.fcardPhone}>📞 {d.phone}</div>
                 <div style={s.fcardFooter}>
-                  <button style={s.btnRoute}>🗺 Rute</button>
-                  <button style={s.btnDetail}>Detail ›</button>
+                  <button style={s.btnRoute} onClick={() => window.open(`https://maps.google.com/?q=${d.address}`, "_blank")}>🗺 Rute</button>
+                  <button style={s.btnDetail} onClick={() => {
+                    setSelectedFaskes(d)
+                    setShowDetail(true)
+                  }}>Detail ›</button>
                 </div>
               </div>
             ))}

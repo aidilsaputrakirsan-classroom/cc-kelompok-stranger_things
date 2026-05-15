@@ -7,6 +7,7 @@ import DataAnak from "./components/DataAnak";
 import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/AboutPage";
+import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -281,7 +282,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
-            <div style={homeStyles.welcomeAvatarWrap}>
+            <div
+              style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
+              onClick={() => onNavigate?.("profile")}
+              title="Lihat Profil" 
+            >
               <svg
                 viewBox="0 0 80 80"
                 width="60"
@@ -604,6 +609,24 @@ function App() {
           onLogout={handleLogout}
           activePage={activePage}
           setActivePage={setActivePage}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "detailJadwal" && (
+        <DetailJadwal
+          onLogout={handleLogout}
+          setActivePage={setActivePage}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "faskes" && (
+        <FaskesMap
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+          activePage={activePage}
+          theme={theme}
         />
       )}
 
@@ -611,23 +634,22 @@ function App() {
         <DataAnak
           setActivePage={setActivePage}
           onLogout={() => setActivePage("login")}
+          theme={theme}
         />
       )}
 
-      {activePage === "faskes" && (
-        <FaskesMap
-          onLogout={handleLogout}
+      {activePage === "profile" && (
+        <ProfilPengguna
+          user={user}
           activePage={activePage}
           setActivePage={setActivePage}
+          onBack={() => setActivePage("home")}
+          onLogout={handleLogout}
+          theme={theme}
         />
       )}
-
-      {activePage === "detailJadwal" && (
-        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
-      )}
-
       {activePage === "about" && (
-        <AboutPage onBack={() => setActivePage("home")} />
+        <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
     </>
   );
