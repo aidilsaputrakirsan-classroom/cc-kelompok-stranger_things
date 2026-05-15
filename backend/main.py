@@ -51,6 +51,15 @@ def init_default_vaccines():
     """Inisialisasi data vaksin default jika belum ada."""
     db = SessionLocal()
     try:
+        # Cek berapa vaccine yang sudah ada
+        existing_count = db.query(VaccineType).count()
+        print(f"[INFO] Current vaccine count: {existing_count}")
+        
+        # Jika sudah ada data, skip
+        if existing_count > 0:
+            print("[OK] Vaccines already initialized, skipping...")
+            return
+        
         default_vaccines = [
             {"id": 1, "name": "BCG (TBC)"},
             {"id": 2, "name": "Hepatitis B"},
@@ -69,6 +78,31 @@ def init_default_vaccines():
             {"id": 15, "name": "Dengue"},
         ]
         
+        # Reset sequence jika perlu (untuk PostgreSQL)
+        try:
+            db.execute(text("ALTER SEQUENCE vaccine_types_id_seq RESTART WITH 1"))
+            print("[INFO] PostgreSQL sequence reset")
+        except:
+            pass  # Mungkin SQLite atau sequence tidak ada
+        
+        # Insert semua vaccines
+        added = 0
+        for vac in default_vaccines:
+            try:
+                new_vac = VaccineType(id=vac["id"], name=vac["name"])
+                db.add(new_vac)
+                added += 1
+                print(f"[INFO] Adding vaccine: {vac['name']}")
+            except Exception as e:
+                print(f"[WARN] Error adding vaccine {vac['id']}: {e}")
+        
+        db.commit()
+        final_count = db.query(VaccineType).count()
+        print(f"[OK] Vaccines initialized! Added: {added}, Total: {final_count}")
+    except Exception as e:
+        print(f"[ERROR] Error initializing vaccines: {e}")
+        import traceback
+        traceback.print_exc()
         for vac in default_vaccines:
             existing = db.query(VaccineType).filter(VaccineType.id == vac["id"]).first()
             if not existing:

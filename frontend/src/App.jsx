@@ -282,6 +282,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
+            <div style={homeStyles.welcomeAvatarWrap}>
             <div
               style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
               onClick={() => onNavigate?.("profile")}
@@ -630,6 +631,8 @@ function App() {
         />
       )}
 
+      {activePage === "detailJadwal" && (
+        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
       {activePage === "dataAnak" && (
         <DataAnak
           setActivePage={setActivePage}
@@ -649,6 +652,7 @@ function App() {
         />
       )}
       {activePage === "about" && (
+        <AboutPage onBack={() => setActivePage("home")} />
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
     </>
