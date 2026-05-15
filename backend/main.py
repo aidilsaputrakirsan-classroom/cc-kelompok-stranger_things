@@ -8,12 +8,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import engine, get_db, SessionLocal
-from models import Base, User, Role
+from models import Base, User, Role, VaccineType
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
     ChildCreate, ChildUpdate, ChildResponse,
-    ImmunizationLogCreate, ImmunizationLogResponse
+    ImmunizationLogCreate, ImmunizationLogUpdate, ImmunizationLogResponse
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -47,7 +47,44 @@ def init_default_roles():
     finally:
         db.close()
 
+def init_default_vaccines():
+    """Inisialisasi data vaksin default jika belum ada."""
+    db = SessionLocal()
+    try:
+        default_vaccines = [
+            {"id": 1, "name": "BCG (TBC)"},
+            {"id": 2, "name": "Hepatitis B"},
+            {"id": 3, "name": "DPT (Difteri, Pertusis, Tetanus)"},
+            {"id": 4, "name": "Polio"},
+            {"id": 5, "name": "Hib"},
+            {"id": 6, "name": "Campak"},
+            {"id": 7, "name": "MMR"},
+            {"id": 8, "name": "Influenza"},
+            {"id": 9, "name": "Pneumokokus (PCV)"},
+            {"id": 10, "name": "Rotavirus"},
+            {"id": 11, "name": "Varicella (Cacar Air)"},
+            {"id": 12, "name": "Hepatitis A"},
+            {"id": 13, "name": "Tifoid"},
+            {"id": 14, "name": "Japanese Encephalitis (JE)"},
+            {"id": 15, "name": "Dengue"},
+        ]
+        
+        for vac in default_vaccines:
+            existing = db.query(VaccineType).filter(VaccineType.id == vac["id"]).first()
+            if not existing:
+                new_vac = VaccineType(id=vac["id"], name=vac["name"])
+                db.add(new_vac)
+        
+        db.commit()
+        print("[OK] Default vaccines initialized")
+    except Exception as e:
+        print(f"[ERROR] Error initializing vaccines: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
 init_default_roles()
+init_default_vaccines()
 
 app = FastAPI(
     title="Cloud App API",
@@ -347,10 +384,10 @@ def get_pending_immunizations(
     return crud.get_pending_immunizations(db=db, child_id=child_id)
 
 
-@app.put("/immunization/{log_id}")
+@app.put("/immunization/{log_id}", response_model=ImmunizationLogResponse)
 def update_immunization_log(
     log_id: int,
-    log_data: dict,
+    log_data: ImmunizationLogUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -359,7 +396,7 @@ def update_immunization_log(
     if not log:
         raise HTTPException(status_code=404, detail="Catatan vaksinasi tidak ditemukan")
     
-    return crud.update_immunization_log(db=db, log_id=log_id, log_data=log_data)
+    return crud.update_immunization_log(db=db, log_id=log_id, log_data=log_data.model_dump(exclude_unset=True))
 
 
 # ==================== GROWTH RECORD ENDPOINTS ====================

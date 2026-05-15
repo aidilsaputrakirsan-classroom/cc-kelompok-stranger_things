@@ -179,16 +179,22 @@ def create_child(db: Session, child_data: ChildCreate, parent_id: int):
 
 def get_child(db: Session, child_id: int):
     """Ambil anak berdasarkan ID dengan immunizations."""
-    from models import Child
+    from models import Child, ImmunizationLog
     from sqlalchemy.orm import joinedload
-    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.id == child_id).first()
+    return db.query(Child).options(
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.vaccine),
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.facility)
+    ).filter(Child.id == child_id).first()
 
 
 def get_children_by_parent(db: Session, parent_id: int):
     """Ambil semua anak untuk seorang parent dengan immunizations."""
-    from models import Child
+    from models import Child, ImmunizationLog
     from sqlalchemy.orm import joinedload
-    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.parent_id == parent_id).all()
+    return db.query(Child).options(
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.vaccine),
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.facility)
+    ).filter(Child.parent_id == parent_id).all()
 
 
 def update_child(db: Session, child_id: int, child_data: dict):
@@ -245,13 +251,21 @@ def create_immunization_log(db: Session, log_data: dict):
 def get_immunization_log(db: Session, log_id: int):
     """Ambil catatan vaksinasi berdasarkan ID."""
     from models import ImmunizationLog
-    return db.query(ImmunizationLog).filter(ImmunizationLog.id == log_id).first()
+    from sqlalchemy.orm import joinedload
+    return db.query(ImmunizationLog).options(
+        joinedload(ImmunizationLog.vaccine),
+        joinedload(ImmunizationLog.facility)
+    ).filter(ImmunizationLog.id == log_id).first()
 
 
 def get_immunization_logs_by_child(db: Session, child_id: int):
     """Ambil semua catatan vaksinasi untuk seorang anak."""
     from models import ImmunizationLog
-    return db.query(ImmunizationLog).filter(ImmunizationLog.child_id == child_id).all()
+    from sqlalchemy.orm import joinedload
+    return db.query(ImmunizationLog).options(
+        joinedload(ImmunizationLog.vaccine),
+        joinedload(ImmunizationLog.facility)
+    ).filter(ImmunizationLog.child_id == child_id).order_by(ImmunizationLog.id.desc()).all()
 
 
 def update_immunization_log(db: Session, log_id: int, log_data: dict):
