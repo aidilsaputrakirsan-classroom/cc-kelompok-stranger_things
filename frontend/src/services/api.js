@@ -278,3 +278,16 @@ export async function fetchImmunizations(childId) {
 
   return handleResponse(response);
 }
+
+export async function updateImmunization(logId, data) {
+  console.log("✏️ Updating immunization log:", logId);
+  const response = await fetch(`${API_URL}/immunization/${logId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
