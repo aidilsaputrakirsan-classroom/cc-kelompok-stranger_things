@@ -163,7 +163,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         });
 
         // Get upcoming schedules sorted by date (take first 6)
-        // Filter: harus ada scheduled_date, dan tidak completed
         const upcoming = allImmunizations
           .filter((i) => i.scheduled_date && i.status !== "completed")
           .sort(
@@ -282,7 +281,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
-            <div style={homeStyles.welcomeAvatarWrap}>
             <div
               style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
               onClick={() => onNavigate?.("profile")}
@@ -342,7 +340,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               </p>
             </div>
           </div>
-        </div>
 
           {/* Reminder */}
           <div style={dynReminder}>
@@ -531,7 +528,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
           ))}
         </div>
       </div>
-   </div>
+    </div>
   );
 }
 
@@ -560,7 +557,6 @@ function App() {
     }
   }, [handleLogout]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadItems();
   }, [isAuthenticated, loadItems]);
