@@ -342,6 +342,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               </p>
             </div>
           </div>
+        </div>
 
           {/* Reminder */}
           <div style={dynReminder}>
@@ -530,7 +531,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
           ))}
         </div>
       </div>
-    </div>
+   </div>
   );
 }
 
@@ -632,11 +633,17 @@ function App() {
       )}
 
       {activePage === "detailJadwal" && (
-        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
+        <DetailJadwal
+          onLogout={handleLogout}
+          setActivePage={setActivePage}
+          theme={theme}
+        />
+      )}
+
       {activePage === "dataAnak" && (
         <DataAnak
           setActivePage={setActivePage}
-          onLogout={() => setActivePage("login")}
+          onLogout={handleLogout}
           theme={theme}
         />
       )}
@@ -652,7 +659,6 @@ function App() {
         />
       )}
       {activePage === "about" && (
-        <AboutPage onBack={() => setActivePage("home")} />
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
     </>
