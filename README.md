@@ -16,8 +16,8 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 | 3      | React Frontend         | ✅     |
 | 4      | Full-Stack Integration | ✅     |
 | 5-7    | Docker & Compose       | ✅     |
-| 8      | UTS Demo               | ⬜     |
-| 9-11   | CI/CD Pipeline         | ⬜     |
+| 8      | UTS Demo               | ✅     |
+| 9-11   | CI/CD Pipeline         | ✅     |
 | 12-14  | Microservices          | ⬜     |
 | 15-16  | Final & UAS            | ⬜     |
 
@@ -650,48 +650,7 @@ Halaman ini menampilkan fitur Faskes Map pada aplikasi ByeByeVirus yang digunaka
 
 ---
 
-## ✅ UTS Demo Preparation Checklist
-
-### 🔧 Environment
-- [ ] Docker Desktop running
-- [ ] Tidak ada konflik port (3000, 8000, 5432)
-- [ ] File `.env` sudah sesuai
-
-### 🐳 Docker
-- [ ] `docker compose up -d --build` berhasil
-- [ ] `docker compose ps` menunjukkan semua container aktif
-- [ ] Tidak ada error di `docker compose logs`
-
-### 🌐 Aplikasi
-- [ ] Frontend bisa diakses
-- [ ] Backend API berjalan
-- [ ] Swagger (`/docs`) bisa dibuka
-
-### 🔐 Auth
-- [ ] Register berhasil
-- [ ] Login berhasil
-
-### 📦 CRUD
-- [ ] Create data
-- [ ] Read tampil di UI
-- [ ] Update berhasil
-- [ ] Delete berhasil
-- [ ] Search (jika ada)
-
-### 🔁 Persistence
-Jalankan perintah berikut:
-
-```bash
-docker compose down
-docker compose up -d
-```
-Data tetap ada (tidak hilang)
-
-### 📄 API Demo
- - [ ] Endpoint terlihat di Swagger
- - [ ] Bisa testing endpoint dari /docs
-
-## Developer Workflow (Modul 9)
+##  👨‍💻  Developer Workflow
 
 Mulai dari modul 9 ini, kita menggunakan **Github Flow**. Setiap anggota tim wajib menjalankan pengecekan lokal menggunakan 'Makefile' sebelum melakukan push kode ke branch fitur.
 
@@ -710,7 +669,22 @@ Gunakan perintah berikut di terminal:
 4. **Verifikasi kode** dengan menjalankan `make pr-check`.
 5. Jika berhasil (muncul ✅), lakukan commit dan push.
 6. Buat Pull Request di GitHub dan minta review dari teman tim.
-  
+
+## 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
+| Backend API | |
+| API Docs (Swagger) | |
+
+## 🔄 CI/CD
+
+Pipeline otomatis berjalan saat push ke main:
+1. ✅ Test backend (pytest)
+2. ✅ Test frontend (Vitest)
+3. ✅ Build Docker images
+4. 🚀 Deploy ke Railway
 ---
 ## 📋 Dokumentasi
 - [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
@@ -718,3 +692,6 @@ Gunakan perintah berikut di terminal:
 - [Dokumentasi Auth testing](docs/auth-test-results.md)
 - [Docker Cheatsheet](docs/docker-cheatsheet.md)
 - [Setup Guide](docs/setup-guide.md)
+- [Testing Guide](docs/testing-guide.md)
+- [Production Test](docs/production-test.md)
+- [Git Workflow](docs/git-workflow.md)
