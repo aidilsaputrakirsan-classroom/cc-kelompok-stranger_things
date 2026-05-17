@@ -62,6 +62,18 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
   });
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isNarrow, setIsNarrow] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 980 : false,
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsNarrow(window.innerWidth <= 980);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Load immunization data from all children
   useEffect(() => {
@@ -198,6 +210,12 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
     ...homeStyles.page,
     background: isDark ? "#0f0f1a" : "#fff5f8",
     color: isDark ? "#f0f0f0" : "#1a1a2e",
+    minHeight: "100vh",
+  };
+
+  const mainGridStyle = {
+    ...homeStyles.main,
+    gridTemplateColumns: isNarrow ? "1fr" : "1fr 300px",
   };
 
   const dynWelcomeCard = {
@@ -276,7 +294,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         onLogout={onLogout}
       />
 
-      <div style={homeStyles.main}>
+      <div style={mainGridStyle}>
         {/* Left Column */}
         <div style={homeStyles.left}>
           {/* Welcome Card */}
@@ -628,14 +646,6 @@ function App() {
         />
       )}
 
-      {activePage === "detailJadwal" && (
-        <DetailJadwal
-          onLogout={handleLogout}
-          setActivePage={setActivePage}
-          theme={theme}
-        />
-      )}
-
       {activePage === "dataAnak" && (
         <DataAnak
           setActivePage={setActivePage}
@@ -673,9 +683,10 @@ const homeStyles = {
     display: "grid",
     gridTemplateColumns: "1fr 300px",
     gap: "1.5rem",
-    padding: "1.5rem 2rem",
+    padding: "1.5rem 2rem 2rem",
     maxWidth: "1200px",
     margin: "0 auto",
+    alignItems: "start",
   },
   left: {
     display: "flex",
