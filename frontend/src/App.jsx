@@ -62,18 +62,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
   });
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isNarrow, setIsNarrow] = useState(
-    typeof window !== "undefined" ? window.innerWidth <= 980 : false,
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsNarrow(window.innerWidth <= 980);
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   // Load immunization data from all children
   useEffect(() => {
@@ -175,6 +163,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         });
 
         // Get upcoming schedules sorted by date (take first 6)
+        // Filter: harus ada scheduled_date, dan tidak completed
         const upcoming = allImmunizations
           .filter((i) => i.scheduled_date && i.status !== "completed")
           .sort(
@@ -210,12 +199,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
     ...homeStyles.page,
     background: isDark ? "#0f0f1a" : "#fff5f8",
     color: isDark ? "#f0f0f0" : "#1a1a2e",
-    minHeight: "100vh",
-  };
-
-  const mainGridStyle = {
-    ...homeStyles.main,
-    gridTemplateColumns: isNarrow ? "1fr" : "1fr 300px",
   };
 
   const dynWelcomeCard = {
@@ -294,11 +277,12 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         onLogout={onLogout}
       />
 
-      <div style={mainGridStyle}>
+      <div style={homeStyles.main}>
         {/* Left Column */}
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
+            <div style={homeStyles.welcomeAvatarWrap}>
             <div
               style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
               onClick={() => onNavigate?.("profile")}
@@ -575,6 +559,7 @@ function App() {
     }
   }, [handleLogout]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadItems();
   }, [isAuthenticated, loadItems]);
@@ -646,10 +631,12 @@ function App() {
         />
       )}
 
+      {activePage === "detailJadwal" && (
+        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
       {activePage === "dataAnak" && (
         <DataAnak
           setActivePage={setActivePage}
-          onLogout={handleLogout}
+          onLogout={() => setActivePage("login")}
           theme={theme}
         />
       )}
@@ -665,6 +652,7 @@ function App() {
         />
       )}
       {activePage === "about" && (
+        <AboutPage onBack={() => setActivePage("home")} />
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
     </>
@@ -683,10 +671,9 @@ const homeStyles = {
     display: "grid",
     gridTemplateColumns: "1fr 300px",
     gap: "1.5rem",
-    padding: "1.5rem 2rem 2rem",
+    padding: "1.5rem 2rem",
     maxWidth: "1200px",
     margin: "0 auto",
-    alignItems: "start",
   },
   left: {
     display: "flex",
