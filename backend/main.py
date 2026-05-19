@@ -47,6 +47,7 @@ def init_default_roles():
     finally:
         db.close()
 
+init_default_roles()
 def init_default_vaccines():
     """Inisialisasi data vaksin default jika belum ada."""
     db = SessionLocal()
@@ -116,9 +117,6 @@ def init_default_vaccines():
         db.rollback()
     finally:
         db.close()
-
-init_default_roles()
-init_default_vaccines()
 
 app = FastAPI(
     title="Cloud App API",

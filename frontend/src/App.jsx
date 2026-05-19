@@ -163,7 +163,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         });
 
         // Get upcoming schedules sorted by date (take first 6)
-        // Filter: harus ada scheduled_date, dan tidak completed
         const upcoming = allImmunizations
           .filter((i) => i.scheduled_date && i.status !== "completed")
           .sort(
@@ -183,7 +182,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
             status: new Date(imun.scheduled_date) >= today ? "green" : "red",
           }));
         console.log("Final upcoming schedules to display:", upcoming);
-        console.log("Upcoming schedules:", upcoming);
         setUpcomingSchedules(upcoming);
       } catch (err) {
         console.error("Error loading immunization summary:", err);
@@ -282,54 +280,52 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
-            <div style={homeStyles.welcomeAvatarWrap}>
-              <div
-                style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
-                onClick={() => onNavigate?.("profile")}
-                title="Lihat Profil" 
+            <div
+              style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
+              onClick={() => onNavigate?.("profile")}
+              title="Lihat Profil"
+            >
+              <svg
+                viewBox="0 0 80 80"
+                width="60"
+                height="60"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  viewBox="0 0 80 80"
-                  width="60"
-                  height="60"
-                  xmlns="http://www.w3.org/2000/svg"
+                <circle cx="40" cy="30" r="18" fill="#f48fb1" />
+                <circle cx="40" cy="30" r="14" fill="#fce4ec" />
+                <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
+                <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
+                <path
+                  d="M35 36 Q40 40 45 36"
+                  stroke="#e91e8c"
+                  strokeWidth="1.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <rect
+                  x="28"
+                  y="16"
+                  width="24"
+                  height="12"
+                  rx="6"
+                  fill="#e91e8c"
+                />
+                <circle cx="40" cy="55" r="14" fill="#f48fb1" />
+                <path
+                  d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z"
+                  fill="#e91e8c"
+                />
+                <circle cx="33" cy="60" r="4" fill="#fff" opacity="0.7" />
+                <text
+                  x="31"
+                  y="63"
+                  fontSize="6"
+                  fill="#e91e8c"
+                  fontWeight="bold"
                 >
-                  <circle cx="40" cy="30" r="18" fill="#f48fb1" />
-                  <circle cx="40" cy="30" r="14" fill="#fce4ec" />
-                  <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
-                  <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
-                  <path
-                    d="M35 36 Q40 40 45 36"
-                    stroke="#e91e8c"
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                  <rect
-                    x="28"
-                    y="16"
-                    width="24"
-                    height="12"
-                    rx="6"
-                    fill="#e91e8c"
-                  />
-                  <circle cx="40" cy="55" r="14" fill="#f48fb1" />
-                  <path
-                    d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z"
-                    fill="#e91e8c"
-                  />
-                  <circle cx="33" cy="60" r="4" fill="#fff" opacity="0.7" />
-                  <text
-                    x="31"
-                    y="63"
-                    fontSize="6"
-                    fill="#e91e8c"
-                    fontWeight="bold"
-                  >
-                    +
-                  </text>
-                </svg>
-              </div>
+                  +
+                </text>
+              </svg>
             </div>
             <div>
               <h2 style={dynWelcomeTitle}>
@@ -835,38 +831,34 @@ const homeStyles = {
     transition: "all 0.25s ease",
   },
   eduImgBox: {
-    width: "100%",
+    position: "relative",
     height: "120px",
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    padding: "10px",
   },
   eduTag: {
-    position: "absolute",
-    padding: "3px 10px",
-    borderRadius: "20px",
+    borderRadius: "6px",
+    padding: "6px 12px",
     fontSize: "11px",
     fontWeight: "600",
     color: "white",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
   eduBody: {
-    padding: "0.6rem 0.85rem 0.75rem",
+    padding: "1rem",
   },
   eduBodyText: {
-    fontSize: "13px",
+    fontSize: "14px",
     fontWeight: "600",
+    margin: "0 0 6px",
     lineHeight: "1.4",
-    margin: 0,
-    transition: "color 0.3s ease",
   },
   eduReadMore: {
-    fontSize: "11px",
+    fontSize: "12px",
     color: "#e91e8c",
-    marginTop: "6px",
-    marginBottom: 0,
-    fontWeight: "500",
+    margin: 0,
+    fontWeight: "600",
   },
 };
 
