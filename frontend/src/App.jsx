@@ -954,6 +954,8 @@ function App() {
         />
       )}
 
+      {activePage === "detailJadwal" && (
+        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
       {activePage === "dataAnak" && (
         <DataAnak
           setActivePage={setActivePage}

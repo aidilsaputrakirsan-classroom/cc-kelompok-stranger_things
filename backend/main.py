@@ -104,6 +104,16 @@ def init_default_vaccines():
         print(f"[ERROR] Error initializing vaccines: {e}")
         import traceback
         traceback.print_exc()
+        for vac in default_vaccines:
+            existing = db.query(VaccineType).filter(VaccineType.id == vac["id"]).first()
+            if not existing:
+                new_vac = VaccineType(id=vac["id"], name=vac["name"])
+                db.add(new_vac)
+        
+        db.commit()
+        print("[OK] Default vaccines initialized")
+    except Exception as e:
+        print(f"[ERROR] Error initializing vaccines: {e}")
         db.rollback()
     finally:
         db.close()
