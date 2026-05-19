@@ -5,14 +5,21 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
   const isDark = theme === "dark"
 
   const navStyle = {
+    position: "sticky",
+    top: 0,
+    zIndex: 20,
+    width: "100%",
     background: isDark ? "#16213e" : "white",
     borderBottom: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f0c0d0",
     padding: "0 2rem",
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
+    display: "flex",
     alignItems: "center",
+    justifyContent: "space-between",
     height: "56px",
     fontFamily: "'Segoe UI', Arial, sans-serif",
+    boxShadow: isDark
+      ? "0 1px 12px rgba(0,0,0,0.18)"
+      : "0 1px 18px rgba(0,0,0,0.08)",
   }
 
   const logoStyle = {
@@ -28,6 +35,7 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
     color: isDark ? "#aaa" : "#888",
     cursor: "pointer",
     textDecoration: "none",
+    whiteSpace: "nowrap",
   }
 
   const navLinkActive = {

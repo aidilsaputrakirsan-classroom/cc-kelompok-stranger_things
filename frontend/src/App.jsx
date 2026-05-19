@@ -522,6 +522,53 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                   +
                 </text>
               </svg>
+              <div
+                style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
+                onClick={() => onNavigate?.("profile")}
+                title="Lihat Profil" 
+              >
+                <svg
+                  viewBox="0 0 80 80"
+                  width="60"
+                  height="60"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="40" cy="30" r="18" fill="#f48fb1" />
+                  <circle cx="40" cy="30" r="14" fill="#fce4ec" />
+                  <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
+                  <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
+                  <path
+                    d="M35 36 Q40 40 45 36"
+                    stroke="#e91e8c"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                  <rect
+                    x="28"
+                    y="16"
+                    width="24"
+                    height="12"
+                    rx="6"
+                    fill="#e91e8c"
+                  />
+                  <circle cx="40" cy="55" r="14" fill="#f48fb1" />
+                  <path
+                    d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z"
+                    fill="#e91e8c"
+                  />
+                  <circle cx="33" cy="60" r="4" fill="#fff" opacity="0.7" />
+                  <text
+                    x="31"
+                    y="63"
+                    fontSize="6"
+                    fill="#e91e8c"
+                    fontWeight="bold"
+                  >
+                    +
+                  </text>
+                </svg>
+              </div>
             </div>
             <div>
               <h2 style={dynWelcomeTitle}>
@@ -979,6 +1026,7 @@ function App() {
           theme={theme}
         />
       )}
+
       {activePage === "about" && (
         <AboutPage onBack={() => setActivePage("home")} />
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
@@ -1334,3 +1382,4 @@ const homeStyles = {
 
 export default App;
 
+export default App;
