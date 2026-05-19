@@ -20,7 +20,7 @@ class ItemUpdate(BaseModel):
 class ItemResponse(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str] = None
     price: float
     quantity: int
     owner_id: int
