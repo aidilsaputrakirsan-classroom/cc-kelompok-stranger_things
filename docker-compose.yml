@@ -1,72 +1,146 @@
-services:
-  # ==================== DATABASE ====================
-  db:
-    image: postgres:16-alpine                        # Menggunakan image PostgresSQL
-    container_name: bye_virus-db                     # Nama container database
-    restart: unless-stopped                          # Container akan otomatis restart kecuali dihentikan manual
-    environment:
-      POSTGRES_USER: postgres                        # Username database
-      POSTGRES_PASSWORD: postgres                    # Password database
-      POSTGRES_DB: bye_virus                         # Nama database yang dibuat otomatis saat container start
-    ports:
-      - "5432:5432"                                  # Port laptop:container (akses DB dari localhost:5432)
-    volumes:
-      - pgdata:/var/lib/postgresql/data              # Menyimpan data DB agar tidak hilang saat container mati
-    networks:
-      - cloudnet                                     # Masuk ke network agar bisa diakses backend
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"] # Cek apakah DB siap digunakan
-      interval: 10s                                              # Cek setiap 10 detik
-      timeout: 5s                                                # Maksimal waktu tunggu
-      retries: 5                                                 # Percobaan sebelum dianggap gagal
+version: "3.9"
 
-  # ==================== BACKEND ====================
-  backend:
-    build:
-      context: ./backend                             # Folder sumber untuk build image backend
-      dockerfile: Dockerfile                         # File Dockerfile yang digunakan
-    image: bye_virus-backend                         # Nama image hasil build
-    container_name: bye_virus-backend                # Nama container backend
-    restart: unless-stopped # Auto restart jika error
-    env_file:
-      - ./backend/.env.docker                        # File environment (config seperti DATABASE_URL)
+services:
+  # ==================== AUTH DATABASE ====================
+  auth-db:
+    image: postgres:16-alpine
+    container_name: bye_virus-auth-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bye_virus
     ports:
-      - "8000:8000"                                  # Akses API di localhost:8000
+      - "5432:5432"
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
     networks:
-      - cloudnet                                     # Terhubung ke network yang sama dengan DB
-    depends_on:
-      db:
-        condition: service_healthy                    # Backend hanya jalan jika DB sudah siap
+      - cloudnet
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s                                   # Cek API tiap 30 detik
-      timeout: 10s                                    # Waktu tunggu maksimal
-      retries: 3                                      # Percobaan sebelum dianggap gagal
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== ITEM DATABASE ====================
+  item-db:
+    image: postgres:16-alpine
+    container_name: bye_virus-item-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bye_virus
+    ports:
+      - "5433:5432"
+    volumes:
+      - item_pgdata:/var/lib/postgresql/data
+    networks:
+      - cloudnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== AUTH SERVICE ====================
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    image: bye_virus-auth-service
+    container_name: bye_virus-auth-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@auth-db:5432/bye_virus"
+    ports:
+      - "8001:8001"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - cloudnet
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== ITEM SERVICE ====================
+  item-service:
+    build:
+      context: ./services/item-service
+      dockerfile: Dockerfile
+    image: bye_virus-item-service
+    container_name: bye_virus-item-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@item-db:5432/bye_virus"
+    ports:
+      - "8002:8002"
+    depends_on:
+      item-db:
+        condition: service_healthy
+    networks:
+      - cloudnet
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # ==================== FRONTEND ====================
   frontend:
     build:
-      context: ./frontend                            # Folder frontend
-      dockerfile: Dockerfile                         # Dockerfile frontend
+      context: ./frontend
+      dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:8000          # URL backend yang dipakai frontend
-    image: bye_virus-frontend                        # Nama image frontend
-    container_name: frontend                         # Nama container frontend
-    restart: unless-stopped                          # Auto restart jika error
+        VITE_API_URL: http://localhost
+    image: bye_virus-frontend
+    container_name: bye_virus-frontend
+    restart: unless-stopped
     ports:
-      - "3000:80"                                    # Akses web di localhost:3000
-    networks:
-      - cloudnet                                     # Terhubung ke network
+      - "3000:80"
     depends_on:
-      - backend                                      # Frontend dijalankan setelah backend
+      - auth-service
+      - item-service
+    networks:
+      - cloudnet
+
+  # ==================== GATEWAY (NGINX) ====================
+  gateway:
+    image: nginx:alpine
+    container_name: bye_virus-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - auth-service
+      - item-service
+      - frontend
+    networks:
+      - cloudnet
 
 # ==================== VOLUMES ====================
 volumes:
-  pgdata:
-    name: bye_virus                                   # Nama volume untuk menyimpan data database
+  auth_pgdata:
+  item_pgdata:
 
 # ==================== NETWORKS ====================
 networks:
   cloudnet:
-    name: cloudnet                                    # Nama network yang digunakan semua container
-    driver: bridge                                    # Tipe network default untuk komunikasi antar container
+    driver: bridge

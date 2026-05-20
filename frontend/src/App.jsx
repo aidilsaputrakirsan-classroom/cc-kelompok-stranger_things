@@ -7,6 +7,7 @@ import DataAnak from "./components/DataAnak";
 import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/AboutPage";
+import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -162,7 +163,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         });
 
         // Get upcoming schedules sorted by date (take first 6)
-        // Filter: harus ada scheduled_date, dan tidak completed
         const upcoming = allImmunizations
           .filter((i) => i.scheduled_date && i.status !== "completed")
           .sort(
@@ -182,7 +182,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
             status: new Date(imun.scheduled_date) >= today ? "green" : "red",
           }));
         console.log("Final upcoming schedules to display:", upcoming);
-        console.log("Upcoming schedules:", upcoming);
         setUpcomingSchedules(upcoming);
       } catch (err) {
         console.error("Error loading immunization summary:", err);
@@ -281,7 +280,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
-            <div style={homeStyles.welcomeAvatarWrap}>
+            <div
+              style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
+              onClick={() => onNavigate?.("profile")}
+              title="Lihat Profil"
+            >
               <svg
                 viewBox="0 0 80 80"
                 width="60"
@@ -604,6 +607,24 @@ function App() {
           onLogout={handleLogout}
           activePage={activePage}
           setActivePage={setActivePage}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "detailJadwal" && (
+        <DetailJadwal
+          onLogout={handleLogout}
+          setActivePage={setActivePage}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "faskes" && (
+        <FaskesMap
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+          activePage={activePage}
+          theme={theme}
         />
       )}
 
@@ -611,23 +632,23 @@ function App() {
         <DataAnak
           setActivePage={setActivePage}
           onLogout={() => setActivePage("login")}
+          theme={theme}
         />
       )}
 
-      {activePage === "faskes" && (
-        <FaskesMap
-          onLogout={handleLogout}
+      {activePage === "profile" && (
+        <ProfilPengguna
+          user={user}
           activePage={activePage}
           setActivePage={setActivePage}
+          onBack={() => setActivePage("home")}
+          onLogout={handleLogout}
+          theme={theme}
         />
-      )}
-
-      {activePage === "detailJadwal" && (
-        <DetailJadwal onLogout={handleLogout} setActivePage={setActivePage} />
       )}
 
       {activePage === "about" && (
-        <AboutPage onBack={() => setActivePage("home")} />
+        <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
     </>
   );
@@ -810,38 +831,34 @@ const homeStyles = {
     transition: "all 0.25s ease",
   },
   eduImgBox: {
-    width: "100%",
+    position: "relative",
     height: "120px",
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    padding: "10px",
   },
   eduTag: {
-    position: "absolute",
-    padding: "3px 10px",
-    borderRadius: "20px",
+    borderRadius: "6px",
+    padding: "6px 12px",
     fontSize: "11px",
     fontWeight: "600",
     color: "white",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
   eduBody: {
-    padding: "0.6rem 0.85rem 0.75rem",
+    padding: "1rem",
   },
   eduBodyText: {
-    fontSize: "13px",
+    fontSize: "14px",
     fontWeight: "600",
+    margin: "0 0 6px",
     lineHeight: "1.4",
-    margin: 0,
-    transition: "color 0.3s ease",
   },
   eduReadMore: {
-    fontSize: "11px",
+    fontSize: "12px",
     color: "#e91e8c",
-    marginTop: "6px",
-    marginBottom: 0,
-    fontWeight: "500",
+    margin: 0,
+    fontWeight: "600",
   },
 };
 
