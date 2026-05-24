@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, asc, desc
-from models import Item, User
+from models import Item, User, Role
 from schemas import ItemCreate, ItemUpdate, UserCreate, ChildCreate
 from auth import hash_password, verify_password
 from sqlalchemy import func
@@ -102,20 +102,32 @@ def delete_item(db: Session, item_id: int) -> bool:
     return True
 
 def create_user(db: Session, user_data: UserCreate) -> User:
-    """Buat user baru dengan password yang di-hash."""
+    """Buat user baru dengan password yang di-hash dan assign role."""
     # Cek apakah email sudah terdaftar
     existing = db.query(User).filter(User.email == user_data.email).first()
     if existing:
         return None  # Email sudah dipakai
 
+    # Get role by name (default to "parent" if not specified)
+    role_name = user_data.role if user_data.role else "parent"
+    role = db.query(Role).filter(Role.name == role_name).first()
+    
+    # If role doesn't exist, try to create it or use a default
+    if not role:
+        # Create the role if it doesn't exist
+        role = Role(name=role_name, description=f"Role: {role_name}")
+        db.add(role)
+        db.flush()  # Flush to get the ID without committing
+
     db_user = User(
         name=user_data.name,
         email=user_data.email,
         hashed_password=hash_password(user_data.password),
+        role_id=role.id,
     )
     db.add(db_user)
     db.commit()
-    db.refresh(db_user)
+    db.refresh(db_user, ["role"])  # Refresh to load the role relationship
     return db_user
 
 
@@ -126,6 +138,9 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
         return None
     if not verify_password(password, user.hashed_password):
         return None
+    # Load the role relationship
+    if user.role_id:
+        db.refresh(user, ["role"])
     return user
 
 

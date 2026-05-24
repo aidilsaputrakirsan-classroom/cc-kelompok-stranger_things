@@ -23,6 +23,23 @@ from schemas import (
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+def update_schema():
+    try:
+        from sqlalchemy import text, inspect
+        inspector = inspect(engine)
+        if "users" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("users")]
+            if "role" not in columns:
+                print("[INFO] Adding role column to users table...")
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'parent';"))
+                    conn.commit()
+                    print("[OK] role column added")
+    except Exception as e:
+        print(f"[WARN] Schema update attempted: {e}")
+
+update_schema()
+
 app = FastAPI(
     title="Auth Service",
     description="Authentication microservice — register, login, verify tokens",
@@ -90,6 +107,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         email=user_data.email,
         name=user_data.name,
         hashed_password=pwd_context.hash(user_data.password),
+        role=user_data.role,
     )
     db.add(user)
     db.commit()
@@ -108,8 +126,9 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "sub": str(user.id),
         "email": user.email,
         "name": user.name,
+        "role": user.role,
     })
-    return TokenResponse(access_token=token)
+    return TokenResponse(access_token=token, user=user)
 
 
 @app.get("/verify", response_model=TokenVerifyResponse)
@@ -128,4 +147,5 @@ def verify_token(authorization: str = Header(...)):
         user_id=int(payload["sub"]),
         email=payload["email"],
         name=payload["name"],
+        role=payload.get("role", "parent"),
     )
