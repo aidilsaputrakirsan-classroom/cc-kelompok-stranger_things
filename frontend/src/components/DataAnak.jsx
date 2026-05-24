@@ -150,11 +150,13 @@ export default function DataAnak({ setActivePage, onLogout }) {
         height: editChild.height ?? "",
       });
       if (editChild.immunizations && editChild.immunizations.length > 0) {
-        setImmunizations(editChild.immunizations.map(item => ({
-          id: item.id,
-          vaccine_id: item.vaccine_id || "",
-          scheduled_date: item.scheduled_date || ""
-        })));
+        setImmunizations(
+          editChild.immunizations.map((item) => ({
+            id: item.id,
+            vaccine_id: item.vaccine_id || "",
+            scheduled_date: item.scheduled_date || "",
+          })),
+        );
       } else {
         setImmunizations([{ vaccine_id: "", scheduled_date: "" }]);
       }
@@ -208,7 +210,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
       };
       if (isEditMode) {
         await updateChild(editId, payload);
-        
+
         let failedVaccines = [];
         for (let item of immunizations) {
           if (!item.id && item.vaccine_id && item.scheduled_date) {
@@ -227,7 +229,10 @@ export default function DataAnak({ setActivePage, onLogout }) {
         }
 
         if (failedVaccines.length > 0) {
-          showNotif(`Data anak diperbarui! ${failedVaccines.length} imunisasi baru gagal.`, "info");
+          showNotif(
+            `Data anak diperbarui! ${failedVaccines.length} imunisasi baru gagal.`,
+            "info",
+          );
         } else {
           showNotif("Data berhasil diperbarui!", "success");
         }
@@ -255,15 +260,21 @@ export default function DataAnak({ setActivePage, onLogout }) {
         // Tampilkan pesan sesuai hasil
         if (failedVaccines.length > 0) {
           showNotif(
-            `Data anak berhasil disimpan! ${failedVaccines.length} `,
+            `Data anak berhasil disimpan! ${failedVaccines.length} imunisasi gagal disimpan.`,
             "info",
           );
         } else {
           showNotif("Data berhasil disimpan!", "success");
         }
       }
-      setTimeout(() => setActivePage?.("jadwal"), 1500);
+      // Navigate to jadwal page after 1.5 seconds
+      setTimeout(() => {
+        if (setActivePage) {
+          setActivePage("jadwal");
+        }
+      }, 1500);
     } catch (err) {
+      console.error("Error saving child:", err);
       showNotif("Gagal menyimpan: " + err.message, "error");
     } finally {
       setLoading(false);

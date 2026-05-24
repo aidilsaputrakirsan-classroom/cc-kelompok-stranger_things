@@ -23,21 +23,61 @@ load_dotenv()
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
 
+# Add missing columns to existing tables (for schema updates)
+def update_schema():
+    """Ensure User table has role_id column."""
+    try:
+        from sqlalchemy import text, inspect
+        inspector = inspect(engine)
+        
+        # Check if users table exists
+        if "users" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("users")]
+            
+            # Add role_id column if missing
+            if "role_id" not in columns:
+                print("[INFO] Adding role_id column to users table...")
+                with engine.connect() as conn:
+                    if "postgresql" in str(engine.url):
+                        conn.execute(text("""
+                            ALTER TABLE users ADD COLUMN role_id INTEGER REFERENCES roles(id);
+                        """))
+                    elif "sqlite" in str(engine.url):
+                        conn.execute(text("""
+                            ALTER TABLE users ADD COLUMN role_id INTEGER REFERENCES roles(id);
+                        """))
+                    conn.commit()
+                    print("[OK] role_id column added to users table")
+    except Exception as e:
+        print(f"[WARN] Schema update attempted: {e}")
+
+update_schema()
+
 # Initialize default roles
 def init_default_roles():
     """Inisialisasi role default jika belum ada."""
     db = SessionLocal()
     try:
-        # Cek apakah role sudah ada
-        user_role = db.query(Role).filter(Role.name == "email").first()
-        if not user_role:
-            user_role = Role(name="user", description="Regular user")
-            db.add(user_role)
+        # Cek dan buat role parent jika tidak ada
+        parent_role = db.query(Role).filter(Role.name == "parent").first()
+        if not parent_role:
+            parent_role = Role(name="parent", description="Parent/Orang Tua")
+            db.add(parent_role)
+            print("[OK] Parent role created")
         
+        # Cek dan buat role midwife jika tidak ada
+        midwife_role = db.query(Role).filter(Role.name == "midwife").first()
+        if not midwife_role:
+            midwife_role = Role(name="midwife", description="Bidan/Nakes")
+            db.add(midwife_role)
+            print("[OK] Midwife role created")
+        
+        # Keep admin role for backward compatibility
         admin_role = db.query(Role).filter(Role.name == "admin").first()
         if not admin_role:
             admin_role = Role(name="admin", description="Administrator")
             db.add(admin_role)
+            print("[OK] Admin role created")
         
         db.commit()
         print("[OK] Default roles initialized")
@@ -132,7 +172,7 @@ allowed_origins_str = os.getenv(
 )
 origins_list = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
 
-print(f"🔐 CORS Allowed Origins: {origins_list}")
+print(f"[INFO] CORS Allowed Origins: {origins_list}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -143,7 +183,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-print("✅ CORS middleware configured successfully")
+print("[OK] CORS middleware configured successfully")
 
 # ==================== HEALTH CHECK ====================
 
@@ -377,10 +417,10 @@ def create_immunization_log(
         log_dict = log_data.model_dump(exclude_unset=True)
         log_dict["child_id"] = child_id
         result = crud.create_immunization_log(db=db, log_data=log_dict)
-        print(f"✅ Immunization log created: child_id={child_id}, vaccine_id={log_data.vaccine_id}")
+        print(f"[OK] Immunization log created: child_id={child_id}, vaccine_id={log_data.vaccine_id}")
         return result
     except Exception as e:
-        print(f"❌ Error creating immunization log: {e}")
+        print(f"[ERROR] Error creating immunization log: {e}")
         raise HTTPException(status_code=500, detail=f"Gagal membuat catatan imunisasi: {str(e)}")
 
 
