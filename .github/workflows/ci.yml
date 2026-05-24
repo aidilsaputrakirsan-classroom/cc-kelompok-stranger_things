@@ -88,7 +88,11 @@ jobs:
       - name: Build frontend
         run: docker build -t cloudapp-frontend:ci ./frontend
 
+<<<<<<< HEAD
   notify-failure:
+=======
+   notify-failure:
+>>>>>>> 7370e2e5f0e3490653c55088d41c18df34a172a7
   name: 📢 Notify Failure
   runs-on: ubuntu-latest
   needs: [test-backend, test-frontend, build-docker]

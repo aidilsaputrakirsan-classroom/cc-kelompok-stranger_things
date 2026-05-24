@@ -11,16 +11,16 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: bye_virus
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - auth_pgdata:/var/lib/postgresql/data
     networks:
       - cloudnet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready"] 
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10                      
 
   # ==================== ITEM DATABASE ====================
   item-db:
@@ -38,10 +38,10 @@ services:
     networks:
       - cloudnet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bye_virus"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready"] 
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10                     
 
   # ==================== AUTH SERVICE ====================
   auth-service:
@@ -114,8 +114,10 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - auth-service
-      - item-service
+      auth-service:
+        condition: service_healthy
+      item-service:
+        condition: service_healthy
     networks:
       - cloudnet
 
@@ -129,9 +131,12 @@ services:
     volumes:
       - ./services/gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - auth-service
-      - item-service
-      - frontend
+      auth-service:
+        condition: service_healthy
+      item-service:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     networks:
       - cloudnet
 
