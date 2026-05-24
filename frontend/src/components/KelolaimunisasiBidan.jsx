@@ -1,13 +1,7 @@
-// DetailImunisasiBidan.jsx
-// Halaman kosong Detail Imunisasi dengan navbar yang sama seperti DashboardBidan
+// KelolaimunisasiBidan.jsx
+// Halaman kosong Kelola Imunisasi dengan navbar yang sama seperti DashboardBidan
 
-/**
- * Props:
- *   user        – object { name, email }
- *   onLogout    – function () => void
- *   onNavigate  – function (page: string) => void
- */
-function DetailImunisasiBidan({ user, onLogout, onNavigate }) {
+function KelolaimunisasiBidan({ user, onLogout, onNavigate }) {
   return (
     <div style={styles.page}>
       {/* NAVBAR — sama persis dengan DashboardBidan */}
@@ -27,24 +21,24 @@ function DetailImunisasiBidan({ user, onLogout, onNavigate }) {
           </button>
 
           <button
-            style={{
-              ...styles.navItem,
-              ...styles.navItemActive,
-            }}
+            style={styles.navItem}
+            onClick={() => onNavigate?.("detail")}
           >
             Detail Imunisasi
           </button>
 
           <button
-            style={styles.navItem}
-            onClick={() => onNavigate?.("kelolaImunisasi")}
+            style={{
+              ...styles.navItem,
+              ...styles.navItemActive,
+            }}
           >
             Kelola Imunisasi
           </button>
 
           <button
             style={styles.navItem}
-            onClick={() => onNavigate?.("profile")}
+            onClick={() => onNavigate?.("profil")}
           >
             Profil
           </button>
@@ -63,8 +57,8 @@ function DetailImunisasiBidan({ user, onLogout, onNavigate }) {
       {/* MAIN — kosong */}
       <div style={styles.main}>
         <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>🩺</div>
-          <h2 style={styles.emptyTitle}>Detail Imunisasi</h2>
+          <div style={styles.emptyIcon}>🗂️</div>
+          <h2 style={styles.emptyTitle}>Kelola Imunisasi</h2>
           <p style={styles.emptyText}>
             Halaman ini sedang dalam pengembangan.
           </p>
@@ -173,4 +167,4 @@ const styles = {
   },
 };
 
-export default DetailImunisasiBidan;
+export default KelolaimunisasiBidan;
