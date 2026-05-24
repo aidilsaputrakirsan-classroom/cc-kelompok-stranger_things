@@ -12,8 +12,7 @@ logs:
 
 restart:
 	docker compose down && docker compose up -d
-
-
+    
 # Target untuk mengecek kerapian kode (Linter)
 # Sesuai tugas: 'make lint'
 lint:
