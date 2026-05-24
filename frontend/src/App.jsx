@@ -7,6 +7,8 @@ import DataAnak from "./components/DataAnak";
 import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/AboutPage";
+import DashboardBidan from "./components/DashboardBidan";
+import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
 import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
@@ -539,6 +541,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [activePage, setActivePage] = useState("home");
+  const [selectedImmunization, setSelectedImmunization] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(null);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -561,15 +565,18 @@ function App() {
     loadItems();
   }, [isAuthenticated, loadItems]);
 
-  const handleLogin = async (email, password) => {
+  const handleLogin = async (email, password, accountType = "parent") => {
+    console.log("Login type:", accountType);
     const data = await login(email, password);
     setUser(data.user);
     setIsAuthenticated(true);
+    const isMidwife = accountType === "midwife" || data.user?.role === "midwife";
+    setActivePage(isMidwife ? "dashboardBidan" : "home");
   };
 
   const handleRegister = async (userData) => {
     await register(userData);
-    await handleLogin(userData.email, userData.password);
+    await handleLogin(userData.email, userData.password, userData.role || "parent");
   };
 
   if (!isAuthenticated) {
@@ -599,6 +606,31 @@ function App() {
           activePage={activePage}
           onNavigate={setActivePage}
           theme={theme}
+        />
+      )}
+
+      {activePage === "dashboardBidan" && (
+        <DashboardBidan 
+          user={user} 
+          onLogout={handleLogout}
+          onNavigate={setActivePage}
+          onSelectImmunization={(immunization, child) => {
+            setSelectedImmunization(immunization);
+            setSelectedChild(child);
+            setActivePage("detailImunisasiBidan");
+          }}
+        />
+      )}
+
+      {activePage === "detailImunisasiBidan" && (
+        <DetailImunisasiBidan
+          immunization={selectedImmunization}
+          child={selectedChild}
+          onBack={() => setActivePage("dashboardBidan")}
+          onSave={(data) => {
+            console.log("Saved immunization data:", data);
+            setActivePage("dashboardBidan");
+          }}
         />
       )}
 

@@ -4,11 +4,13 @@ function LoginPage({ onLogin, onRegister, onBack }) {
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("parent");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    strNumber: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,7 +64,7 @@ function LoginPage({ onLogin, onRegister, onBack }) {
         }
         if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
           setError(
-            "Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)",
+            "Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)"
           );
           setLoading(false);
           return;
@@ -72,14 +74,14 @@ function LoginPage({ onLogin, onRegister, onBack }) {
           setLoading(false);
           return;
         }
-        await onRegister?.(formData);
+        await onRegister?.({ ...formData, role: selectedRole });
       } else {
         if (!formData.email.trim()) {
           setError("Email wajib diisi");
           setLoading(false);
           return;
         }
-        await onLogin?.(formData.email, formData.password);
+        await onLogin?.(formData.email, formData.password, selectedRole);
       }
     } catch (err) {
       setError(err.message);
@@ -97,14 +99,17 @@ function LoginPage({ onLogin, onRegister, onBack }) {
             ← Kembali
           </button>
         )}
+
         {/* Title */}
         <h1 style={styles.title}>
-          {isRegister ? "Daftar Akun" : "Masuk Akun"}
+          {isRegister ? "Daftar Akun" : selectedRole === "midwife" ? "Login Bidan" : "Masuk Akun"}
         </h1>
         <p style={styles.subtitle}>
           {isRegister
             ? "Buat akun sekarang dan mulai jelajahi Bye Bye Virus"
-            : "Masuk akun sekarang dan mulai jelajahi Bye Bye Virus"}
+            : selectedRole === "midwife"
+            ? "Masuk sebagai bidan untuk langsung ke dashboard bidan"
+            : "Masuk sebagai orang tua untuk melihat jadwal imunisasi"}
         </p>
 
         {/* Tab Switch */}
@@ -128,6 +133,74 @@ function LoginPage({ onLogin, onRegister, onBack }) {
             Register
           </button>
         </div>
+
+        {!isRegister && (
+          <div style={styles.field}>
+            <label style={styles.label}>Masuk sebagai</label>
+            <div style={styles.roleOptions}>
+              <div
+                style={{
+                  ...styles.roleCard,
+                  ...(selectedRole === "parent" ? styles.roleCardActive : {}),
+                }}
+                onClick={() => setSelectedRole("parent")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setSelectedRole("parent")}
+                aria-pressed={selectedRole === "parent"}
+              >
+                <span style={styles.roleIcon}>
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={selectedRole === "parent" ? "#e879a0" : "#9ca3af"}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 12h.01" />
+                    <path d="M15 12h.01" />
+                    <path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" />
+                    <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1" />
+                  </svg>
+                </span>
+                <span style={styles.roleName}>Orang Tua</span>
+                <span style={styles.roleDesc}>Akses fitur orang tua</span>
+              </div>
+
+              <div
+                style={{
+                  ...styles.roleCard,
+                  ...(selectedRole === "midwife" ? styles.roleCardActive : {}),
+                }}
+                onClick={() => setSelectedRole("midwife")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setSelectedRole("midwife")}
+                aria-pressed={selectedRole === "midwife"}
+              >
+                <span style={styles.roleIcon}>
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={selectedRole === "midwife" ? "#e879a0" : "#9ca3af"}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2c0 1.1.9 2 2 2h5v5c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z" />
+                  </svg>
+                </span>
+                <span style={styles.roleName}>Bidan / Nakes</span>
+                <span style={styles.roleDesc}>Masuk ke dashboard bidan</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && <div style={styles.error}>{error}</div>}
 
@@ -193,6 +266,148 @@ function LoginPage({ onLogin, onRegister, onBack }) {
               </span>
             </div>
           </div>
+
+          {/* Role Selection — Register only */}
+          {isRegister && (
+            <div style={styles.field}>
+              <label style={styles.label}>Daftar sebagai</label>
+              <div style={styles.roleOptions}>
+                {/* Orang Tua */}
+                <div
+                  style={{
+                    ...styles.roleCard,
+                    ...(selectedRole === "parent" ? styles.roleCardActive : {}),
+                  }}
+                  onClick={() => setSelectedRole("parent")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && setSelectedRole("parent")}
+                  aria-pressed={selectedRole === "parent"}
+                >
+                  <span style={styles.roleIcon}>
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={selectedRole === "parent" ? "#e879a0" : "#9ca3af"}
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M9 12h.01" />
+                      <path d="M15 12h.01" />
+                      <path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" />
+                      <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1" />
+                    </svg>
+                  </span>
+                  <span style={styles.roleName}>Orang Tua</span>
+                  <span style={styles.roleDesc}>
+                    Pantau imunisasi &amp; tumbuh kembang anak
+                  </span>
+                </div>
+
+                {/* Bidan / Nakes */}
+                <div
+                  style={{
+                    ...styles.roleCard,
+                    ...(selectedRole === "midwife" ? styles.roleCardActive : {}),
+                  }}
+                  onClick={() => setSelectedRole("midwife")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && setSelectedRole("midwife")
+                  }
+                  aria-pressed={selectedRole === "midwife"}
+                >
+                  <span style={styles.roleIcon}>
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={selectedRole === "midwife" ? "#e879a0" : "#9ca3af"}
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2c0 1.1.9 2 2 2h5v5c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z" />
+                    </svg>
+                  </span>
+                  <span style={styles.roleName}>Bidan / Nakes</span>
+                  <span style={styles.roleDesc}>
+                    Kelola data imunisasi &amp; pasien
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Info note untuk bidan */}
+          {isRegister && selectedRole === "midwife" && (
+            <div style={styles.bidanNote}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#1d6fa5"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0, marginTop: "1px" }}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+              <span>
+                Akun bidan memerlukan verifikasi nomor STR/SIP. Anda bisa
+                melanjutkan pendaftaran dan melengkapinya nanti.
+              </span>
+            </div>
+          )}
+
+          {/* STR / SIP — Midwife only */}
+          {isRegister && selectedRole === "midwife" && (
+            <div style={styles.field}>
+              <label style={styles.label}>
+                Nomor STR / SIP{" "}
+                <span style={styles.optionalTag}>(opsional)</span>
+              </label>
+              <div style={styles.inputWrapper}>
+                <input
+                  type="text"
+                  name="strNumber"
+                  value={formData.strNumber}
+                  onChange={handleChange}
+                  placeholder="Masukkan nomor STR atau SIP"
+                  style={styles.input}
+                />
+                <span style={styles.icon}>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#e879a0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M16 10h.01" />
+                    <path d="M12 10h.01" />
+                    <path d="M8 10h.01" />
+                    <path d="M16 14h.01" />
+                    <path d="M12 14h.01" />
+                    <path d="M8 14h.01" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Password */}
           <div style={styles.field}>
@@ -302,15 +517,30 @@ function LoginPage({ onLogin, onRegister, onBack }) {
             {loading
               ? "⏳ Loading..."
               : isRegister
-                ? "Daftar Sekarang"
-                : "Masuk"}
+              ? "Daftar Sekarang"
+              : "Masuk"}
           </button>
         </form>
+
+        {/* Toggle link */}
+        <p style={styles.toggleNote}>
+          {isRegister ? "Sudah punya akun? " : "Belum punya akun? "}
+          <button
+            style={styles.toggleLink}
+            onClick={() => {
+              setIsRegister((r) => !r);
+              setError("");
+            }}
+          >
+            {isRegister ? "Masuk sekarang" : "Daftar sekarang"}
+          </button>
+        </p>
       </div>
     </div>
   );
 }
 
+/* ─── Design tokens ─────────────────────────────────── */
 const PINK = "#e879a0";
 const PINK_DARK = "#d4588a";
 const PINK_LIGHT = "#f9a8d4";
@@ -322,7 +552,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#fce7f3",
+    background: PINK_BG,
     padding: "2rem",
     fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
   },
@@ -331,8 +561,9 @@ const styles = {
     padding: "2.5rem 2.25rem",
     borderRadius: "24px",
     width: "100%",
-    maxWidth: "420px",
-    boxShadow: "0 8px 40px rgba(232,121,160,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+    maxWidth: "440px",
+    boxShadow:
+      "0 8px 40px rgba(232,121,160,0.15), 0 2px 8px rgba(0,0,0,0.06)",
   },
   title: {
     textAlign: "center",
@@ -391,6 +622,11 @@ const styles = {
     fontWeight: "600",
     color: "#374151",
   },
+  optionalTag: {
+    fontWeight: "400",
+    color: "#9ca3af",
+    fontSize: "0.8rem",
+  },
   inputWrapper: {
     position: "relative",
     display: "flex",
@@ -425,6 +661,63 @@ const styles = {
     display: "flex",
     alignItems: "center",
   },
+
+  /* Role selector */
+  roleOptions: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "10px",
+  },
+  roleCard: {
+    border: `1.5px solid ${PINK_LIGHT}`,
+    borderRadius: "12px",
+    padding: "14px 10px",
+    cursor: "pointer",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "5px",
+    transition: "all 0.18s ease",
+    backgroundColor: "#ffffff",
+    userSelect: "none",
+  },
+  roleCardActive: {
+    borderColor: PINK,
+    backgroundColor: PINK_BG,
+    boxShadow: `0 0 0 3px rgba(232,121,160,0.15)`,
+  },
+  roleIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: "2px",
+  },
+  roleName: {
+    fontSize: "0.85rem",
+    fontWeight: "700",
+    color: "#1a1a2e",
+  },
+  roleDesc: {
+    fontSize: "0.72rem",
+    color: "#6b7280",
+    lineHeight: "1.4",
+  },
+
+  /* Bidan info note */
+  bidanNote: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "8px",
+    backgroundColor: "#eff6ff",
+    border: "1px solid #bfdbfe",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    fontSize: "0.78rem",
+    color: "#1d4ed8",
+    lineHeight: "1.5",
+  },
+
   btnSubmit: {
     padding: "0.9rem",
     background: `linear-gradient(135deg, ${PINK}, ${PINK_DARK})`,
@@ -450,16 +743,31 @@ const styles = {
     border: "1.5px solid #fecaca",
     fontWeight: "500",
   },
-
   btnBack: {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: "#e879a0",
+    color: PINK,
     fontSize: "0.9rem",
     fontWeight: "600",
     padding: "0 0 1rem 0",
     display: "block",
+  },
+  toggleNote: {
+    textAlign: "center",
+    marginTop: "1rem",
+    fontSize: "0.85rem",
+    color: "#6b7280",
+  },
+  toggleLink: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: PINK,
+    fontWeight: "600",
+    fontSize: "0.85rem",
+    padding: 0,
+    textDecoration: "underline",
   },
 };
 
