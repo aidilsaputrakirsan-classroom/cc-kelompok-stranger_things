@@ -78,10 +78,16 @@ def get_current_user(
 ) -> User:
     print(f" [DEBUG] get_current_user called with token: {token[:30]}...")
     payload = decode_token(token)
-    user_id: int = int(payload.get("sub"))  # ← Konvert string ke int
+    sub = payload.get("sub")
+    if sub is None:
+        print(" [ERROR] sub is None in token payload!")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token tidak valid",
+        )
+    user_id: int = int(sub)
     
     print(f" [DEBUG] Extracted user_id: {user_id}")
-    # ... rest of function
 
     if user_id is None:
         print(f" [ERROR] user_id is None!")
@@ -106,6 +112,10 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Akun tidak aktif",
         )
+
+    # Load the role relationship for the user
+    if user.role_id:
+        db.refresh(user, ["role"])
 
     print(f" [SUCCESS] User authenticated: {user.email}")
     return user

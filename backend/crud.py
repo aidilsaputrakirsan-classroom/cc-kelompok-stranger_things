@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, asc, desc
-from models import Item, User
+from models import Item, User, Role
 from schemas import ItemCreate, ItemUpdate, UserCreate, ChildCreate
 from auth import hash_password, verify_password
 from sqlalchemy import func
@@ -102,20 +102,32 @@ def delete_item(db: Session, item_id: int) -> bool:
     return True
 
 def create_user(db: Session, user_data: UserCreate) -> User:
-    """Buat user baru dengan password yang di-hash."""
+    """Buat user baru dengan password yang di-hash dan assign role."""
     # Cek apakah email sudah terdaftar
     existing = db.query(User).filter(User.email == user_data.email).first()
     if existing:
         return None  # Email sudah dipakai
 
+    # Get role by name (default to "parent" if not specified)
+    role_name = user_data.role if user_data.role else "parent"
+    role = db.query(Role).filter(Role.name == role_name).first()
+    
+    # If role doesn't exist, try to create it or use a default
+    if not role:
+        # Create the role if it doesn't exist
+        role = Role(name=role_name, description=f"Role: {role_name}")
+        db.add(role)
+        db.flush()  # Flush to get the ID without committing
+
     db_user = User(
         name=user_data.name,
         email=user_data.email,
         hashed_password=hash_password(user_data.password),
+        role_id=role.id,
     )
     db.add(db_user)
     db.commit()
-    db.refresh(db_user)
+    db.refresh(db_user, ["role"])  # Refresh to load the role relationship
     return db_user
 
 
@@ -126,6 +138,9 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
         return None
     if not verify_password(password, user.hashed_password):
         return None
+    # Load the role relationship
+    if user.role_id:
+        db.refresh(user, ["role"])
     return user
 
 
@@ -179,16 +194,22 @@ def create_child(db: Session, child_data: ChildCreate, parent_id: int):
 
 def get_child(db: Session, child_id: int):
     """Ambil anak berdasarkan ID dengan immunizations."""
-    from models import Child
+    from models import Child, ImmunizationLog
     from sqlalchemy.orm import joinedload
-    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.id == child_id).first()
+    return db.query(Child).options(
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.vaccine),
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.facility)
+    ).filter(Child.id == child_id).first()
 
 
 def get_children_by_parent(db: Session, parent_id: int):
     """Ambil semua anak untuk seorang parent dengan immunizations."""
-    from models import Child
+    from models import Child, ImmunizationLog
     from sqlalchemy.orm import joinedload
-    return db.query(Child).options(joinedload(Child.immunization_logs)).filter(Child.parent_id == parent_id).all()
+    return db.query(Child).options(
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.vaccine),
+        joinedload(Child.immunization_logs).joinedload(ImmunizationLog.facility)
+    ).filter(Child.parent_id == parent_id).all()
 
 
 def update_child(db: Session, child_id: int, child_data: dict):
@@ -245,13 +266,21 @@ def create_immunization_log(db: Session, log_data: dict):
 def get_immunization_log(db: Session, log_id: int):
     """Ambil catatan vaksinasi berdasarkan ID."""
     from models import ImmunizationLog
-    return db.query(ImmunizationLog).filter(ImmunizationLog.id == log_id).first()
+    from sqlalchemy.orm import joinedload
+    return db.query(ImmunizationLog).options(
+        joinedload(ImmunizationLog.vaccine),
+        joinedload(ImmunizationLog.facility)
+    ).filter(ImmunizationLog.id == log_id).first()
 
 
 def get_immunization_logs_by_child(db: Session, child_id: int):
     """Ambil semua catatan vaksinasi untuk seorang anak."""
     from models import ImmunizationLog
-    return db.query(ImmunizationLog).filter(ImmunizationLog.child_id == child_id).all()
+    from sqlalchemy.orm import joinedload
+    return db.query(ImmunizationLog).options(
+        joinedload(ImmunizationLog.vaccine),
+        joinedload(ImmunizationLog.facility)
+    ).filter(ImmunizationLog.child_id == child_id).order_by(ImmunizationLog.id.desc()).all()
 
 
 def update_immunization_log(db: Session, log_id: int, log_data: dict):

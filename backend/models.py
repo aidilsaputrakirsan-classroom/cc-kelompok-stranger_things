@@ -22,12 +22,19 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True, index=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     children = relationship("Child", back_populates="parent")
     articles = relationship("Article", back_populates="author")
+    role = relationship("Role")
+    
+    @property
+    def role_name(self):
+        """Get role name from relationship."""
+        return self.role.name if self.role else None
 
 
 class Child(Base):

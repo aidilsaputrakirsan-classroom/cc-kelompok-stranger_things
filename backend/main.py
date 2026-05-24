@@ -8,12 +8,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import engine, get_db, SessionLocal
-from models import Base, User, Role
+from models import Base, User, Role, VaccineType
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
     ChildCreate, ChildUpdate, ChildResponse,
-    ImmunizationLogCreate, ImmunizationLogResponse
+    ImmunizationLogCreate, ImmunizationLogUpdate, ImmunizationLogResponse
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -23,21 +23,61 @@ load_dotenv()
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
 
+# Add missing columns to existing tables (for schema updates)
+def update_schema():
+    """Ensure User table has role_id column."""
+    try:
+        from sqlalchemy import text, inspect
+        inspector = inspect(engine)
+        
+        # Check if users table exists
+        if "users" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("users")]
+            
+            # Add role_id column if missing
+            if "role_id" not in columns:
+                print("[INFO] Adding role_id column to users table...")
+                with engine.connect() as conn:
+                    if "postgresql" in str(engine.url):
+                        conn.execute(text("""
+                            ALTER TABLE users ADD COLUMN role_id INTEGER REFERENCES roles(id);
+                        """))
+                    elif "sqlite" in str(engine.url):
+                        conn.execute(text("""
+                            ALTER TABLE users ADD COLUMN role_id INTEGER REFERENCES roles(id);
+                        """))
+                    conn.commit()
+                    print("[OK] role_id column added to users table")
+    except Exception as e:
+        print(f"[WARN] Schema update attempted: {e}")
+
+update_schema()
+
 # Initialize default roles
 def init_default_roles():
     """Inisialisasi role default jika belum ada."""
     db = SessionLocal()
     try:
-        # Cek apakah role sudah ada
-        user_role = db.query(Role).filter(Role.name == "email").first()
-        if not user_role:
-            user_role = Role(name="user", description="Regular user")
-            db.add(user_role)
+        # Cek dan buat role parent jika tidak ada
+        parent_role = db.query(Role).filter(Role.name == "parent").first()
+        if not parent_role:
+            parent_role = Role(name="parent", description="Parent/Orang Tua")
+            db.add(parent_role)
+            print("[OK] Parent role created")
         
+        # Cek dan buat role midwife jika tidak ada
+        midwife_role = db.query(Role).filter(Role.name == "midwife").first()
+        if not midwife_role:
+            midwife_role = Role(name="midwife", description="Bidan/Nakes")
+            db.add(midwife_role)
+            print("[OK] Midwife role created")
+        
+        # Keep admin role for backward compatibility
         admin_role = db.query(Role).filter(Role.name == "admin").first()
         if not admin_role:
             admin_role = Role(name="admin", description="Administrator")
             db.add(admin_role)
+            print("[OK] Admin role created")
         
         db.commit()
         print("[OK] Default roles initialized")
@@ -48,6 +88,75 @@ def init_default_roles():
         db.close()
 
 init_default_roles()
+def init_default_vaccines():
+    """Inisialisasi data vaksin default jika belum ada."""
+    db = SessionLocal()
+    try:
+        # Cek berapa vaccine yang sudah ada
+        existing_count = db.query(VaccineType).count()
+        print(f"[INFO] Current vaccine count: {existing_count}")
+        
+        # Jika sudah ada data, skip
+        if existing_count > 0:
+            print("[OK] Vaccines already initialized, skipping...")
+            return
+        
+        default_vaccines = [
+            {"id": 1, "name": "BCG (TBC)"},
+            {"id": 2, "name": "Hepatitis B"},
+            {"id": 3, "name": "DPT (Difteri, Pertusis, Tetanus)"},
+            {"id": 4, "name": "Polio"},
+            {"id": 5, "name": "Hib"},
+            {"id": 6, "name": "Campak"},
+            {"id": 7, "name": "MMR"},
+            {"id": 8, "name": "Influenza"},
+            {"id": 9, "name": "Pneumokokus (PCV)"},
+            {"id": 10, "name": "Rotavirus"},
+            {"id": 11, "name": "Varicella (Cacar Air)"},
+            {"id": 12, "name": "Hepatitis A"},
+            {"id": 13, "name": "Tifoid"},
+            {"id": 14, "name": "Japanese Encephalitis (JE)"},
+            {"id": 15, "name": "Dengue"},
+        ]
+        
+        # Reset sequence jika perlu (untuk PostgreSQL)
+        try:
+            db.execute(text("ALTER SEQUENCE vaccine_types_id_seq RESTART WITH 1"))
+            print("[INFO] PostgreSQL sequence reset")
+        except:
+            pass  # Mungkin SQLite atau sequence tidak ada
+        
+        # Insert semua vaccines
+        added = 0
+        for vac in default_vaccines:
+            try:
+                new_vac = VaccineType(id=vac["id"], name=vac["name"])
+                db.add(new_vac)
+                added += 1
+                print(f"[INFO] Adding vaccine: {vac['name']}")
+            except Exception as e:
+                print(f"[WARN] Error adding vaccine {vac['id']}: {e}")
+        
+        db.commit()
+        final_count = db.query(VaccineType).count()
+        print(f"[OK] Vaccines initialized! Added: {added}, Total: {final_count}")
+    except Exception as e:
+        print(f"[ERROR] Error initializing vaccines: {e}")
+        import traceback
+        traceback.print_exc()
+        for vac in default_vaccines:
+            existing = db.query(VaccineType).filter(VaccineType.id == vac["id"]).first()
+            if not existing:
+                new_vac = VaccineType(id=vac["id"], name=vac["name"])
+                db.add(new_vac)
+        
+        db.commit()
+        print("[OK] Default vaccines initialized")
+    except Exception as e:
+        print(f"[ERROR] Error initializing vaccines: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 app = FastAPI(
     title="Cloud App API",
@@ -63,7 +172,7 @@ allowed_origins_str = os.getenv(
 )
 origins_list = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
 
-print(f"🔐 CORS Allowed Origins: {origins_list}")
+print(f"[INFO] CORS Allowed Origins: {origins_list}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -74,7 +183,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-print("✅ CORS middleware configured successfully")
+print("[OK] CORS middleware configured successfully")
 
 # ==================== HEALTH CHECK ====================
 
@@ -308,10 +417,10 @@ def create_immunization_log(
         log_dict = log_data.model_dump(exclude_unset=True)
         log_dict["child_id"] = child_id
         result = crud.create_immunization_log(db=db, log_data=log_dict)
-        print(f"✅ Immunization log created: child_id={child_id}, vaccine_id={log_data.vaccine_id}")
+        print(f"[OK] Immunization log created: child_id={child_id}, vaccine_id={log_data.vaccine_id}")
         return result
     except Exception as e:
-        print(f"❌ Error creating immunization log: {e}")
+        print(f"[ERROR] Error creating immunization log: {e}")
         raise HTTPException(status_code=500, detail=f"Gagal membuat catatan imunisasi: {str(e)}")
 
 
@@ -347,10 +456,10 @@ def get_pending_immunizations(
     return crud.get_pending_immunizations(db=db, child_id=child_id)
 
 
-@app.put("/immunization/{log_id}")
+@app.put("/immunization/{log_id}", response_model=ImmunizationLogResponse)
 def update_immunization_log(
     log_id: int,
-    log_data: dict,
+    log_data: ImmunizationLogUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -359,7 +468,7 @@ def update_immunization_log(
     if not log:
         raise HTTPException(status_code=404, detail="Catatan vaksinasi tidak ditemukan")
     
-    return crud.update_immunization_log(db=db, log_id=log_id, log_data=log_data)
+    return crud.update_immunization_log(db=db, log_id=log_id, log_data=log_data.model_dump(exclude_unset=True))
 
 
 # ==================== GROWTH RECORD ENDPOINTS ====================

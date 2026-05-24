@@ -67,13 +67,15 @@ class UserCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     email: str
     password: str = Field(..., min_length=8)
+    role: Optional[str] = Field("parent", description="parent atau midwife/bidan")
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "name": "Daffa Alfattah",
                 "email": "daffa@student.itk.ac.id",
-                "password": "Password123!"
+                "password": "Password123!",
+                "role": "parent"
             }
         }
     }
@@ -110,9 +112,22 @@ class UserResponse(BaseModel):
     name: str
     is_active: bool
     created_at: datetime
+    role: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def extract_role_name(cls, v):
+        """Extract role name from Role object or return string."""
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v.get("name")
+        if hasattr(v, "name"):
+            return v.name
+        return v
 
 
 class LoginRequest(BaseModel):
@@ -128,6 +143,12 @@ class LoginRequest(BaseModel):
             }
         }
     }
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        """Ubah email menjadi lowercase saat login"""
+        return v.lower()
 
 
 class TokenResponse(BaseModel):
@@ -206,42 +227,6 @@ class ChildUpdate(BaseModel):
 
 
 
-class ChildResponse(BaseModel):
-    """Schema untuk response data anak."""
-    id: int
-    parent_id: int
-    name: str
-    birth_date: date
-    gender: str
-    blood_type: Optional[str] = None
-    height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
-    weight: Optional[float] = Field(None, title="Berat Badan (kg)")
-    notes: Optional[str] = None
-    is_active: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    immunizations: Optional[list] = Field(
-        default_factory=list, 
-        alias="immunization_logs",
-        title="Riwayat Imunisasi"
-    )
-
-    class Config:
-        from_attributes = True
-        populate_by_name = True
-    
-    @computed_field
-    @property
-    def heightNow(self) -> Optional[float]:
-        """Alias untuk height (untuk frontend)"""
-        return self.height
-    
-    @computed_field
-    @property
-    def weightNow(self) -> Optional[float]:
-        """Alias untuk weight (untuk frontend)"""
-        return self.weight
-
 
 # ============================================
 # Vaccine Type Schemas
@@ -282,36 +267,98 @@ class VaccineScheduleResponse(BaseModel):
 class ImmunizationLogCreate(BaseModel):
     """Schema untuk membuat catatan imunisasi."""
     vaccine_id: int
-    scheduled_date: date  # Format: YYYY-MM-DD
-    status: Optional[str] = Field(None, description="pending, completed, delayed, skipped")
+    schedule_id: Optional[int] = None
     facility_id: Optional[int] = None
+    scheduled_date: date  # Format: YYYY-MM-DD
+    status: Optional[str] = Field("pending", description="pending, completed, delayed, skipped")
     completion_date: Optional[date] = None
     notes: Optional[str] = None
 
 
 class ImmunizationLogUpdate(BaseModel):
     """Schema untuk update status imunisasi."""
+    vaccine_id: Optional[int] = None
+    schedule_id: Optional[int] = None
+    facility_id: Optional[int] = None
     status: Optional[str] = None  # 'pending', 'completed', 'delayed', 'skipped'
     completion_date: Optional[date] = None
+    scheduled_date: Optional[date] = None
+    notes: Optional[str] = None
 
+
+# ============================================
+# Healthcare Facility Schemas
+# ============================================
+
+class HealthcareFacilityResponse(BaseModel):
+    """Schema untuk response fasilitas kesehatan."""
+    id: int
+    name: str
+    type: str
+    address: str
+    phone: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    operating_hours: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class ImmunizationLogResponse(BaseModel):
     """Schema untuk response catatan imunisasi."""
     id: int
     child_id: int
     vaccine_id: int
+    schedule_id: Optional[int] = None
+    facility_id: Optional[int] = None
     status: str
     scheduled_date: date
     completion_date: Optional[date] = None
     created_at: datetime
     notes: Optional[str] = None
+    
+    vaccine: Optional[VaccineTypeResponse] = None
+    facility: Optional[HealthcareFacilityResponse] = None
 
     class Config:
         from_attributes = True
 
+class ChildResponse(BaseModel):
+    """Schema untuk response data anak."""
+    id: int
+    parent_id: int
+    name: str
+    birth_date: date
+    gender: str
+    blood_type: Optional[str] = None
+    height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
+    weight: Optional[float] = Field(None, title="Berat Badan (kg)")
+    notes: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    immunizations: Optional[list[ImmunizationLogResponse]] = Field(
+        default_factory=list, 
+        alias="immunization_logs",
+        title="Riwayat Imunisasi"
+    )
 
-# ============================================
-# Growth Record Schemas
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+    
+    @computed_field
+    @property
+    def heightNow(self) -> Optional[float]:
+        """Alias untuk height (untuk frontend)"""
+        return self.height
+    
+    @computed_field
+    @property
+    def weightNow(self) -> Optional[float]:
+        """Alias untuk weight (untuk frontend)"""
+        return self.weight
+
 # ============================================
 
 class GrowthRecordCreate(BaseModel):
@@ -340,20 +387,3 @@ class GrowthRecordResponse(BaseModel):
         from_attributes = True
 
 
-# ============================================
-# Healthcare Facility Schemas
-# ============================================
-
-class HealthcareFacilityResponse(BaseModel):
-    """Schema untuk response fasilitas kesehatan."""
-    id: int
-    name: str
-    type: str
-    address: str
-    phone: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    operating_hours: Optional[str] = None
-
-    class Config:
-        from_attributes = True

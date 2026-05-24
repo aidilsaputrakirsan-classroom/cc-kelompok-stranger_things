@@ -6,30 +6,26 @@ import FaskesMap from "./components/FaskesMap";
 import DataAnak from "./components/DataAnak";
 import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
+import AboutPage from "./components/AboutPage";
+import DashboardBidan from "./components/DashboardBidan";
+import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
+import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
+import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
 import useTheme from "./hooks/useTheme";
 import {
-  fetchItems,
-  createItem,
-  updateItem,
-  deleteItem,
   checkHealth,
   login,
   register,
   clearToken,
+  fetchChildren,
+  fetchImmunizations,
+  fetchVaccineTypes,
 } from "./services/api";
 
-// ── Static data ──
-const scheduleData = [
-  { id: 1, name: "BCG", date: "6 April 2026", status: "red" },
-  { id: 2, name: "POLIO 2", date: "6 April 2026", status: "orange" },
-  { id: 3, name: "POLIO 2", date: "6 April 2026", status: "green" },
-  { id: 4, name: "Hepatitis B", date: "6 April 2026", status: "green" },
-  { id: 5, name: "DPT 1", date: "6 April 2026", status: "orange" },
-  { id: 6, name: "DPT 1", date: "6 April 2026", status: "orange" },
-];
+const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" };
 
 const eduArticles = [
   {
@@ -58,83 +54,151 @@ const eduArticles = [
   },
 ];
 
-const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" };
-
 // ── HomePage Component ──
 function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
   const isDark = theme === "dark";
-  const summary = { selesai: 7, total: 12, mendatang: 3, belumTerjadwal: 2 };
+  const [summary, setSummary] = useState({
+    selesai: 0,
+    total: 0,
+    mendatang: 0,
+    belumTerjadwal: 0,
+  });
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadImmunizationSummary = async () => {
+      setLoading(true);
+      try {
+        let vaccineMap = {};
+        try {
+          const vaccinTypes = await fetchVaccineTypes();
+          if (vaccinTypes && Array.isArray(vaccinTypes)) {
+            vaccinTypes.forEach((v) => {
+              vaccineMap[String(v.id)] = v.name;
+              vaccineMap[v.id] = v.name;
+            });
+          }
+        } catch (err) {
+          console.warn("Could not fetch vaccine types, using fallback", err);
+        }
+
+        const children = await fetchChildren();
+
+        if (!children || children.length === 0) {
+          setSummary({ selesai: 0, total: 0, mendatang: 0, belumTerjadwal: 0 });
+          setUpcomingSchedules([]);
+          setLoading(false);
+          return;
+        }
+
+        const allImmunizations = [];
+        for (const child of children) {
+          try {
+            const immunizations = await fetchImmunizations(child.id);
+            if (immunizations && Array.isArray(immunizations)) {
+              allImmunizations.push(
+                ...immunizations.map((imun) => {
+                  const vacId = String(imun.vaccine_id);
+                  const mappedName =
+                    vaccineMap[vacId] ||
+                    vaccineMap[imun.vaccine_id] ||
+                    imun.vaccine_name ||
+                    `Vaksin ${imun.vaccine_id}`;
+                  return {
+                    ...imun,
+                    childName: child.name,
+                    childId: child.id,
+                    vaccine_name: mappedName,
+                  };
+                }),
+              );
+            }
+          } catch (err) {
+            console.error(`Error fetching immunizations for child ${child.id}:`, err);
+          }
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const in30Days = new Date(today);
+        in30Days.setDate(in30Days.getDate() + 30);
+
+        const selesai = allImmunizations.filter((i) => i.status === "completed").length;
+        const belumTerjadwal = allImmunizations.filter((i) => !i.scheduled_date).length;
+        const mendatang = allImmunizations.filter((i) => {
+          if (!i.scheduled_date) return false;
+          const schedDate = new Date(i.scheduled_date);
+          schedDate.setHours(0, 0, 0, 0);
+          return schedDate >= today && schedDate <= in30Days && i.status !== "completed";
+        }).length;
+
+        setSummary({ selesai, total: allImmunizations.length, mendatang, belumTerjadwal });
+
+        const upcoming = allImmunizations
+          .filter((i) => i.scheduled_date && i.status !== "completed")
+          .sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date))
+          .slice(0, 6)
+          .map((imun) => ({
+            id: imun.id,
+            name: imun.vaccine_name,
+            date: new Date(imun.scheduled_date).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }),
+            scheduled_date: imun.scheduled_date,
+            childName: imun.childName,
+            status: new Date(imun.scheduled_date) >= today ? "green" : "red",
+          }));
+        setUpcomingSchedules(upcoming);
+      } catch (err) {
+        console.error("Error loading immunization summary:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadImmunizationSummary();
+  }, []);
 
   const dynPage = {
     ...homeStyles.page,
     background: isDark ? "#0f0f1a" : "#fff5f8",
     color: isDark ? "#f0f0f0" : "#1a1a2e",
   };
-
   const dynWelcomeCard = {
     ...homeStyles.welcomeCard,
     background: isDark ? "#16213e" : "#fce4ec",
     boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynWelcomeTitle = {
-    ...homeStyles.welcomeTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
-  const dynWelcomeSubtitle = {
-    ...homeStyles.welcomeSubtitle,
-    color: isDark ? "#aaa" : "#555",
-  };
-
+  const dynWelcomeTitle = { ...homeStyles.welcomeTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
+  const dynWelcomeSubtitle = { ...homeStyles.welcomeSubtitle, color: isDark ? "#aaa" : "#555" };
   const dynReminder = {
     ...homeStyles.reminder,
     background: isDark ? "#1a1a2e" : "#fff0f5",
     border: isDark ? "1px solid #2a2a4a" : "1px solid #f9a8d4",
     boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynReminderText = {
-    ...homeStyles.reminderText,
-    color: isDark ? "#ccc" : "#333",
-  };
-
-  const dynSectionTitle = {
-    ...homeStyles.sectionTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
+  const dynReminderText = { ...homeStyles.reminderText, color: isDark ? "#ccc" : "#333" };
+  const dynSectionTitle = { ...homeStyles.sectionTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
   const dynSchedCard = {
     ...homeStyles.schedCard,
     background: isDark ? "#16213e" : "white",
     border: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f9c0d0",
     boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynSchedName = {
-    ...homeStyles.schedName,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
-  const dynEduTitle = {
-    ...homeStyles.eduTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
+  const dynSchedName = { ...homeStyles.schedName, color: isDark ? "#f0f0f0" : "#1a1a2e" };
+  const dynEduTitle = { ...homeStyles.eduTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
   const dynEduCard = {
     ...homeStyles.eduCard,
     background: isDark ? "#16213e" : "white",
     border: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f0d0da",
   };
-
-  const dynEduBodyText = {
-    ...homeStyles.eduBodyText,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
+  const dynEduBodyText = { ...homeStyles.eduBodyText, color: isDark ? "#f0f0f0" : "#1a1a2e" };
 
   return (
     <div style={dynPage}>
-      {/* Navbar bersama */}
       <Navbar activePage={activePage} setActivePage={onNavigate} onLogout={onLogout} />
 
       <div style={homeStyles.main}>
@@ -142,7 +206,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
         <div style={homeStyles.left}>
           {/* Welcome Card */}
           <div style={dynWelcomeCard}>
-            <div style={homeStyles.welcomeAvatarWrap}>
+            <div
+              style={{ ...homeStyles.welcomeAvatarWrap, cursor: "pointer" }}
+              onClick={() => onNavigate?.("profile")}
+              title="Lihat Profil"
+            >
               <svg viewBox="0 0 80 80" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="40" cy="30" r="18" fill="#f48fb1" />
                 <circle cx="40" cy="30" r="14" fill="#fce4ec" />
@@ -172,9 +240,31 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
           <div style={dynReminder}>
             <div style={homeStyles.reminderIcon}>!</div>
             <p style={dynReminderText}>
-              <strong>Pengingat</strong>: Imunisasi BCG untuk Dina dalam 3 hari lagi
+              {loading ? (
+                <strong>Pengingat</strong>
+              ) : upcomingSchedules.length > 0 ? (
+                <>
+                  <strong>Pengingat</strong>: {upcomingSchedules[0].name} untuk{" "}
+                  {upcomingSchedules[0].childName}
+                </>
+              ) : (
+                <strong>Pengingat</strong>
+              )}
             </p>
-            <span style={homeStyles.reminderBadge}>3 hari lagi</span>
+            <span style={homeStyles.reminderBadge}>
+              {loading
+                ? "..."
+                : upcomingSchedules.length > 0
+                  ? (() => {
+                      const schedDate = new Date(upcomingSchedules[0].scheduled_date);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      schedDate.setHours(0, 0, 0, 0);
+                      const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
+                      return daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
+                    })()
+                  : "-"}
+            </span>
           </div>
 
           {/* Ringkasan Imunisasi */}
@@ -203,16 +293,38 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
           <div>
             <h3 style={dynSectionTitle}>Jadwal Imunisasi Terdekat</h3>
             <div style={homeStyles.scheduleGrid}>
-              {scheduleData.map((item) => (
-                <div key={item.id} style={dynSchedCard}>
-                  <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={dynSchedName}>{item.name}</div>
-                    <div style={homeStyles.schedDate}>{item.date}</div>
-                  </div>
-                  <span style={homeStyles.schedBadge}>3 hari lagi</span>
-                </div>
-              ))}
+              {loading ? (
+                <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
+                  Memuat jadwal...
+                </p>
+              ) : upcomingSchedules.length === 0 ? (
+                <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
+                  Tidak ada jadwal terdekat
+                </p>
+              ) : (
+                upcomingSchedules.map((item) => {
+                  const schedDate = new Date(item.scheduled_date);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  schedDate.setHours(0, 0, 0, 0);
+                  const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
+                  const daysLabel =
+                    daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
+                  return (
+                    <div key={item.id} style={dynSchedCard}>
+                      <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={dynSchedName}>{item.name}</div>
+                        <div style={homeStyles.schedDate}>{item.date}</div>
+                        <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>
+                          {item.childName}
+                        </div>
+                      </div>
+                      <span style={homeStyles.schedBadge}>{daysLabel}</span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -245,7 +357,14 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                 }}
               >
                 <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} />
-                <span style={{ ...homeStyles.eduTag, background: article.tagColor, position: "relative", zIndex: 2 }}>
+                <span
+                  style={{
+                    ...homeStyles.eduTag,
+                    background: article.tagColor,
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
                   {article.tag}
                 </span>
               </div>
@@ -263,111 +382,45 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
 
 // ── Main App ──
 function App() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [activePage, setActivePage] = useState("home");
 
-  const [items, setItems] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
-  const [toast, setToast] = useState(null);
-
-  const loadItems = useCallback(async (search = "") => {
-    setLoading(true);
-    try {
-      const data = await fetchItems(search);
-      setItems(data.items);
-      setTotalItems(data.total);
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout();
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = useCallback(() => {
+    clearToken();
+    setUser(null);
+    setIsAuthenticated(false);
+    setActivePage("home");
+    setShowSplash(true);
   }, []);
 
-  useEffect(() => { checkHealth().then(setIsConnected); }, []);
-  useEffect(() => { if (isAuthenticated) loadItems(); }, [isAuthenticated, loadItems]);
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3000);
-    return () => clearTimeout(t);
-  }, [toast]);
+  const loadItems = useCallback(async () => {
+    try {
+      await checkHealth();
+    } catch (err) {
+      if (err.message === "UNAUTHORIZED") handleLogout();
+    }
+  }, [handleLogout]);
 
-  const handleLogin = async (email, password) => {
+  useEffect(() => {
+    loadItems();
+  }, [isAuthenticated, loadItems]);
+
+  const handleLogin = async (email, password, accountType = "parent") => {
     const data = await login(email, password);
     setUser(data.user);
     setIsAuthenticated(true);
+    const isMidwife = accountType === "midwife" || data.user?.role === "midwife";
+    setActivePage(isMidwife ? "dashboardBidan" : "home");
   };
 
   const handleRegister = async (userData) => {
     await register(userData);
-    await handleLogin(userData.email, userData.password);
+    await handleLogin(userData.email, userData.password, userData.role || "parent");
   };
-
-  const handleLogout = () => {
-    clearToken();
-    setUser(null);
-    setIsAuthenticated(false);
-    setItems([]);
-    setTotalItems(0);
-    setEditingItem(null);
-    setSearchQuery("");
-    setActivePage("home");
-    setShowSplash(true);
-  };
-
-  const handleSubmit = async (itemData, editId) => {
-    try {
-      if (editId) {
-        await updateItem(editId, itemData);
-        setEditingItem(null);
-        setToast({ type: "success", message: "Item berhasil diupdate" });
-      } else {
-        await createItem(itemData);
-        setToast({ type: "success", message: "Item berhasil ditambahkan" });
-      }
-      loadItems(searchQuery);
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout();
-      else setToast({ type: "error", message: err.message });
-    }
-  };
-
-  const handleDelete = async (id) => {
-    const item = items.find((i) => i.id === id);
-    if (!window.confirm(`Hapus "${item?.name}" ?`)) return;
-    try {
-      await deleteItem(id);
-      setToast({ type: "success", message: "Item berhasil dihapus" });
-      loadItems(searchQuery);
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout();
-      else setToast({ type: "error", message: err.message });
-    }
-  };
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    loadItems(query);
-  };
-
-  const sortedItems = [...items].sort((a, b) => {
-    switch (sortBy) {
-      case "price_asc": return a.price - b.price;
-      case "price_desc": return b.price - a.price;
-      case "name_asc": return a.name.localeCompare(b.name);
-      case "name_desc": return b.name.localeCompare(a.name);
-      case "oldest": return a.id - b.id;
-      default: return b.id - a.id;
-    }
-  });
 
   if (!isAuthenticated) {
     if (showSplash) {
@@ -387,8 +440,16 @@ function App() {
     );
   }
 
+  // ── Shared nav props untuk halaman bidan ──
+  const bidanProps = {
+    user,
+    onLogout: handleLogout,
+    onNavigate: setActivePage,
+  };
+
   return (
     <>
+      {/* ── Halaman Pengguna (Orang Tua) ── */}
       {activePage === "home" && (
         <HomePage
           user={user}
@@ -404,21 +465,7 @@ function App() {
           onLogout={handleLogout}
           activePage={activePage}
           setActivePage={setActivePage}
-        />
-      )}
-
-      {activePage === "dataAnak" && (
-        <DataAnak
-          setActivePage={setActivePage}
-          onLogout={() => setActivePage("login")}
-        />
-      )}
-
-      {activePage === "faskes" && (
-        <FaskesMap
-          onLogout={handleLogout}
-          activePage={activePage}
-          setActivePage={setActivePage}
+          theme={theme}
         />
       )}
 
@@ -426,20 +473,53 @@ function App() {
         <DetailJadwal
           onLogout={handleLogout}
           setActivePage={setActivePage}
+          theme={theme}
         />
       )}
 
-      {toast && (
-        <div style={{
-          ...toastStyles.base,
-          ...(toast.type === "success" ? toastStyles.success : toastStyles.error),
-        }}>
-          <div style={toastStyles.iconWrap(toast.type)}>
-            {toast.type === "success" ? "✓" : "!"}
-          </div>
-          <span style={toastStyles.message}>{toast.message}</span>
-          <button style={toastStyles.close} onClick={() => setToast(null)}>✕</button>
-        </div>
+      {activePage === "faskes" && (
+        <FaskesMap
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+          activePage={activePage}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "dataAnak" && (
+        <DataAnak
+          setActivePage={setActivePage}
+          onLogout={() => setActivePage("login")}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "profile" && (
+        <ProfilPengguna
+          user={user}
+          activePage={activePage}
+          setActivePage={setActivePage}
+          onBack={() => setActivePage("home")}
+          onLogout={handleLogout}
+          theme={theme}
+        />
+      )}
+
+      {activePage === "about" && (
+        <AboutPage onBack={() => setActivePage("home")} theme={theme} />
+      )}
+
+      {/* ── Halaman Bidan ── */}
+      {activePage === "dashboardBidan" && (
+        <DashboardBidan {...bidanProps} />
+      )}
+
+      {activePage === "detailImunisasi" && (
+        <DetailImunisasiBidan {...bidanProps} />
+      )}
+
+      {activePage === "kelolaImunisasi" && (
+        <KelolaimunisasiBidan {...bidanProps} />
       )}
     </>
   );
@@ -461,253 +541,195 @@ const homeStyles = {
     maxWidth: "1200px",
     margin: "0 auto",
   },
-  left: { 
-    display: "flex", 
-    flexDirection: "column", 
-    gap: "1rem" 
+  left: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
   },
   welcomeCard: {
-    borderRadius: "16px", 
+    borderRadius: "16px",
     padding: "1.5rem",
-    display: "flex", 
-    alignItems: "center", 
+    display: "flex",
+    alignItems: "center",
     gap: "1.25rem",
     transition: "background 0.3s ease, box-shadow 0.3s ease",
   },
   welcomeAvatarWrap: {
-    width: "72px", 
-    height: "72px", 
+    width: "72px",
+    height: "72px",
     borderRadius: "50%",
-    background: "white", 
+    background: "white",
     display: "flex",
-    alignItems: "center", 
-    justifyContent: "center", 
+    alignItems: "center",
+    justifyContent: "center",
     flexShrink: 0,
   },
-  welcomeTitle: { 
-    fontSize: "20px", 
-    fontWeight: "700", 
-    marginBottom: "6px", 
-    transition: "color 0.3s ease" 
+  welcomeTitle: {
+    fontSize: "20px",
+    fontWeight: "700",
+    marginBottom: "6px",
+    transition: "color 0.3s ease",
   },
-  welcomeSubtitle: { 
-    fontSize: "13px", 
-    lineHeight: "1.6", 
-    margin: 0, 
-    transition: "color 0.3s ease" 
+  welcomeSubtitle: {
+    fontSize: "13px",
+    lineHeight: "1.6",
+    margin: 0,
+    transition: "color 0.3s ease",
   },
   reminder: {
-    borderRadius: "12px", padding: "0.85rem 1.25rem",
-    display: "flex", alignItems: "center", gap: "12px",
+    borderRadius: "12px",
+    padding: "0.85rem 1.25rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
     transition: "background 0.3s ease, border-color 0.3s ease",
   },
   reminderIcon: {
-    width: "32px", 
-    height: "32px", 
+    width: "32px",
+    height: "32px",
     borderRadius: "50%",
-    background: "#e91e8c", 
-    display: "flex", 
+    background: "#e91e8c",
+    display: "flex",
     alignItems: "center",
-    justifyContent: "center", 
-    flexShrink: 0, 
-    color: "white", 
-    fontWeight: "800", 
+    justifyContent: "center",
+    flexShrink: 0,
+    color: "white",
+    fontWeight: "800",
     fontSize: "15px",
   },
-  reminderText: { 
-    flex: 1, 
-    fontSize: "13px", 
-    margin: 0, 
-    transition: "color 0.3s ease" 
+  reminderText: {
+    flex: 1,
+    fontSize: "13px",
+    margin: 0,
+    transition: "color 0.3s ease",
   },
   reminderBadge: {
-    background: "#c2185b", 
-    color: "white", 
+    background: "#c2185b",
+    color: "white",
     borderRadius: "20px",
-    padding: "5px 14px", 
-    fontSize: "12px", 
-    fontWeight: "600", 
+    padding: "5px 14px",
+    fontSize: "12px",
+    fontWeight: "600",
     whiteSpace: "nowrap",
   },
-  sectionTitle: { 
-    fontSize: "15px", 
-    fontWeight: "700", 
-    marginBottom: "0.6rem", 
-    transition: "color 0.3s ease" 
+  sectionTitle: {
+    fontSize: "15px",
+    fontWeight: "700",
+    marginBottom: "0.6rem",
+    transition: "color 0.3s ease",
   },
-  statsGrid: { 
-    display: "grid", 
-    gridTemplateColumns: "repeat(3, 1fr)", 
-    gap: "0.75rem" 
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "0.75rem",
   },
-  statCard: { 
-    borderRadius: "14px", 
-    padding: "1rem 1.25rem", 
-    color: "white", 
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)" 
+  statCard: {
+    borderRadius: "14px",
+    padding: "1rem 1.25rem",
+    color: "white",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
-  statLabel: { 
-    fontSize: "13px", 
-    fontWeight: "500", 
-    opacity: 0.9, 
-    marginBottom: "6px" 
+  statLabel: {
+    fontSize: "13px",
+    fontWeight: "500",
+    opacity: 0.9,
+    marginBottom: "6px",
   },
-  statNumber: { 
-    fontSize: "32px", 
-    fontWeight: "700", 
-    lineHeight: 1, 
-    marginBottom: "4px" 
+  statNumber: {
+    fontSize: "32px",
+    fontWeight: "700",
+    lineHeight: 1,
+    marginBottom: "4px",
   },
-  statSub: { 
-    fontSize: "12px", 
-    opacity: 0.85 
+  statSub: {
+    fontSize: "12px",
+    opacity: 0.85,
   },
-  scheduleGrid: { 
-    display: "grid", 
-    gridTemplateColumns: "repeat(3, 1fr)", 
-    gap: "0.6rem" 
+  scheduleGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "0.6rem",
   },
   schedCard: {
-    borderRadius: "12px", 
+    borderRadius: "12px",
     padding: "0.75rem 1rem",
-    display: "flex", 
-    alignItems: "center", 
+    display: "flex",
+    alignItems: "center",
     gap: "10px",
     transition: "background 0.3s ease, border-color 0.3s ease",
   },
-  dot: { 
-    width: "10px", 
-    height: "10px", 
-    borderRadius: "50%", 
-    flexShrink: 0 
+  dot: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    flexShrink: 0,
   },
-  schedName: { 
-    fontSize: "13px", 
-    fontWeight: "600", 
-    transition: "color 0.3s ease" 
+  schedName: {
+    fontSize: "13px",
+    fontWeight: "600",
+    transition: "color 0.3s ease",
   },
-  schedDate: { 
-    fontSize: "11px", 
-    color: "#888", 
-    marginTop: "2px" 
+  schedDate: {
+    fontSize: "11px",
+    color: "#888",
+    marginTop: "2px",
   },
   schedBadge: {
-    background: "#c2185b", 
-    color: "white", 
+    background: "#c2185b",
+    color: "white",
     borderRadius: "20px",
-    padding: "4px 10px", 
-    fontSize: "11px", 
-    fontWeight: "600", 
+    padding: "4px 10px",
+    fontSize: "11px",
+    fontWeight: "600",
     whiteSpace: "nowrap",
   },
-  right: { 
-    display: "flex", 
-    flexDirection: "column" 
+  right: {
+    display: "flex",
+    flexDirection: "column",
   },
-  eduTitle: { 
-    fontSize: "16px", 
-    fontWeight: "700", 
-    marginBottom: "1rem", 
-    transition: "color 0.3s ease" 
+  eduTitle: {
+    fontSize: "16px",
+    fontWeight: "700",
+    marginBottom: "1rem",
+    transition: "color 0.3s ease",
   },
   eduCard: {
-    borderRadius: "12px", 
-    overflow: "hidden", 
+    borderRadius: "12px",
+    overflow: "hidden",
     marginBottom: "0.75rem",
-    cursor: "pointer", 
-    display: "block", 
+    cursor: "pointer",
+    display: "block",
     transition: "all 0.25s ease",
   },
   eduImgBox: {
-    width: "100%", 
-    height: "120px",
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center", 
     position: "relative",
+    height: "120px",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    padding: "10px",
   },
   eduTag: {
-    position: "absolute", 
-    padding: "3px 10px", 
-    borderRadius: "20px",
-    fontSize: "11px", 
-    fontWeight: "600", 
-    color: "white", 
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    borderRadius: "6px",
+    padding: "6px 12px",
+    fontSize: "11px",
+    fontWeight: "600",
+    color: "white",
   },
-  eduBody: { 
-    padding: "0.6rem 0.85rem 0.75rem" 
+  eduBody: {
+    padding: "1rem",
   },
-  eduBodyText: { 
-    fontSize: "13px", 
-    fontWeight: "600", 
-    lineHeight: "1.4", 
-    margin: 0, 
-    transition: "color 0.3s ease" },
-  eduReadMore: { 
-    fontSize: "11px", 
-    color: "#e91e8c", 
-    marginTop: "6px", 
-    marginBottom: 0, 
-    fontWeight: "500" 
+  eduBodyText: {
+    fontSize: "14px",
+    fontWeight: "600",
+    margin: "0 0 6px",
+    lineHeight: "1.4",
   },
-};
-
-// ── Toast Styles ──
-const toastStyles = {
-  base: {
-    position: "fixed", 
-    top: 24, 
-    right: 24,
-    display: "flex", 
-    alignItems: "center", 
-    gap: "12px",
-    padding: "14px 18px", 
-    borderRadius: "14px", 
-    zIndex: 999,
-    minWidth: "260px", 
-    maxWidth: "360px",
-    backdropFilter: "blur(12px)", 
-    WebkitBackdropFilter: "blur(12px)",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)",
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-  },
-  success: { 
-    background: "rgba(240,253,244,0.95)", 
-    border: "1px solid rgba(22,163,74,0.2)" },
-  error: { 
-    background: "rgba(254,242,242,0.95)", 
-    border: "1px solid rgba(220,38,38,0.2)" },
-  iconWrap: (type) => ({
-    width: "28px", 
-    height: "28px", 
-    borderRadius: "50%", 
-    flexShrink: 0,
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center",
-    fontWeight: "800", 
-    fontSize: "13px",
-    background: type === "success" ? "#16a34a" : "#dc2626", 
-    color: "#fff",
-  }),
-  message: { 
-    flex: 1, 
-    fontSize: "0.9rem", 
-    fontWeight: "600", 
-    color: "#1e293b", 
-    lineHeight: "1.4" 
-  },
-  close: {
-    background: "none", 
-    border: "none", 
-    cursor: "pointer",
-    fontSize: "12px", 
-    color: "#94a3b8", 
-    padding: "2px 4px",
-    borderRadius: "4px", 
-    flexShrink: 0, 
-    lineHeight: 1,
+  eduReadMore: {
+    fontSize: "12px",
+    color: "#e91e8c",
+    margin: 0,
+    fontWeight: "600",
   },
 };
 

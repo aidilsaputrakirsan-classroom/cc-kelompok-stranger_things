@@ -149,6 +149,17 @@ export default function DataAnak({ setActivePage, onLogout }) {
         weight: editChild.weight ?? "",
         height: editChild.height ?? "",
       });
+      if (editChild.immunizations && editChild.immunizations.length > 0) {
+        setImmunizations(
+          editChild.immunizations.map((item) => ({
+            id: item.id,
+            vaccine_id: item.vaccine_id || "",
+            scheduled_date: item.scheduled_date || "",
+          })),
+        );
+      } else {
+        setImmunizations([{ vaccine_id: "", scheduled_date: "" }]);
+      }
       setIsEditMode(true);
       setEditId(editChild.id);
       localStorage.removeItem("editChild");
@@ -199,7 +210,32 @@ export default function DataAnak({ setActivePage, onLogout }) {
       };
       if (isEditMode) {
         await updateChild(editId, payload);
-        showNotif("Data berhasil diperbarui!", "success");
+
+        let failedVaccines = [];
+        for (let item of immunizations) {
+          if (!item.id && item.vaccine_id && item.scheduled_date) {
+            try {
+              await createImmunization({
+                child_id: editId,
+                vaccine_id: item.vaccine_id,
+                scheduled_date: item.scheduled_date,
+                status: "pending",
+              });
+            } catch (vaccineErr) {
+              console.error("Gagal menyimpan imunisasi:", vaccineErr);
+              failedVaccines.push(item.vaccine_id);
+            }
+          }
+        }
+
+        if (failedVaccines.length > 0) {
+          showNotif(
+            `Data anak diperbarui! ${failedVaccines.length} imunisasi baru gagal.`,
+            "info",
+          );
+        } else {
+          showNotif("Data berhasil diperbarui!", "success");
+        }
       } else {
         const newChild = await createChild(payload);
 
@@ -224,15 +260,21 @@ export default function DataAnak({ setActivePage, onLogout }) {
         // Tampilkan pesan sesuai hasil
         if (failedVaccines.length > 0) {
           showNotif(
-            `Data anak berhasil disimpan! ${failedVaccines.length} `,
+            `Data anak berhasil disimpan! ${failedVaccines.length} imunisasi gagal disimpan.`,
             "info",
           );
         } else {
           showNotif("Data berhasil disimpan!", "success");
         }
       }
-      setTimeout(() => setActivePage?.("jadwal"), 1500);
+      // Navigate to jadwal page after 1.5 seconds
+      setTimeout(() => {
+        if (setActivePage) {
+          setActivePage("jadwal");
+        }
+      }, 1500);
     } catch (err) {
+      console.error("Error saving child:", err);
       showNotif("Gagal menyimpan: " + err.message, "error");
     } finally {
       setLoading(false);
@@ -409,12 +451,14 @@ export default function DataAnak({ setActivePage, onLogout }) {
                       Imunisasi
                       <span style={s.imunBadge}>{i + 1}</span>
                     </span>
-                    <button
-                      style={s.deleteBtn}
-                      onClick={() => removeImmunization(i)}
-                    >
-                      🗑
-                    </button>
+                    {!item.id && (
+                      <button
+                        style={s.deleteBtn}
+                        onClick={() => removeImmunization(i)}
+                      >
+                        🗑
+                      </button>
+                    )}
                   </div>
 
                   <label style={s.imunLabel}>Jenis Vaksin</label>
@@ -424,6 +468,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
                       handleImmunizationChange(i, "vaccine_id", e.target.value)
                     }
                     style={s.imunInput}
+                    disabled={!!item.id}
                   >
                     <option value="">Pilih jenis vaksin</option>
                     {vaccineTypes.length === 0 && (
@@ -448,6 +493,7 @@ export default function DataAnak({ setActivePage, onLogout }) {
                       )
                     }
                     style={s.imunInput}
+                    disabled={!!item.id}
                   />
                 </div>
               ))}
