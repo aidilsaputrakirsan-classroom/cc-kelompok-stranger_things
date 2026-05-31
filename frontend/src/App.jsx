@@ -8,7 +8,9 @@ import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/AboutPage";
 import DashboardBidan from "./components/DashboardBidan";
-import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
+import DataAnakImunisasi from "./components/DataAnakImunisasi";
+import KelolaJadwalBidan from "./components/KelolaJadwalBidan";
+import ProfilBidan from "./components/ProfilBidan";
 import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
@@ -579,6 +581,18 @@ function App() {
     await handleLogin(userData.email, userData.password, userData.role || "parent");
   };
 
+  const BIDAN_NAV_MAP = {
+    "Beranda": "dashboardBidan",
+    "Kelola Jadwal Imunisasi": "kelolaJadwalBidan",
+    "Data Anak Imunisasi": "dataAnakBidan",
+    "Profil": "profilBidan",
+  };
+
+  const handleBidanNavigate = (labelOrPage) => {
+    const mapped = BIDAN_NAV_MAP[labelOrPage] || labelOrPage;
+    setActivePage(mapped);
+  };
+
   if (!isAuthenticated) {
     if (showSplash) {
       return (
@@ -597,7 +611,7 @@ function App() {
     );
   }
 
-  return (
+return (
     <>
       {activePage === "home" && (
         <HomePage
@@ -613,24 +627,36 @@ function App() {
         <DashboardBidan 
           user={user} 
           onLogout={handleLogout}
-          onNavigate={setActivePage}
+          onNavigate={handleBidanNavigate}
           onSelectImmunization={(immunization, child) => {
             setSelectedImmunization(immunization);
             setSelectedChild(child);
-            setActivePage("detailImunisasiBidan");
+            setActivePage("dataAnakBidan");
           }}
         />
       )}
 
-      {activePage === "detailImunisasiBidan" && (
-        <DetailImunisasiBidan
-          immunization={selectedImmunization}
-          child={selectedChild}
-          onBack={() => setActivePage("dashboardBidan")}
-          onSave={(data) => {
-            console.log("Saved immunization data:", data);
-            setActivePage("dashboardBidan");
-          }}
+      {activePage === "profilBidan" && (
+        <ProfilBidan
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+        />
+      )}
+
+      {activePage === "kelolaJadwalBidan" && (
+        <KelolaJadwalBidan
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+        />
+      )}
+
+      {activePage === "dataAnakBidan" && (
+        <DataAnakImunisasi
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
         />
       )}
 
