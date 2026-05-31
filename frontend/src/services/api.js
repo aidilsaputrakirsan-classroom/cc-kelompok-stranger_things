@@ -65,11 +65,12 @@ async function handleResponse(response) {
 
 export async function register(userData) {
   console.log("📝 Registering user:", userData.email);
-  // Backend menerima: name, email, password
+  // Backend menerima: name, email, password, role
   const registerData = {
     name: userData.fullName,
     email: userData.email,
     password: userData.password,
+    role: userData.role || "parent", // Include role, default to parent
   };
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
@@ -183,7 +184,9 @@ export async function fetchChildren() {
   const response = await fetch(`${API_URL}/children`, {
     headers: authHeaders(),
   });
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  // Backend returns {total, children}, extract the children array
+  return data.children || data || [];
 }
 
 export async function createChild(childData) {
@@ -276,7 +279,9 @@ export async function fetchImmunizations(childId) {
     headers: authHeaders(),
   });
 
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  // Backend returns {total, immunizations}, extract the array
+  return data.immunizations || data || [];
 }
 
 export async function updateImmunization(logId, data) {

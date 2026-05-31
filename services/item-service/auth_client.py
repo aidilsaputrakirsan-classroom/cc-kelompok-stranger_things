@@ -7,7 +7,7 @@ import os
 import httpx
 from fastapi import HTTPException, Header
 
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8000")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
 
 
 async def verify_token_with_auth_service(authorization: str = Header(...)) -> dict:

@@ -11,6 +11,8 @@ import DashboardBidan from "./components/DashboardBidan";
 import DataAnakImunisasi from "./components/DataAnakImunisasi";
 import KelolaJadwalBidan from "./components/KelolaJadwalBidan";
 import ProfilBidan from "./components/ProfilBidan";
+import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
+import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
 import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
@@ -67,29 +69,24 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load immunization data from all children
   useEffect(() => {
     const loadImmunizationSummary = async () => {
       setLoading(true);
       try {
-        // Fetch vaccine types for mapping (with fallback)
         let vaccineMap = {};
         try {
           const vaccinTypes = await fetchVaccineTypes();
-          console.log("Vaccine types from API:", vaccinTypes);
           if (vaccinTypes && Array.isArray(vaccinTypes)) {
             vaccinTypes.forEach((v) => {
               vaccineMap[String(v.id)] = v.name;
               vaccineMap[v.id] = v.name;
             });
           }
-          console.log("VaccineMap created:", vaccineMap);
         } catch (err) {
           console.warn("Could not fetch vaccine types, using fallback", err);
         }
 
         const children = await fetchChildren();
-        console.log("Children fetched:", children);
 
         if (!children || children.length === 0) {
           setSummary({ selesai: 0, total: 0, mendatang: 0, belumTerjadwal: 0 });
@@ -98,12 +95,10 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
           return;
         }
 
-        // Fetch immunizations for all children
         const allImmunizations = [];
         for (const child of children) {
           try {
             const immunizations = await fetchImmunizations(child.id);
-            console.log(`Immunizations for ${child.name}:`, immunizations);
             if (immunizations && Array.isArray(immunizations)) {
               allImmunizations.push(
                 ...immunizations.map((imun) => {
@@ -113,9 +108,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                     vaccineMap[imun.vaccine_id] ||
                     imun.vaccine_name ||
                     `Vaksin ${imun.vaccine_id}`;
-                  console.log(
-                    `Mapping vaccine_id=${imun.vaccine_id} (str: ${vacId}) to name=${mappedName}`,
-                  );
                   return {
                     ...imun,
                     childName: child.name,
@@ -126,52 +118,29 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               );
             }
           } catch (err) {
-            console.error(
-              `Error fetching immunizations for child ${child.id}:`,
-              err,
-            );
+            console.error(`Error fetching immunizations for child ${child.id}:`, err);
           }
         }
 
-        console.log("All immunizations:", allImmunizations);
-
-        // Calculate summary
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const in30Days = new Date(today);
         in30Days.setDate(in30Days.getDate() + 30);
 
-        const selesai = allImmunizations.filter(
-          (i) => i.status === "completed",
-        ).length;
-        const belumTerjadwal = allImmunizations.filter(
-          (i) => !i.scheduled_date,
-        ).length;
-
+        const selesai = allImmunizations.filter((i) => i.status === "completed").length;
+        const belumTerjadwal = allImmunizations.filter((i) => !i.scheduled_date).length;
         const mendatang = allImmunizations.filter((i) => {
           if (!i.scheduled_date) return false;
           const schedDate = new Date(i.scheduled_date);
           schedDate.setHours(0, 0, 0, 0);
-          return (
-            schedDate >= today &&
-            schedDate <= in30Days &&
-            i.status !== "completed"
-          );
+          return schedDate >= today && schedDate <= in30Days && i.status !== "completed";
         }).length;
 
-        setSummary({
-          selesai,
-          total: allImmunizations.length,
-          mendatang,
-          belumTerjadwal,
-        });
+        setSummary({ selesai, total: allImmunizations.length, mendatang, belumTerjadwal });
 
-        // Get upcoming schedules sorted by date (take first 6)
         const upcoming = allImmunizations
           .filter((i) => i.scheduled_date && i.status !== "completed")
-          .sort(
-            (a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date),
-          )
+          .sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date))
           .slice(0, 6)
           .map((imun) => ({
             id: imun.id,
@@ -185,7 +154,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
             childName: imun.childName,
             status: new Date(imun.scheduled_date) >= today ? "green" : "red",
           }));
-        console.log("Final upcoming schedules to display:", upcoming);
         setUpcomingSchedules(upcoming);
       } catch (err) {
         console.error("Error loading immunization summary:", err);
@@ -202,82 +170,39 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
     background: isDark ? "#0f0f1a" : "#fff5f8",
     color: isDark ? "#f0f0f0" : "#1a1a2e",
   };
-
   const dynWelcomeCard = {
     ...homeStyles.welcomeCard,
     background: isDark ? "#16213e" : "#fce4ec",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynWelcomeTitle = {
-    ...homeStyles.welcomeTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
-  const dynWelcomeSubtitle = {
-    ...homeStyles.welcomeSubtitle,
-    color: isDark ? "#aaa" : "#555",
-  };
-
+  const dynWelcomeTitle = { ...homeStyles.welcomeTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
+  const dynWelcomeSubtitle = { ...homeStyles.welcomeSubtitle, color: isDark ? "#aaa" : "#555" };
   const dynReminder = {
     ...homeStyles.reminder,
     background: isDark ? "#1a1a2e" : "#fff0f5",
     border: isDark ? "1px solid #2a2a4a" : "1px solid #f9a8d4",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynReminderText = {
-    ...homeStyles.reminderText,
-    color: isDark ? "#ccc" : "#333",
-  };
-
-  const dynSectionTitle = {
-    ...homeStyles.sectionTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
+  const dynReminderText = { ...homeStyles.reminderText, color: isDark ? "#ccc" : "#333" };
+  const dynSectionTitle = { ...homeStyles.sectionTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
   const dynSchedCard = {
     ...homeStyles.schedCard,
     background: isDark ? "#16213e" : "white",
     border: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f9c0d0",
-    boxShadow: isDark
-      ? "0 2px 6px rgba(0,0,0,0.5)"
-      : "0 2px 6px rgba(0,0,0,0.2)",
+    boxShadow: isDark ? "0 2px 6px rgba(0,0,0,0.5)" : "0 2px 6px rgba(0,0,0,0.2)",
   };
-
-  const dynSchedName = {
-    ...homeStyles.schedName,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
-  const dynEduTitle = {
-    ...homeStyles.eduTitle,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
-
+  const dynSchedName = { ...homeStyles.schedName, color: isDark ? "#f0f0f0" : "#1a1a2e" };
+  const dynEduTitle = { ...homeStyles.eduTitle, color: isDark ? "#f0f0f0" : "#1a1a2e" };
   const dynEduCard = {
     ...homeStyles.eduCard,
     background: isDark ? "#16213e" : "white",
     border: isDark ? "0.5px solid #2a2a4a" : "0.5px solid #f0d0da",
   };
-
-  const dynEduBodyText = {
-    ...homeStyles.eduBodyText,
-    color: isDark ? "#f0f0f0" : "#1a1a2e",
-  };
+  const dynEduBodyText = { ...homeStyles.eduBodyText, color: isDark ? "#f0f0f0" : "#1a1a2e" };
 
   return (
     <div style={dynPage}>
-      {/* Navbar bersama */}
-      <Navbar
-        activePage={activePage}
-        setActivePage={onNavigate}
-        onLogout={onLogout}
-      />
+      <Navbar activePage={activePage} setActivePage={onNavigate} onLogout={onLogout} />
 
       <div style={homeStyles.main}>
         {/* Left Column */}
@@ -289,52 +214,22 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               onClick={() => onNavigate?.("profile")}
               title="Lihat Profil"
             >
-              <svg
-                viewBox="0 0 80 80"
-                width="60"
-                height="60"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg viewBox="0 0 80 80" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="40" cy="30" r="18" fill="#f48fb1" />
                 <circle cx="40" cy="30" r="14" fill="#fce4ec" />
                 <ellipse cx="35" cy="28" rx="2" ry="2.5" fill="#333" />
                 <ellipse cx="45" cy="28" rx="2" ry="2.5" fill="#333" />
-                <path
-                  d="M35 36 Q40 40 45 36"
-                  stroke="#e91e8c"
-                  strokeWidth="1.5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                <rect
-                  x="28"
-                  y="16"
-                  width="24"
-                  height="12"
-                  rx="6"
-                  fill="#e91e8c"
-                />
+                <path d="M35 36 Q40 40 45 36" stroke="#e91e8c" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                <rect x="28" y="16" width="24" height="12" rx="6" fill="#e91e8c" />
                 <circle cx="40" cy="55" r="14" fill="#f48fb1" />
-                <path
-                  d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z"
-                  fill="#e91e8c"
-                />
+                <path d="M30 50 Q40 48 50 50 L52 70 Q40 74 28 70Z" fill="#e91e8c" />
                 <circle cx="33" cy="60" r="4" fill="#fff" opacity="0.7" />
-                <text
-                  x="31"
-                  y="63"
-                  fontSize="6"
-                  fill="#e91e8c"
-                  fontWeight="bold"
-                >
-                  +
-                </text>
+                <text x="31" y="63" fontSize="6" fill="#e91e8c" fontWeight="bold">+</text>
               </svg>
             </div>
             <div>
               <h2 style={dynWelcomeTitle}>
-                Selamat Datang,{" "}
-                {user?.name || user?.email?.split("@")[0] || "Andin"}!
+                Selamat Datang, {user?.name || user?.email?.split("@")[0] || "Andin"}!
               </h2>
               <p style={dynWelcomeSubtitle}>
                 Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.
@@ -364,20 +259,12 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                 ? "..."
                 : upcomingSchedules.length > 0
                   ? (() => {
-                      const schedDate = new Date(
-                        upcomingSchedules[0].scheduled_date,
-                      );
+                      const schedDate = new Date(upcomingSchedules[0].scheduled_date);
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       schedDate.setHours(0, 0, 0, 0);
-                      const daysLeft = Math.ceil(
-                        (schedDate - today) / (1000 * 60 * 60 * 24),
-                      );
-                      return daysLeft === 0
-                        ? "hari ini"
-                        : daysLeft === 1
-                          ? "1 hari lagi"
-                          : `${daysLeft} hari lagi`;
+                      const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
+                      return daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
                     })()
                   : "-"}
             </span>
@@ -390,9 +277,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               <div style={{ ...homeStyles.statCard, background: "#e91e8c" }}>
                 <div style={homeStyles.statLabel}>Selesai</div>
                 <div style={homeStyles.statNumber}>{summary.selesai}</div>
-                <div style={homeStyles.statSub}>
-                  Dari {summary.total} Imunisasi
-                </div>
+                <div style={homeStyles.statSub}>Dari {summary.total} Imunisasi</div>
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f06292" }}>
                 <div style={homeStyles.statLabel}>Mendatang</div>
@@ -401,9 +286,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f48fb1" }}>
                 <div style={homeStyles.statLabel}>Belum terjadwal</div>
-                <div style={homeStyles.statNumber}>
-                  {summary.belumTerjadwal}
-                </div>
+                <div style={homeStyles.statNumber}>{summary.belumTerjadwal}</div>
                 <div style={homeStyles.statSub}>Perlu segera dijadwalkan</div>
               </div>
             </div>
@@ -414,23 +297,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
             <h3 style={dynSectionTitle}>Jadwal Imunisasi Terdekat</h3>
             <div style={homeStyles.scheduleGrid}>
               {loading ? (
-                <p
-                  style={{
-                    gridColumn: "1 / -1",
-                    color: "#aaa",
-                    textAlign: "center",
-                  }}
-                >
+                <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
                   Memuat jadwal...
                 </p>
               ) : upcomingSchedules.length === 0 ? (
-                <p
-                  style={{
-                    gridColumn: "1 / -1",
-                    color: "#aaa",
-                    textAlign: "center",
-                  }}
-                >
+                <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
                   Tidak ada jadwal terdekat
                 </p>
               ) : (
@@ -439,33 +310,16 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
                   schedDate.setHours(0, 0, 0, 0);
-                  const daysLeft = Math.ceil(
-                    (schedDate - today) / (1000 * 60 * 60 * 24),
-                  );
+                  const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
                   const daysLabel =
-                    daysLeft === 0
-                      ? "hari ini"
-                      : daysLeft === 1
-                        ? "1 hari lagi"
-                        : `${daysLeft} hari lagi`;
+                    daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
                   return (
                     <div key={item.id} style={dynSchedCard}>
-                      <div
-                        style={{
-                          ...homeStyles.dot,
-                          background: dotColors[item.status],
-                        }}
-                      />
+                      <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
                       <div style={{ flex: 1 }}>
                         <div style={dynSchedName}>{item.name}</div>
                         <div style={homeStyles.schedDate}>{item.date}</div>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "#888",
-                            marginTop: "2px",
-                          }}
-                        >
+                        <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>
                           {item.childName}
                         </div>
                       </div>
@@ -505,13 +359,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                   backgroundPosition: "center",
                 }}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(0,0,0,0.35)",
-                  }}
-                />
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} />
                 <span
                   style={{
                     ...homeStyles.eduTag,
@@ -562,7 +410,6 @@ function App() {
     }
   }, [handleLogout]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadItems();
   }, [isAuthenticated, loadItems]);
@@ -612,7 +459,16 @@ function App() {
   }
 
 return (
+  // ── Shared nav props untuk halaman bidan ──
+  const bidanProps = {
+    user,
+    onLogout: handleLogout,
+    onNavigate: setActivePage,
+  };
+
+  return (
     <>
+      {/* ── Halaman Pengguna (Orang Tua) ── */}
       {activePage === "home" && (
         <HomePage
           user={user}
@@ -707,6 +563,19 @@ return (
 
       {activePage === "about" && (
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
+      )}
+
+      {/* ── Halaman Bidan ── */}
+      {activePage === "dashboardBidan" && (
+        <DashboardBidan {...bidanProps} />
+      )}
+
+      {activePage === "detailImunisasi" && (
+        <DetailImunisasiBidan {...bidanProps} />
+      )}
+
+      {activePage === "kelolaImunisasi" && (
+        <KelolaimunisasiBidan {...bidanProps} />
       )}
     </>
   );

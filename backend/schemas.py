@@ -67,13 +67,15 @@ class UserCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     email: str
     password: str = Field(..., min_length=8)
+    role: Optional[str] = Field("parent", description="parent atau midwife/bidan")
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "name": "Daffa Alfattah",
                 "email": "daffa@student.itk.ac.id",
-                "password": "Password123!"
+                "password": "Password123!",
+                "role": "parent"
             }
         }
     }
@@ -110,9 +112,22 @@ class UserResponse(BaseModel):
     name: str
     is_active: bool
     created_at: datetime
+    role: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def extract_role_name(cls, v):
+        """Extract role name from Role object or return string."""
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v.get("name")
+        if hasattr(v, "name"):
+            return v.name
+        return v
 
 
 class LoginRequest(BaseModel):
@@ -128,6 +143,12 @@ class LoginRequest(BaseModel):
             }
         }
     }
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        """Ubah email menjadi lowercase saat login"""
+        return v.lower()
 
 
 class TokenResponse(BaseModel):
@@ -365,4 +386,4 @@ class GrowthRecordResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
+
