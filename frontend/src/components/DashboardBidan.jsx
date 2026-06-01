@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   fetchChildren,
@@ -182,10 +183,10 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
   }, []);
 
   const navItems = [
-    { label: "Beranda",         icon: HomeIcon,     page: "dashboardBidan"    },
-    { label: "Kelola Jadwal",   icon: CalendarIcon, page: "kelolaJadwalBidan" },
-    { label: "Data Anak",       icon: PersonIcon,   page: "dataAnakBidan"     },
-    { label: "Profil",          icon: ProfileIcon,  page: "profilBidan"       },
+    { label: "Beranda",       icon: HomeIcon,     page: "dashboardBidan"    },
+    { label: "Kelola Jadwal", icon: CalendarIcon, page: "kelolaJadwalBidan" },
+    { label: "Data Anak",     icon: PersonIcon,   page: "dataAnakBidan"     },
+    { label: "Profil",        icon: ProfileIcon,  page: "profilBidan"       },
   ];
 
   return (
@@ -455,7 +456,7 @@ const s = {
     minHeight: "110px", overflow: "hidden",
   },
   heroTitle: { fontSize: "18px", fontWeight: "700", color: "#9FE1CB", marginBottom: "4px" },
-  heroSub:  { fontSize: "12px", color: "#5DCAA5", lineHeight: 1.6 },
+  heroSub:   { fontSize: "12px", color: "#5DCAA5", lineHeight: 1.6 },
 
   /* STATS */
   statsGrid: {
@@ -475,9 +476,9 @@ const s = {
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
   },
-  statIconTeal:  { background: TEAL_LIGHT,  color: TEAL_TEXT },
-  statIconBlue:  { background: "#E6F1FB",   color: "#185FA5" },
-  statIconAmber: { background: "#FAEEDA",   color: "#854F0B" },
+  statIconTeal:  { background: TEAL_LIGHT, color: TEAL_TEXT },
+  statIconBlue:  { background: "#E6F1FB",  color: "#185FA5" },
+  statIconAmber: { background: "#FAEEDA",  color: "#854F0B" },
   statNum:   { fontSize: "20px", fontWeight: "700", color: "#1a1a2e", lineHeight: 1 },
   statLabel: { fontSize: "11px", color: "#888", marginTop: "3px" },
 
@@ -513,7 +514,7 @@ const s = {
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0, overflow: "hidden",
   },
-  schedImg: { width: "100%", height: "100%", objectFit: "cover" },
+  schedImg:  { width: "100%", height: "100%", objectFit: "cover" },
   schedName: { fontSize: "13px", fontWeight: "600", color: "#1a1a2e" },
   schedMeta: { fontSize: "11px", color: "#888", marginTop: "1px" },
   schedRight: {
