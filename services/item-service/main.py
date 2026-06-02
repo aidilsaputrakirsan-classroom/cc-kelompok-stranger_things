@@ -8,6 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
+from sqlalchemy import text
+from database import get_db
+from auth_client import auth_circuit
+
 from database import engine, get_db, Base
 from models import Item, Child, ImmunizationLog
 from schemas import (
@@ -92,10 +96,10 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check dengan dependency status."""
-    # Check Auth Service
+    # Mengambil status Circuit Breaker dari Auth Service
     auth_status = auth_circuit.get_status()
 
-    # Check database
+    # Memeriksa koneksi ke database secara langsung
     db_status = "connected"
     try:
         db = next(get_db())
@@ -104,6 +108,7 @@ async def health_check():
     except Exception:
         db_status = "disconnected"
 
+    # Menentukan status kesehatan sistem keseluruhan
     overall = "healthy"
     if auth_status["state"] != "CLOSED":
         overall = "degraded"
@@ -124,7 +129,6 @@ async def health_check():
             },
         },
     }
-
 
 @app.post("/items", response_model=ItemResponse, status_code=201)
 async def create_item(
