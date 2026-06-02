@@ -20,7 +20,13 @@ services:
       test: ["CMD-SHELL", "pg_isready"] 
       interval: 5s
       timeout: 5s
-      retries: 10                      
+      retries: 10
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== ITEM DATABASE ====================
   item-db:
@@ -41,7 +47,13 @@ services:
       test: ["CMD-SHELL", "pg_isready"] 
       interval: 5s
       timeout: 5s
-      retries: 10                     
+      retries: 10 
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== AUTH SERVICE ====================
   auth-service:
@@ -71,6 +83,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== ITEM SERVICE ====================
   item-service:
@@ -100,6 +118,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== FRONTEND ====================
   frontend:
@@ -120,6 +144,12 @@ services:
         condition: service_healthy
     networks:
       - cloudnet
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== GATEWAY (NGINX) ====================
   gateway:
@@ -139,6 +169,12 @@ services:
         condition: service_started
     networks:
       - cloudnet
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
 # ==================== VOLUMES ====================
 volumes:
