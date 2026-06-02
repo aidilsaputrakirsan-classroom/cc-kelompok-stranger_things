@@ -6,6 +6,7 @@ import os
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db, Base
 from models import Item, Child, ImmunizationLog
@@ -15,6 +16,8 @@ from schemas import (
     ImmunizationLogCreate, ImmunizationLogResponse, ImmunizationListResponse
 )
 from auth_client import verify_token_with_auth_service
+from auth_client import auth_circuit  # Import circuit breaker instance
+
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -87,11 +90,39 @@ app.add_middleware(
 # =====================
 
 @app.get("/health")
-def health_check():
+async def health_check():
+    """Health check dengan dependency status."""
+    # Check Auth Service
+    auth_status = auth_circuit.get_status()
+
+    # Check database
+    db_status = "connected"
+    try:
+        db = next(get_db())
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception:
+        db_status = "disconnected"
+
+    overall = "healthy"
+    if auth_status["state"] != "CLOSED":
+        overall = "degraded"
+    if db_status != "connected":
+        overall = "unhealthy"
+
     return {
-        "status": "healthy",
+        "status": overall,
         "service": "item-service",
-        "version": "2.0.0",
+        "version": "2.1.0",
+        "dependencies": {
+            "auth-service": {
+                "status": "available" if auth_status["state"] == "CLOSED" else "unavailable",
+                "circuit_breaker": auth_status,
+            },
+            "database": {
+                "status": db_status,
+            },
+        },
     }
 
 
@@ -233,8 +264,11 @@ async def get_user_children(
     user: dict = Depends(verify_token_with_auth_service),
     db: Session = Depends(get_db),
 ):
-    """Ambil daftar anak milik parent yang login."""
-    children = db.query(Child).filter(Child.parent_id == user["user_id"]).all()
+    """Ambil daftar anak (Parent: anak sendiri, Midwife: semua anak)."""
+    if user.get("role") == "midwife":
+        children = db.query(Child).all()
+    else:
+        children = db.query(Child).filter(Child.parent_id == user["user_id"]).all()
     return ChildListResponse(total=len(children), children=children)
 
 
@@ -245,9 +279,12 @@ async def get_child(
     db: Session = Depends(get_db),
 ):
     """Ambil detail anak berdasarkan ID."""
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     return child
@@ -261,9 +298,13 @@ async def update_child(
     db: Session = Depends(get_db),
 ):
     """Update data anak."""
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -306,10 +347,14 @@ async def create_immunization(
     db: Session = Depends(get_db),
 ):
     """Buat immunization log untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is a midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -333,10 +378,14 @@ async def get_child_immunizations(
     db: Session = Depends(get_db),
 ):
     """Ambil daftar immunization logs untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -353,10 +402,14 @@ async def get_pending_immunizations(
     db: Session = Depends(get_db),
 ):
     """Ambil daftar immunization yang pending untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -365,3 +418,39 @@ async def get_pending_immunizations(
         ImmunizationLog.status == "pending"
     ).all()
     return ImmunizationListResponse(total=len(immunizations), immunizations=immunizations)
+
+@app.put("/children/{child_id}/immunization/{immun_id}", response_model=ImmunizationLogResponse)
+async def update_immunization(
+    child_id: int,
+    immun_id: int,
+    immun_data: ImmunizationLogCreate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Update status immunization (khusus untuk Bidan/Parent yang sah)."""
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
+    if not child:
+        raise HTTPException(status_code=404, detail="Child not found")
+        
+    immunization = db.query(ImmunizationLog).filter(
+        ImmunizationLog.id == immun_id,
+        ImmunizationLog.child_id == child_id
+    ).first()
+    
+    if not immunization:
+        raise HTTPException(status_code=404, detail="Immunization not found")
+        
+    immunization.vaccine_id = immun_data.vaccine_id
+    immunization.status = immun_data.status
+    immunization.scheduled_date = immun_data.scheduled_date
+    immunization.notes = immun_data.notes
+    
+    db.commit()
+    db.refresh(immunization)
+    return immunization
