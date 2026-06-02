@@ -11,6 +11,8 @@ import DashboardBidan from "./components/DashboardBidan";
 import DataAnakImunisasi from "./components/DataAnakImunisasi";
 import KelolaJadwalBidan from "./components/KelolaJadwalBidan";
 import ProfilBidan from "./components/ProfilBidan";
+import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
+import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
 import ProfilPengguna from "./components/ProfilPengguna";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
@@ -455,6 +457,12 @@ function App() {
       />
     );
   }
+
+  const bidanProps = {
+    user,
+    onLogout: handleLogout,
+    onNavigate: setActivePage,
+  };
 
   return (
     <>

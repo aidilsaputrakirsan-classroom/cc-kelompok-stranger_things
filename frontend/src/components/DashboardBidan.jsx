@@ -1,3 +1,5 @@
+// DashboardBidan.jsx
+// Navigasi antar halaman menggunakan prop onNavigate(page)
 
 import { useEffect, useState } from "react";
 import {
