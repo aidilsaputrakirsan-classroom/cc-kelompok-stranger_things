@@ -6,11 +6,6 @@ import os
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-
-from sqlalchemy import text
-from database import get_db
-from auth_client import auth_circuit
 
 from database import engine, get_db, Base
 from models import Item, Child, ImmunizationLog
