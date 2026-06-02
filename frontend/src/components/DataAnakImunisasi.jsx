@@ -142,7 +142,7 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
 
         const fetchedChildren = await fetchChildren();
         if (!fetchedChildren || fetchedChildren.length === 0) {
-          setChildren(SAMPLE_CHILDREN);
+          setChildren([]);
           return;
         }
 
@@ -160,7 +160,7 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
         }
         setChildren(result);
       } catch (_) {
-        setChildren(SAMPLE_CHILDREN);
+        setChildren([]);
       } finally {
         setLoading(false);
       }

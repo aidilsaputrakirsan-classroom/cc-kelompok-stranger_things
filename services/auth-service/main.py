@@ -11,10 +11,12 @@ from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+# pyrefly: ignore [missing-import]
 import jwt
 
 from database import engine, get_db, Base
 from models import User
+
 from schemas import (
     UserCreate, UserResponse, LoginRequest,
     TokenResponse, TokenVerifyResponse

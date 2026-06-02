@@ -419,7 +419,13 @@ function App() {
     const data = await login(email, password);
     setUser(data.user);
     setIsAuthenticated(true);
-    const isMidwife = accountType === "midwife" || data.user?.role === "midwife";
+    const actualRole = data.user?.role || "parent";
+    if (accountType === "midwife" && actualRole !== "midwife") {
+      alert("Akun ini terdaftar sebagai Orang Tua, bukan Bidan. Anda dialihkan ke dashboard Orang Tua.");
+    } else if (accountType === "parent" && actualRole === "midwife") {
+      alert("Akun ini terdaftar sebagai Bidan/Nakes. Anda dialihkan ke dashboard Bidan.");
+    }
+    const isMidwife = actualRole === "midwife";
     setActivePage(isMidwife ? "dashboardBidan" : "home");
   };
 
