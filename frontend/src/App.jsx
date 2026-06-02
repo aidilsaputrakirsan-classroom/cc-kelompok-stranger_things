@@ -8,6 +8,9 @@ import DetailJadwal from "./components/DetailJadwal";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/AboutPage";
 import DashboardBidan from "./components/DashboardBidan";
+import DataAnakImunisasi from "./components/DataAnakImunisasi";
+import KelolaJadwalBidan from "./components/KelolaJadwalBidan";
+import ProfilBidan from "./components/ProfilBidan";
 import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
 import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
 import ProfilPengguna from "./components/ProfilPengguna";
@@ -388,6 +391,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [activePage, setActivePage] = useState("home");
+  const [selectedImmunization, setSelectedImmunization] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(null);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -410,6 +415,7 @@ function App() {
   }, [isAuthenticated, loadItems]);
 
   const handleLogin = async (email, password, accountType = "parent") => {
+    console.log("Login type:", accountType);
     const data = await login(email, password);
     setUser(data.user);
     setIsAuthenticated(true);
@@ -420,6 +426,18 @@ function App() {
   const handleRegister = async (userData) => {
     await register(userData);
     await handleLogin(userData.email, userData.password, userData.role || "parent");
+  };
+
+  const BIDAN_NAV_MAP = {
+    "Beranda": "dashboardBidan",
+    "Kelola Jadwal Imunisasi": "kelolaJadwalBidan",
+    "Data Anak Imunisasi": "dataAnakBidan",
+    "Profil": "profilBidan",
+  };
+
+  const handleBidanNavigate = (labelOrPage) => {
+    const mapped = BIDAN_NAV_MAP[labelOrPage] || labelOrPage;
+    setActivePage(mapped);
   };
 
   if (!isAuthenticated) {
@@ -440,7 +458,6 @@ function App() {
     );
   }
 
-  // ── Shared nav props untuk halaman bidan ──
   const bidanProps = {
     user,
     onLogout: handleLogout,
@@ -511,15 +528,42 @@ function App() {
 
       {/* ── Halaman Bidan ── */}
       {activePage === "dashboardBidan" && (
-        <DashboardBidan {...bidanProps} />
+        <DashboardBidan
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+          onSelectImmunization={(immunization, child) => {
+            setSelectedImmunization(immunization);
+            setSelectedChild(child);
+            setActivePage("dataAnakBidan");
+          }}
+        />
       )}
 
-      {activePage === "detailImunisasi" && (
-        <DetailImunisasiBidan {...bidanProps} />
+      {activePage === "profilBidan" && (
+        <ProfilBidan
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+        />
       )}
 
-      {activePage === "kelolaImunisasi" && (
-        <KelolaimunisasiBidan {...bidanProps} />
+      {activePage === "kelolaJadwalBidan" && (
+        <KelolaJadwalBidan
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+        />
+      )}
+
+      {activePage === "dataAnakBidan" && (
+        <DataAnakImunisasi
+          user={user}
+          onLogout={handleLogout}
+          onNavigate={handleBidanNavigate}
+          selectedImmunization={selectedImmunization}
+          selectedChild={selectedChild}
+        />
       )}
     </>
   );
