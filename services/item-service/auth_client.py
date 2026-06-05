@@ -7,7 +7,8 @@ import time
 import asyncio
 import logging
 import httpx
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from circuit_breaker import CircuitBreaker
 
@@ -107,14 +108,14 @@ async def _call_auth_service(authorization: str) -> dict:
     )
 
 
+security = HTTPBearer()
+
 async def verify_token_with_auth_service(
-    authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> dict:
     """
     FastAPI Dependency: Verifikasi token via Auth Service.
     Dengan retry logic dan proper error handling.
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
-
+    authorization = f"Bearer {credentials.credentials}"
     return await _call_auth_service(authorization)

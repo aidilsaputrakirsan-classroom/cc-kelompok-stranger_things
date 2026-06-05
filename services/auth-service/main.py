@@ -7,7 +7,8 @@ Microservice yang bertanggung jawab untuk:
 """
 import os
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -133,16 +134,15 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=token, user=user)
 
 
+security = HTTPBearer()
+
 @app.get("/verify", response_model=TokenVerifyResponse)
-def verify_token(authorization: str = Header(...)):
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Verifikasi JWT token — dipanggil oleh service lain.
     Service lain mengirim header: Authorization: Bearer <token>
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
-
-    token = authorization.split("Bearer ")[1]
+    token = credentials.credentials
     payload = decode_token(token)
 
     return TokenVerifyResponse(
