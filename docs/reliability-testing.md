@@ -167,6 +167,7 @@ Meskipun terjadi timeout pada salah satu service, `item-service` tetap berjalan 
 | Sistem mengembalikan response error ketika komunikasi gagal | Sistem mengembalikan HTTP 503 Service Unavailable dengan pesan "Auth Service unreachable after 3 attempts" | ✅ |
 | Item Service tetap berjalan normal | Item Service tetap berjalan dan endpoint lain tetap merespon 200 OK | ✅ |
 | Sistem tidak mengalami crash atau hang | Tidak terjadi crash atau hang, service tetap stabil | ✅ |
+=======
 
 ---
 
@@ -224,6 +225,7 @@ Response body berisi data yang berhasil dibuat, termasuk atribut seperti `id`, `
 | Request yang sebelumnya gagal dapat diproses kembali | Request ke endpoint `/children` berhasil diproses dan menghasilkan HTTP 201 Created | ✅ |
 | Sistem kembali beroperasi tanpa perlu me-restart seluruh aplikasi | Sistem tetap berjalan stabil tanpa restart seluruh container, hanya auth-service yang di-start ulang | ✅ |
 
+
 ---
 
 # Test Summary
@@ -233,5 +235,6 @@ Response body berisi data yang berhasil dibuat, termasuk atribut seperti `id`, `
 | 1 | Service Down | Sistem tetap berjalan saat Auth Service mati | Auth Service berhenti, service lain tetap berjalan, request menghasilkan 503 | PASS ✅ |
 | 2 | Timeout Handling | Sistem mengembalikan error tanpa crash saat Auth Service gagal diakses | Sistem melakukan retry 3x lalu mengembalikan 503 tanpa hang | PASS ✅ |
 | 3 | Service Recovery | Sistem kembali normal setelah Auth Service aktif kembali | Auth Service berhasil start, request kembali berhasil dengan 201 Created | PASS ✅ |
----
+
+
 

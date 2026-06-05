@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost";
 
 // ==================== TOKEN MANAGEMENT ====================
 // Token disimpan di localStorage agar tidak hilang saat refresh/pindah halaman
@@ -29,12 +29,16 @@ function authHeaders() {
 }
 
 // Helper: handle response errors
-// Helper: handle response errors
 async function handleResponse(response) {
   if (response.status === 401) {
     console.error("❌ 401 Unauthorized - clearing token");
     clearToken();
     throw new Error("UNAUTHORIZED");
+  }
+
+    if (response.status === 503 || response.status === 504) {
+    console.error(`❌ ${response.status} - Service unavailable`);
+    throw new Error("Service temporarily unavailable. Please try again later.");
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
