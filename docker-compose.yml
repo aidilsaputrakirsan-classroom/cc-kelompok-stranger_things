@@ -65,6 +65,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@auth-db:5432/bye_virus"
+      SERVICE_NAME: auth-service
+      LOG_LEVEL: INFO
     ports:
       - "8001:8001"
     depends_on:
@@ -89,6 +91,12 @@ services:
         limits:
           cpus: '0.50'
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
 
   # ==================== ITEM SERVICE ====================
   item-service:
@@ -100,6 +108,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@item-db:5432/bye_virus"
+      SERVICE_NAME: item-service
+      LOG_LEVEL: INFO
     ports:
       - "8002:8002"
     depends_on:
@@ -124,7 +134,12 @@ services:
         limits:
           cpus: '0.50'
           memory: 512M
-
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "item-service"
   # ==================== FRONTEND ====================
   frontend:
     build:
@@ -185,3 +200,4 @@ volumes:
 networks:
   cloudnet:
     driver: bridge
+

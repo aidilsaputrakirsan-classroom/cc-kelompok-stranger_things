@@ -88,6 +88,7 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
     { key: "jadwal",  label: "Jadwal Imunisasi" },
     { key: "faskes",  label: "Faskes Map" },
     { key: "about",   label: "About" },
+    { key: "status",  label: "System Status" },
   ]
 
   return (
