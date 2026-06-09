@@ -17,6 +17,12 @@ from schemas import (
 from auth_client import verify_token_with_auth_service
 from auth_client import auth_circuit  # Import circuit breaker instance
 
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -83,6 +89,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(RequestLoggingMiddleware)
 
 # =====================
 # ENDPOINTS
@@ -123,6 +130,15 @@ async def health_check():
                 "status": db_status,
             },
         },
+    }
+
+
+@app.get("/metrics")
+def get_metrics():
+    """Return application metrics."""
+    return {
+        "service": "item-service",
+        **metrics.get_metrics(),
     }
 
 @app.post("/items", response_model=ItemResponse, status_code=201)

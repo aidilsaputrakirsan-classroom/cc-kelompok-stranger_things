@@ -5,6 +5,7 @@ Microservice yang bertanggung jawab untuk:
 - User login (JWT token generation)
 - Token verification (dipanggil oleh service lain)
 """
+from _pytest import logging
 import os
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Depends, HTTPException
@@ -22,6 +23,14 @@ from schemas import (
     UserCreate, UserResponse, LoginRequest,
     TokenResponse, TokenVerifyResponse
 )
+
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+# Setup structured logging
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -59,6 +68,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Logging middleware (setelah CORS)
+app.add_middleware(RequestLoggingMiddleware)
+
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -95,6 +107,15 @@ def health_check():
         "status": "healthy",
         "service": "auth-service",
         "version": "2.0.0",
+    }
+
+
+@app.get("/metrics")
+def get_metrics():
+    """Return application metrics."""
+    return {
+        "service": "auth-service",
+        **metrics.get_metrics(),
     }
 
 

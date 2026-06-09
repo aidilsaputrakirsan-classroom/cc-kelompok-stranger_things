@@ -15,6 +15,7 @@ import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
 import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
 import DegradedBanner from "./components/DegradedBanner";
 import ProfilPengguna from "./components/ProfilPengguna";
+import StatusPage from "./pages/StatusPage";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -622,6 +623,10 @@ function App() {
 
       {activePage === "about" && (
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
+      )}
+
+      {activePage === "status" && (
+        <StatusPage />
       )}
 
       {/* ── Halaman Bidan ── */}
