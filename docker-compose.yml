@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   # ==================== AUTH DATABASE ====================
   auth-db:
     image: postgres:16-alpine
@@ -91,6 +92,7 @@ services:
         limits:
           cpus: '0.50'
           memory: 512M
+
     logging:
       driver: "json-file"
       options:
@@ -98,7 +100,7 @@ services:
         max-file: "3"
         tag: "auth-service"
 
-  # ==================== ITEM SERVICE ====================
+# ==================== ITEM SERVICE ====================
   item-service:
     build:
       context: ./services/item-service
@@ -128,18 +130,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    # ➕ Menambahkan pembatasan resource
+
+    #  Menambahkan pembatasan resource
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         tag: "item-service"
+
   # ==================== FRONTEND ====================
   frontend:
     build:
@@ -159,7 +164,8 @@ services:
         condition: service_healthy
     networks:
       - cloudnet
-    # ➕ Menambahkan pembatasan resource
+
+    #  Menambahkan pembatasan resource
     deploy:
       resources:
         limits:
@@ -184,7 +190,8 @@ services:
         condition: service_started
     networks:
       - cloudnet
-    # ➕ Menambahkan pembatasan resource
+
+    # Menambahkan pembatasan resource
     deploy:
       resources:
         limits:

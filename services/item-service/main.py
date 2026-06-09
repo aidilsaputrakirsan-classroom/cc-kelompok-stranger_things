@@ -3,6 +3,7 @@ Item Service — Handles inventory management.
 Berkomunikasi dengan Auth Service untuk verifikasi token.
 """
 import os
+import logging  # ← TAMBAHKAN INI
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session

@@ -5,7 +5,7 @@ Microservice yang bertanggung jawab untuk:
 - User login (JWT token generation)
 - Token verification (dipanggil oleh service lain)
 """
-from _pytest import logging
+import logging  # ← TAMBAHKAN INI
 import os
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Depends, HTTPException
