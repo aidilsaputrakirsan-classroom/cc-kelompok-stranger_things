@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import LoginPage from "./components/LoginPage";
 import SplashPage from "./components/SplashPage";
 import JadwalImunisasi from "./components/JadwalImunisasi";
@@ -13,7 +13,9 @@ import KelolaJadwalBidan from "./components/KelolaJadwalBidan";
 import ProfilBidan from "./components/ProfilBidan";
 import DetailImunisasiBidan from "./components/DetailImunisasiBidan";
 import KelolaimunisasiBidan from "./components/KelolaimunisasiBidan";
+import DegradedBanner from "./components/DegradedBanner";
 import ProfilPengguna from "./components/ProfilPengguna";
+import StatusPage from "./pages/StatusPage";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
@@ -27,6 +29,9 @@ import {
   fetchImmunizations,
   fetchVaccineTypes,
 } from "./services/api";
+
+// Interval polling health check (ms) — cek setiap 30 detik saat login
+const HEALTH_POLL_INTERVAL = 30_000;
 
 const dotColors = { red: "#e53935", orange: "#fb8c00", green: "#43a047" };
 
@@ -57,8 +62,17 @@ const eduArticles = [
   },
 ];
 
+// ── Utility: apakah error termasuk service-down? ──
+function isServiceDownError(err) {
+  return (
+    err?.message?.includes("503") ||
+    err?.message?.includes("Service temporarily unavailable") ||
+    err?.message?.includes("Failed to fetch")
+  );
+}
+
 // ── HomePage Component ──
-function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
+function HomePage({ user, onLogout, activePage, onNavigate, theme, serviceDown }) {
   const isDark = theme === "dark";
   const [summary, setSummary] = useState({
     selesai: 0,
@@ -114,7 +128,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                     childId: child.id,
                     vaccine_name: mappedName,
                   };
-                }),
+                })
               );
             }
           } catch (err) {
@@ -204,6 +218,14 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
     <div style={dynPage}>
       <Navbar activePage={activePage} setActivePage={onNavigate} onLogout={onLogout} />
 
+      {/* ── Banner service down untuk halaman orang tua ── */}
+      {serviceDown && (
+        <DegradedBanner
+          message="Layanan sedang bermasalah. Beberapa data mungkin tidak ter-update."
+          isDark={isDark}
+        />
+      )}
+
       <div style={homeStyles.main}>
         {/* Left Column */}
         <div style={homeStyles.left}>
@@ -232,9 +254,14 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                 Selamat Datang, {user?.name || user?.email?.split("@")[0] || "Andin"}!
               </h2>
               <p style={dynWelcomeSubtitle}>
-                Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.
-                <br />
-                Pantau jadwal imunisasi dan tumbuh kembang anak dengan mudah.
+                {serviceDown
+                  ? "Koneksi ke server bermasalah. Menampilkan data terakhir yang tersedia."
+                  : <>
+                      Mari bersama menjaga kesehatan si kecil dengan Bye Bye Virus.
+                      <br />
+                      Pantau jadwal imunisasi dan tumbuh kembang anak dengan mudah.
+                    </>
+                }
               </p>
             </div>
           </div>
@@ -264,7 +291,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                       today.setHours(0, 0, 0, 0);
                       schedDate.setHours(0, 0, 0, 0);
                       const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
-                      return daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
+                      return daysLeft === 0
+                        ? "hari ini"
+                        : daysLeft === 1
+                          ? "1 hari lagi"
+                          : `${daysLeft} hari lagi`;
                     })()
                   : "-"}
             </span>
@@ -276,17 +307,23 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
             <div style={homeStyles.statsGrid}>
               <div style={{ ...homeStyles.statCard, background: "#e91e8c" }}>
                 <div style={homeStyles.statLabel}>Selesai</div>
-                <div style={homeStyles.statNumber}>{summary.selesai}</div>
-                <div style={homeStyles.statSub}>Dari {summary.total} Imunisasi</div>
+                <div style={homeStyles.statNumber}>
+                  {loading ? "..." : serviceDown ? "—" : summary.selesai}
+                </div>
+                <div style={homeStyles.statSub}>Dari {serviceDown ? "—" : summary.total} Imunisasi</div>
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f06292" }}>
                 <div style={homeStyles.statLabel}>Mendatang</div>
-                <div style={homeStyles.statNumber}>{summary.mendatang}</div>
+                <div style={homeStyles.statNumber}>
+                  {loading ? "..." : serviceDown ? "—" : summary.mendatang}
+                </div>
                 <div style={homeStyles.statSub}>Dalam 30 Hari Kedepan</div>
               </div>
               <div style={{ ...homeStyles.statCard, background: "#f48fb1" }}>
                 <div style={homeStyles.statLabel}>Belum terjadwal</div>
-                <div style={homeStyles.statNumber}>{summary.belumTerjadwal}</div>
+                <div style={homeStyles.statNumber}>
+                  {loading ? "..." : serviceDown ? "—" : summary.belumTerjadwal}
+                </div>
                 <div style={homeStyles.statSub}>Perlu segera dijadwalkan</div>
               </div>
             </div>
@@ -300,6 +337,10 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                 <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
                   Memuat jadwal...
                 </p>
+              ) : serviceDown ? (
+                <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
+                  Tidak dapat memuat jadwal. Periksa koneksi server.
+                </p>
               ) : upcomingSchedules.length === 0 ? (
                 <p style={{ gridColumn: "1 / -1", color: "#aaa", textAlign: "center" }}>
                   Tidak ada jadwal terdekat
@@ -312,7 +353,11 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme }) {
                   schedDate.setHours(0, 0, 0, 0);
                   const daysLeft = Math.ceil((schedDate - today) / (1000 * 60 * 60 * 24));
                   const daysLabel =
-                    daysLeft === 0 ? "hari ini" : daysLeft === 1 ? "1 hari lagi" : `${daysLeft} hari lagi`;
+                    daysLeft === 0
+                      ? "hari ini"
+                      : daysLeft === 1
+                        ? "1 hari lagi"
+                        : `${daysLeft} hari lagi`;
                   return (
                     <div key={item.id} style={dynSchedCard}>
                       <div style={{ ...homeStyles.dot, background: dotColors[item.status] }} />
@@ -393,6 +438,10 @@ function App() {
   const [activePage, setActivePage] = useState("home");
   const [selectedImmunization, setSelectedImmunization] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
+  const [serviceDown, setServiceDown] = useState(false);
+
+  // Ref untuk interval polling — agar bisa dibersihkan saat logout
+  const pollRef = useRef(null);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -400,45 +449,92 @@ function App() {
     setIsAuthenticated(false);
     setActivePage("home");
     setShowSplash(true);
+    setServiceDown(false);
+    // Hentikan polling saat logout
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   }, []);
 
-  const loadItems = useCallback(async () => {
+  // ── Health check sekali panggil ──
+  const runHealthCheck = useCallback(async () => {
     try {
       await checkHealth();
+      setServiceDown(false);
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout();
+      if (err.message === "UNAUTHORIZED") {
+        handleLogout();
+      } else if (isServiceDownError(err)) {
+        setServiceDown(true);
+      }
     }
   }, [handleLogout]);
 
+  // ── Polling health check setiap HEALTH_POLL_INTERVAL saat sudah login ──
   useEffect(() => {
-    loadItems();
-  }, [isAuthenticated, loadItems]);
+    if (!isAuthenticated) return;
 
+    // Jalankan langsung saat pertama login
+    runHealthCheck();
+
+    // Kemudian polling berkala
+    pollRef.current = setInterval(runHealthCheck, HEALTH_POLL_INTERVAL);
+
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [isAuthenticated, runHealthCheck]);
+
+  // ── Handle Login ──
   const handleLogin = async (email, password, accountType = "parent") => {
-    console.log("Login type:", accountType);
-    const data = await login(email, password);
-    setUser(data.user);
-    setIsAuthenticated(true);
-    const actualRole = data.user?.role || "parent";
-    if (accountType === "midwife" && actualRole !== "midwife") {
-      alert("Akun ini terdaftar sebagai Orang Tua, bukan Bidan. Anda dialihkan ke dashboard Orang Tua.");
-    } else if (accountType === "parent" && actualRole === "midwife") {
-      alert("Akun ini terdaftar sebagai Bidan/Nakes. Anda dialihkan ke dashboard Bidan.");
+    try {
+      const data = await login(email, password);
+      setUser(data.user);
+      setIsAuthenticated(true);
+      setServiceDown(false);
+
+      const actualRole = data.user?.role || "parent";
+      if (accountType === "midwife" && actualRole !== "midwife") {
+        alert(
+          "Akun ini terdaftar sebagai Orang Tua, bukan Bidan. Anda dialihkan ke dashboard Orang Tua."
+        );
+      } else if (accountType === "parent" && actualRole === "midwife") {
+        alert(
+          "Akun ini terdaftar sebagai Bidan/Nakes. Anda dialihkan ke dashboard Bidan."
+        );
+      }
+      const isMidwife = actualRole === "midwife";
+      setActivePage(isMidwife ? "dashboardBidan" : "home");
+    } catch (err) {
+      if (isServiceDownError(err)) {
+        setServiceDown(true);
+      }
+      throw err;
     }
-    const isMidwife = actualRole === "midwife";
-    setActivePage(isMidwife ? "dashboardBidan" : "home");
   };
 
+  // ── Handle Register ──
   const handleRegister = async (userData) => {
-    await register(userData);
-    await handleLogin(userData.email, userData.password, userData.role || "parent");
+    try {
+      await register(userData);
+      await handleLogin(userData.email, userData.password, userData.role || "parent");
+    } catch (err) {
+      if (isServiceDownError(err)) {
+        setServiceDown(true);
+      }
+      throw err;
+    }
   };
 
   const BIDAN_NAV_MAP = {
-    "Beranda": "dashboardBidan",
+    Beranda: "dashboardBidan",
     "Kelola Jadwal Imunisasi": "kelolaJadwalBidan",
     "Data Anak Imunisasi": "dataAnakBidan",
-    "Profil": "profilBidan",
+    Profil: "profilBidan",
   };
 
   const handleBidanNavigate = (labelOrPage) => {
@@ -464,12 +560,6 @@ function App() {
     );
   }
 
-  const bidanProps = {
-    user,
-    onLogout: handleLogout,
-    onNavigate: setActivePage,
-  };
-
   return (
     <>
       {/* ── Halaman Pengguna (Orang Tua) ── */}
@@ -480,6 +570,7 @@ function App() {
           activePage={activePage}
           onNavigate={setActivePage}
           theme={theme}
+          serviceDown={serviceDown}
         />
       )}
 
@@ -489,6 +580,7 @@ function App() {
           activePage={activePage}
           setActivePage={setActivePage}
           theme={theme}
+          serviceDown={serviceDown}
         />
       )}
 
@@ -514,6 +606,7 @@ function App() {
           setActivePage={setActivePage}
           onLogout={() => setActivePage("login")}
           theme={theme}
+          serviceDown={serviceDown}
         />
       )}
 
@@ -532,12 +625,17 @@ function App() {
         <AboutPage onBack={() => setActivePage("home")} theme={theme} />
       )}
 
+      {activePage === "status" && (
+        <StatusPage />
+      )}
+
       {/* ── Halaman Bidan ── */}
       {activePage === "dashboardBidan" && (
         <DashboardBidan
           user={user}
           onLogout={handleLogout}
           onNavigate={handleBidanNavigate}
+          serviceDown={serviceDown}
           onSelectImmunization={(immunization, child) => {
             setSelectedImmunization(immunization);
             setSelectedChild(child);

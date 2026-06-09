@@ -5,9 +5,11 @@ Microservice yang bertanggung jawab untuk:
 - User login (JWT token generation)
 - Token verification (dipanggil oleh service lain)
 """
+from _pytest import logging
 import os
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -21,6 +23,14 @@ from schemas import (
     UserCreate, UserResponse, LoginRequest,
     TokenResponse, TokenVerifyResponse
 )
+
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+# Setup structured logging
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -57,6 +67,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Logging middleware (setelah CORS)
+app.add_middleware(RequestLoggingMiddleware)
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -97,6 +110,15 @@ def health_check():
     }
 
 
+@app.get("/metrics")
+def get_metrics():
+    """Return application metrics."""
+    return {
+        "service": "auth-service",
+        **metrics.get_metrics(),
+    }
+
+
 @app.post("/register", response_model=UserResponse, status_code=201)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Register user baru."""
@@ -133,16 +155,15 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=token, user=user)
 
 
+security = HTTPBearer()
+
 @app.get("/verify", response_model=TokenVerifyResponse)
-def verify_token(authorization: str = Header(...)):
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Verifikasi JWT token — dipanggil oleh service lain.
     Service lain mengirim header: Authorization: Bearer <token>
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
-
-    token = authorization.split("Bearer ")[1]
+    token = credentials.credentials
     payload = decode_token(token)
 
     return TokenVerifyResponse(
