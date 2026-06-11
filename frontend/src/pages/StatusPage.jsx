@@ -16,12 +16,14 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       setHealth({ status: 'unreachable' });
     }
 
-    try {
-      const metricsRes = await fetch(metricsUrl);
-      const metricsData = await metricsRes.json();
-      setMetrics(metricsData);
-    } catch {
-      setMetrics(null);
+    if (metricsUrl) {
+      try {
+        const metricsRes = await fetch(metricsUrl);
+        const metricsData = await metricsRes.json();
+        setMetrics(metricsData);
+      } catch {
+        setMetrics(null);
+      }
     }
 
     setLoading(false);
@@ -29,7 +31,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000); // Refresh setiap 10 detik
+    const interval = setInterval(fetchStatus, 10000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
@@ -85,7 +87,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
 export default function StatusPage() {
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', color: '#1a1a2e' }}>
       <h1>📊 System Status</h1>
       <p style={{ color: '#64748b' }}>
         Real-time health monitoring — auto-refresh setiap 10 detik
