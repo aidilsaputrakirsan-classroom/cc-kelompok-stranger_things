@@ -123,4 +123,62 @@ export default function StatusPage() {
       });
     }, 1000);
     return () => clearInterval(tick);
-  }, []
+  }, []);
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', color: '#1a1a2e' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ margin: '0 0 8px 0' }}>📊 System Status</h1>
+          <p style={{ color: '#64748b', margin: 0 }}>
+            Real-time health monitoring
+          </p>
+        </div>
+        <div style={{
+          background: '#f1f5f9',
+          borderRadius: '10px',
+          padding: '10px 16px',
+          fontSize: '13px',
+          color: '#64748b',
+          textAlign: 'right',
+        }}>
+          <div>Refresh dalam <strong style={{ color: '#e91e8c' }}>{countdown}s</strong></div>
+          <div style={{ marginTop: '4px' }}>
+            Last checked: <strong>{lastChecked.toLocaleTimeString()}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: '3px', background: '#e2e8f0', borderRadius: '2px', margin: '16px 0' }}>
+        <div style={{
+          height: '100%',
+          background: '#e91e8c',
+          borderRadius: '2px',
+          width: `${(countdown / 10) * 100}%`,
+          transition: 'width 1s linear',
+        }} />
+      </div>
+
+      <div style={{ display: 'grid', gap: '16px' }}>
+        <ServiceCard
+          name="Auth Service"
+          icon="🔐"
+          healthUrl={`${API_URL}/auth/health`}
+          metricsUrl={`${API_URL}/auth/metrics`}
+        />
+        <ServiceCard
+          name="Item Service"
+          icon="📦"
+          healthUrl={`${API_URL}/items/health`}
+          metricsUrl={`${API_URL}/items/metrics`}
+        />
+        <ServiceCard
+          name="API Gateway"
+          icon="🚪"
+          healthUrl={`${API_URL}/health`}
+          metricsUrl={null}
+        />
+      </div>
+    </div>
+  );
+}
