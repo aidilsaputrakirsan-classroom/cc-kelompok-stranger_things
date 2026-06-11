@@ -3,9 +3,11 @@ Item Service — Handles inventory management.
 Berkomunikasi dengan Auth Service untuk verifikasi token.
 """
 import os
+import logging  # ← TAMBAHKAN INI
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db, Base
 from models import Item, Child, ImmunizationLog
@@ -17,6 +19,12 @@ from schemas import (
 from auth_client import verify_token_with_auth_service
 from auth_client import auth_circuit  # Import circuit breaker instance
 
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -83,6 +91,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(RequestLoggingMiddleware)
 
 # =====================
 # ENDPOINTS
@@ -100,7 +109,10 @@ async def health_check():
         db = next(get_db())
         db.execute(text("SELECT 1"))
         db.close()
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"HEALTHCHECK DB ERROR: {e}")
+        traceback.print_exc()
         db_status = "disconnected"
 
     # Menentukan status kesehatan sistem keseluruhan
@@ -123,6 +135,15 @@ async def health_check():
                 "status": db_status,
             },
         },
+    }
+
+
+@app.get("/metrics")
+def get_metrics():
+    """Return application metrics."""
+    return {
+        "service": "item-service",
+        **metrics.get_metrics(),
     }
 
 @app.post("/items", response_model=ItemResponse, status_code=201)

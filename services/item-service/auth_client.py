@@ -7,7 +7,7 @@ import time
 import asyncio
 import logging
 import httpx
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Depends, Header, Request
 
 from circuit_breaker import CircuitBreaker
 
@@ -33,9 +33,12 @@ TIMEOUT_SECONDS = 5.0      # Timeout per request
 RETRYABLE_STATUS_CODES = {500, 502, 503, 504}
 
 
-async def _call_auth_service(authorization: str) -> dict:
+async def _call_auth_service(
+    authorization: str,
+    correlation_id: str = None,
+) -> dict:
     """
-    Panggil Auth Service dengan Circuit Breaker + Retry.
+    Panggil Auth Service dengan Circuit Breaker + Retry + Correlation ID.
     """
     # Circuit breaker check
     if not auth_circuit.can_execute():
@@ -48,16 +51,23 @@ async def _call_auth_service(authorization: str) -> dict:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            headers = {"Authorization": authorization}
+            if correlation_id:
+                headers["X-Correlation-ID"] = correlation_id
+
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     f"{AUTH_SERVICE_URL}/verify",
-                    headers={"Authorization": authorization},
+                    headers=headers,
                     timeout=TIMEOUT_SECONDS,
                 )
 
             if response.status_code == 200:
                 auth_circuit.record_success()
-                logger.info(f"Auth verified (attempt {attempt})")
+                logger.info(
+                    f"Auth verified (attempt {attempt})",
+                    extra={"correlation_id": correlation_id},
+                )
                 return response.json()
 
             if response.status_code == 401:
@@ -108,13 +118,15 @@ async def _call_auth_service(authorization: str) -> dict:
 
 
 async def verify_token_with_auth_service(
-    authorization: str = Header(...)
+    request: Request,
+    authorization: str = Header(...),
 ) -> dict:
     """
     FastAPI Dependency: Verifikasi token via Auth Service.
-    Dengan retry logic dan proper error handling.
+    Dengan retry logic, proper error handling, dan Correlation ID.
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
-    return await _call_auth_service(authorization)
+    correlation_id = getattr(request.state, "correlation_id", None)
+    return await _call_auth_service(authorization, correlation_id)

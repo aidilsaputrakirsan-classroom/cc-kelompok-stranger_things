@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   # ==================== AUTH DATABASE ====================
   auth-db:
     image: postgres:16-alpine
@@ -65,6 +66,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@auth-db:5432/bye_virus"
+      SERVICE_NAME: auth-service
+      LOG_LEVEL: INFO
     ports:
       - "8001:8001"
     depends_on:
@@ -90,7 +93,14 @@ services:
           cpus: '0.50'
           memory: 512M
 
-  # ==================== ITEM SERVICE ====================
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
+
+# ==================== ITEM SERVICE ====================
   item-service:
     build:
       context: ./services/item-service
@@ -100,6 +110,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@item-db:5432/bye_virus"
+      SERVICE_NAME: item-service
+      LOG_LEVEL: INFO
     ports:
       - "8002:8002"
     depends_on:
@@ -118,12 +130,20 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    # ➕ Menambahkan pembatasan resource
+
+    #  Menambahkan pembatasan resource
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "item-service"
 
   # ==================== FRONTEND ====================
   frontend:
@@ -144,7 +164,8 @@ services:
         condition: service_healthy
     networks:
       - cloudnet
-    # ➕ Menambahkan pembatasan resource
+
+    #  Menambahkan pembatasan resource
     deploy:
       resources:
         limits:
@@ -169,7 +190,8 @@ services:
         condition: service_started
     networks:
       - cloudnet
-    # ➕ Menambahkan pembatasan resource
+
+    # Menambahkan pembatasan resource
     deploy:
       resources:
         limits:
@@ -185,3 +207,4 @@ volumes:
 networks:
   cloudnet:
     driver: bridge
+

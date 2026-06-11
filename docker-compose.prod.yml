@@ -1,17 +1,45 @@
-# Production overrides — gunakan dengan:
-# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+version: "3.9"
 
 services:
-  backend:
-    environment:
-      - DEBUG=false
-      - CORS_ORIGINS=https://yourdomain.com
+  auth-db:
     restart: always
+    ports: !reset [] # 🔒 Menghapus ekspos port 5434 ke luar
+    environment:
+      POSTGRES_USER: prod_user_secure
+      POSTGRES_PASSWORD: prod_password_super_secret
+
+  item-db:
+    restart: always
+    ports: !reset [] # 🔒 Menghapus ekspos port 5433 ke luar
+    environment:
+      POSTGRES_USER: prod_user_secure
+      POSTGRES_PASSWORD: prod_password_super_secret
+
+  auth-service:
+    restart: always
+    ports: !reset [] # 🔒 Menghapus ekspos port 8001 ke luar
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://prod_user_secure:prod_password_super_secret@auth-db:5432/bye_virus
+
+  item-service:
+    restart: always
+    ports: !reset [] # 🔒 Menghapus ekspos port 8002 ke luar
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://prod_user_secure:prod_password_super_secret@item-db:5432/bye_virus
 
   frontend:
     restart: always
+    ports: !reset [] # 🔒 Menghapus ekspos port 3000 ke luar
+    environment:
+      - NODE_ENV=production
 
-  db:
+  gateway:
     restart: always
-    # Tidak expose port ke host di production
-    ports: !reset []
+    ports:
+      - "80:80" # 🚪 HANYA pintu ini yang boleh diakses publik dari luar server!
