@@ -6,8 +6,11 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
   const [health, setHealth] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStatus = useCallback(async () => {
+  const fetchStatus = useCallback(async (isAuto = false) => {
+    if (isAuto) setRefreshing(true);
+
     try {
       const healthRes = await fetch(healthUrl);
       const healthData = await healthRes.json();
@@ -16,20 +19,24 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       setHealth({ status: 'unreachable' });
     }
 
-    try {
-      const metricsRes = await fetch(metricsUrl);
-      const metricsData = await metricsRes.json();
-      setMetrics(metricsData);
-    } catch {
-      setMetrics(null);
+    // FIX: guard against null metricsUrl
+    if (metricsUrl) {
+      try {
+        const metricsRes = await fetch(metricsUrl);
+        const metricsData = await metricsRes.json();
+        setMetrics(metricsData);
+      } catch {
+        setMetrics(null);
+      }
     }
 
     setLoading(false);
+    setRefreshing(false);
   }, [healthUrl, metricsUrl]);
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000);
+    const interval = setInterval(() => fetchStatus(true), 10000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
@@ -41,6 +48,8 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
   };
 
   const status = health?.status || 'unreachable';
+  const errorRate = metrics?.error_rate_percent || 0;
+  const errorRateColor = errorRate > 10 ? '#ef4444' : errorRate > 5 ? '#f59e0b' : '#22c55e';
 
   return (
     <div style={{
@@ -49,9 +58,18 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       padding: '20px',
       borderLeft: `4px solid ${statusColor[status] || '#6b7280'}`,
       background: '#fff',
+      transition: 'opacity 0.3s',
+      opacity: refreshing ? 0.75 : 1,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0 }}>{icon} {name}</h3>
+        <h3 style={{ margin: 0, color: '#1a1a2e' }}>
+          {icon} {name}
+          {refreshing && (
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px', fontWeight: 400 }}>
+              ↻ memperbarui...
+            </span>
+          )}
+        </h3>
         <span style={{
           background: statusColor[status],
           color: '#fff',
@@ -68,14 +86,22 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       {metrics && (
         <div style={{ marginTop: '16px', fontSize: '14px', color: '#64748b' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <div>Requests: <strong>{metrics.total_requests}</strong></div>
-            <div>Errors: <strong style={{ color: metrics.total_errors > 0 ? '#ef4444' : 'inherit' }}>
+            <div>Requests: <strong style={{ color: '#1a1a2e' }}>{metrics.total_requests}</strong></div>
+            <div>Errors: <strong style={{ color: metrics.total_errors > 0 ? '#ef4444' : '#22c55e' }}>
               {metrics.total_errors}
             </strong></div>
-            <div>Error Rate: <strong>{metrics.error_rate_percent}%</strong></div>
-            <div>Avg Latency: <strong>{metrics.latency?.avg_ms || 0}ms</strong></div>
-            <div>p95 Latency: <strong>{metrics.latency?.p95_ms || 0}ms</strong></div>
-            <div>Uptime: <strong>{Math.round((metrics.uptime_seconds || 0) / 60)}min</strong></div>
+            <div>Error Rate: <strong style={{ color: errorRateColor }}>
+              {errorRate}%
+            </strong></div>
+            <div>Avg Latency: <strong style={{ color: (metrics.latency?.avg_ms || 0) > 500 ? '#f59e0b' : '#1a1a2e' }}>
+              {metrics.latency?.avg_ms || 0}ms
+            </strong></div>
+            <div>p95 Latency: <strong style={{ color: (metrics.latency?.p95_ms || 0) > 1000 ? '#ef4444' : '#1a1a2e' }}>
+              {metrics.latency?.p95_ms || 0}ms
+            </strong></div>
+            <div>Uptime: <strong style={{ color: '#1a1a2e' }}>
+              {Math.round((metrics.uptime_seconds || 0) / 60)}min
+            </strong></div>
           </div>
         </div>
       )}
@@ -84,14 +110,58 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 }
 
 export default function StatusPage() {
-  return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
-      <h1>📊 System Status</h1>
-      <p style={{ color: '#64748b' }}>
-        Real-time health monitoring — auto-refresh setiap 10 detik
-      </p>
+  const [lastChecked, setLastChecked] = useState(new Date());
+  const [countdown, setCountdown] = useState(10);
 
-      <div style={{ display: 'grid', gap: '16px', marginTop: '24px' }}>
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          setLastChecked(new Date());
+          return 10;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
+
+  // FIX: satu div wrapper, hapus duplikat blok pertama
+  return (
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', color: '#1a1a2e' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ margin: '0 0 8px 0' }}>📊 System Status</h1>
+          <p style={{ color: '#64748b', margin: 0 }}>
+            Real-time health monitoring — auto-refresh setiap 10 detik
+          </p>
+        </div>
+        <div style={{
+          background: '#f1f5f9',
+          borderRadius: '10px',
+          padding: '10px 16px',
+          fontSize: '13px',
+          color: '#64748b',
+          textAlign: 'right',
+        }}>
+          <div>Refresh dalam <strong style={{ color: '#e91e8c' }}>{countdown}s</strong></div>
+          <div style={{ marginTop: '4px' }}>
+            Last checked: <strong>{lastChecked.toLocaleTimeString()}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: '3px', background: '#e2e8f0', borderRadius: '2px', margin: '16px 0' }}>
+        <div style={{
+          height: '100%',
+          background: '#e91e8c',
+          borderRadius: '2px',
+          width: `${(countdown / 10) * 100}%`,
+          transition: 'width 1s linear',
+        }} />
+      </div>
+
+      <div style={{ display: 'grid', gap: '16px' }}>
         <ServiceCard
           name="Auth Service"
           icon="🔐"
@@ -111,12 +181,6 @@ export default function StatusPage() {
           metricsUrl={null}
         />
       </div>
-
-      <p style={{ marginTop: '24px', fontSize: '13px', color: '#94a3b8' }}>
-        Last checked: {new Date().toLocaleTimeString()}
-      </p>
     </div>
   );
-
 }
-
