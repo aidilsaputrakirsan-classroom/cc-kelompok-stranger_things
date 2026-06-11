@@ -5,6 +5,7 @@ import {
   createImmunization,
   updateChild,
 } from "../services/api";
+import DegradedBanner from "../components/DegradedBanner";
 
 const defaultVaccines = [
   { id: 1, name: "BCG (TBC)" },
@@ -23,6 +24,15 @@ const defaultVaccines = [
   { id: 14, name: "Japanese Encephalitis (JE)" },
   { id: 15, name: "Dengue" },
 ];
+
+// ── Utility: apakah error termasuk service-down?
+function isServiceDownError(err) {
+  return (
+    err?.message?.includes("503") ||
+    err?.message?.includes("Service temporarily unavailable") ||
+    err?.message?.includes("Failed to fetch")
+  );
+}
 
 // ── Notification (inline) ─────────────────────────────────────────
 function useNotification() {
@@ -118,7 +128,7 @@ function SectionLabel({ children }) {
   );
 }
 
-export default function DataAnak({ setActivePage, onLogout }) {
+export default function DataAnak({ setActivePage, onLogout, serviceDown: serviceDownProp = false }) {
   const [child, setChild] = useState({
     name: "",
     birth_date: "",
@@ -134,7 +144,11 @@ export default function DataAnak({ setActivePage, onLogout }) {
   const [focusedField, setFocusedField] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [fetchServiceDown, setFetchServiceDown] = useState(false);
   const { notif, showNotif, closeNotif } = useNotification();
+
+  // Gabungkan: serviceDown dari App ATAU dari fetch lokal
+  const isServiceDown = serviceDownProp || fetchServiceDown;
 
   useEffect(() => {
     loadVaccines();
@@ -170,9 +184,14 @@ export default function DataAnak({ setActivePage, onLogout }) {
     try {
       const data = await fetchVaccineTypes();
       setVaccineTypes(!data || data.length === 0 ? defaultVaccines : data);
+      setFetchServiceDown(false);
     } catch (err) {
       console.error(err);
+      // Fallback ke defaultVaccines — form tetap bisa dipakai
       setVaccineTypes(defaultVaccines);
+      if (isServiceDownError(err)) {
+        setFetchServiceDown(true);
+      }
     }
   };
 
@@ -199,6 +218,13 @@ export default function DataAnak({ setActivePage, onLogout }) {
       showNotif("Data anak wajib diisi", "error");
       return;
     }
+
+    // Cegah submit saat service down
+    if (isServiceDown) {
+      showNotif("Layanan sedang tidak tersedia. Coba beberapa saat lagi.", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
@@ -239,7 +265,6 @@ export default function DataAnak({ setActivePage, onLogout }) {
       } else {
         const newChild = await createChild(payload);
 
-        // Simpan imunisasi dengan error handling terpisah
         let failedVaccines = [];
         for (let item of immunizations) {
           if (item.vaccine_id && item.scheduled_date) {
@@ -257,7 +282,6 @@ export default function DataAnak({ setActivePage, onLogout }) {
           }
         }
 
-        // Tampilkan pesan sesuai hasil
         if (failedVaccines.length > 0) {
           showNotif(
             `Data anak berhasil disimpan! ${failedVaccines.length} imunisasi gagal disimpan.`,
@@ -275,7 +299,12 @@ export default function DataAnak({ setActivePage, onLogout }) {
       }, 1500);
     } catch (err) {
       console.error("Error saving child:", err);
-      showNotif("Gagal menyimpan: " + err.message, "error");
+      if (isServiceDownError(err)) {
+        setFetchServiceDown(true);
+        showNotif("Layanan tidak tersedia. Data tidak tersimpan. Coba lagi nanti.", "error");
+      } else {
+        showNotif("Gagal menyimpan: " + err.message, "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -318,6 +347,14 @@ export default function DataAnak({ setActivePage, onLogout }) {
           </svg>
         </div>
       </nav>
+
+      {/* Banner service down */}
+      {isServiceDown && (
+        <DegradedBanner
+          message="Layanan sedang bermasalah. Penyimpanan data tidak tersedia sementara."
+          isDark={false}
+        />
+      )}
 
       {/* Card Utama */}
       <div style={s.card}>
@@ -507,7 +544,20 @@ export default function DataAnak({ setActivePage, onLogout }) {
 
         {/* Simpan */}
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <button style={s.saveBtn} onClick={handleSubmit} disabled={loading}>
+          {isServiceDown && (
+            <p style={{ color: "#854F0B", fontSize: "13px", marginBottom: "8px" }}>
+              ⚠️ Penyimpanan tidak tersedia saat layanan bermasalah.
+            </p>
+          )}
+          <button
+            style={{
+              ...s.saveBtn,
+              opacity: isServiceDown ? 0.5 : 1,
+              cursor: isServiceDown ? "not-allowed" : "pointer",
+            }}
+            onClick={handleSubmit}
+            disabled={loading || isServiceDown}
+          >
             {loading ? "Menyimpan..." : isEditMode ? "Perbarui" : "Simpan"}
           </button>
         </div>

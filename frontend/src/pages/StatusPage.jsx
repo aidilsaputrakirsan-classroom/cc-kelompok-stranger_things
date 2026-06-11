@@ -16,14 +16,12 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       setHealth({ status: 'unreachable' });
     }
 
-    if (metricsUrl) {
-      try {
-        const metricsRes = await fetch(metricsUrl);
-        const metricsData = await metricsRes.json();
-        setMetrics(metricsData);
-      } catch {
-        setMetrics(null);
-      }
+    try {
+      const metricsRes = await fetch(metricsUrl);
+      const metricsData = await metricsRes.json();
+      setMetrics(metricsData);
+    } catch {
+      setMetrics(null);
     }
 
     setLoading(false);
@@ -87,7 +85,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
 export default function StatusPage() {
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', color: '#1a1a2e' }}>
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
       <h1>📊 System Status</h1>
       <p style={{ color: '#64748b' }}>
         Real-time health monitoring — auto-refresh setiap 10 detik
