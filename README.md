@@ -13,21 +13,6 @@ Bye bye Virus adalah aplikasi yang dirancang untuk memantau dan mengelola imunis
 Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan sedang bekerja, biasanya sering terlewat jadwal imunisasi dikarenakan tidak adanya informasi atau pengingat secara berkala. Aplikasi ini hadir untuk memudahkan para orang tua (ibu rumah tangga maupun yang sedang bekerja) dalam merencanakan dan menjadwalkan imunisasi anak mereka.
 
 ---
-## 📅 Roadmap
-
-| Minggu | Target                 | Status |
-| ------ | ---------------------- | ------ |
-| 1      | Setup & Hello World    | ✅     |
-| 2      | REST API + Database    | ✅     |
-| 3      | React Frontend         | ✅     |
-| 4      | Full-Stack Integration + Auth | ✅     |
-| 5-7    | Docker & Compose       | ✅     |
-| 8      | UTS Demo  (Milestone 1)| ✅     |
-| 9-11   | CI/CD Pipeline         | ✅     |
-| 12-14  | Microservices          | ✅     |
-| 15     | Final Polish & Securit | ⬜     |
-| 12-14  | Microservices          | ✅     |
----
 
 ## 👥 Tim
 
@@ -38,20 +23,7 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 | Cintya Widhi Astuti  | 10231026 | Lead DevOps    |
 | Verina Rahma Dinah   | 10231090 | Lead QA & Docs |
 
-## 🛠️ Tech Stack
-
-| Teknologi      | Fungsi           | Keterangan                                                                                                                                   |
-| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| FastAPI        | Backend REST API | Membangun layanan backend berbasis REST API yang menangani logika aplikasi, pengolahan data, dan komunikasi dengan database                  |
-| React          | Frontend SPA     | Membangun antarmuka pengguna berbasis Single Page Application yang interaktif, responsif, dan mampu berkomunikasi dengan backend melalui API |
-| PostgreSQL     | Database         | Menyimpan data aplikasi secara terstruktur                                                                                                   |
-| Docker         | Containerization | Mengemas aplikasi dan seluruh dependensinya ke dalam container sehingga aplikasi bisa berjalan konsisten di lingkungan manapun               |
-| GitHub Actions | CI/CD            | Mengotomatiskan proses pengujian, build, dan deployment aplikasi                                                                             |
-| Railway/Render | Cloud Deployment | Melakukan deployment aplikasi ke cloud agar backend dan frontend dapat berjalan dan diakses secara online                                    |
-
-
 ## 🏗️ Architecture
-
 ```mermaid
 flowchart TD
     USER["👤 User"] --> GW["🚪 API Gateway<br/>Nginx"]
@@ -147,48 +119,55 @@ npm run dev
 ### Item Service (port 8002)
 
 | Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/items` | List items (with search) | ✅ |
-| POST | `/items` | Create item | ✅ |
-| GET | `/items/{id}` | Get item by ID | ✅ |
-| PUT | `/items/{id}` | Update item | ✅ |
-| DELETE | `/items/{id}` | Delete item | ✅ |
-| GET | `/items/stats` | Item statistics | ✅ |
-| GET | `/health` | Health check | ❌ |
-| GET | `/metrics` | Service metrics | ❌ |
+|---|---|---|---|
+| GET | `/health` | Health check item-service | ❌ |
+| GET | `/metrics` | Menampilkan metrics item-service | ❌ |
+| POST | `/items` | Menambahkan item baru | ✅ |
+| GET | `/items` | Menampilkan daftar item | ✅ |
+| GET | `/items/stats` | Menampilkan statistik item | ✅ |
+| GET | `/items/{item_id}` | Menampilkan detail item berdasarkan ID | ✅ |
+| PUT | `/items/{item_id}` | Memperbarui item berdasarkan ID | ✅ |
+| DELETE | `/items/{item_id}` | Menghapus item berdasarkan ID | ✅ |
+| POST | `/children` | Menambahkan data anak | ✅ |
+| GET | `/children` | Menampilkan daftar anak milik user | ✅ |
+| GET | `/children/{child_id}` | Menampilkan detail data anak | ✅ |
+| PUT | `/children/{child_id}` | Memperbarui data anak | ✅ |
+| DELETE | `/children/{child_id}` | Menghapus data anak | ✅ |
+| POST | `/children/{child_id}/immunization` | Menambahkan data imunisasi anak | ✅ |
+| GET | `/children/{child_id}/immunization` | Menampilkan data imunisasi anak | ✅ |
+| GET | `/children/{child_id}/immunization/pending` | Menampilkan imunisasi yang masih pending | ✅ |
+| PUT | `/children/{child_id}/immunization/{immun_id}` | Memperbarui data imunisasi anak | ✅ |
 
 ### Via Gateway (port 80)
 
-All requests go through the gateway with prefix:
-- Auth: `http://localhost/auth/...`
-- Items: `http://localhost/items/...`
-- Status: `http://localhost/status`
+| Service | Direct URL | Gateway URL |
+|---|---|---|
+| Gateway Health | - | `http://localhost/health` |
+| Auth Health | `http://localhost:8001/health` | `http://localhost/auth/health` |
+| Auth Metrics | `http://localhost:8001/metrics` | `http://localhost/auth/metrics` |
+| Item Health | `http://localhost:8002/health` | `http://localhost/items/health` |
+| Item Metrics | `http://localhost:8002/metrics` | `http://localhost/items/metrics` |
 
-## 🔐 Security
+## 🔐 Keamanan
 
-- JWT authentication with expiry
-- bcrypt password hashing
-- Rate limiting (Nginx): 5 req/s auth, 20 req/s API
-- Input validation (Pydantic)
-- CORS configured per environment
-- Secrets via environment variables (never hardcoded)
-- Database per service (no shared DB)
+- **Autentikasi menggunakan JWT** untuk mengamankan akses user setelah login.
+- **Token memiliki masa berlaku** sehingga akses pengguna dapat dibatasi dalam periode tertentu.
+- **Password disimpan menggunakan hashing bcrypt**, sehingga password tidak disimpan dalam bentuk asli atau plain text.
+- **Rate limiting menggunakan Nginx** untuk membatasi jumlah request, terutama pada endpoint autentikasi dan API utama.
+- **Validasi input menggunakan Pydantic** agar data yang masuk ke service sesuai dengan format yang dibutuhkan.
+- **CORS dikonfigurasi sesuai environment** untuk mengatur akses antara frontend dan backend.
+- **Konfigurasi sensitif disimpan melalui environment variables**, sehingga secret seperti database URL, JWT secret, dan konfigurasi lain tidak ditulis langsung di dalam kode.
+- **Database dipisahkan per service**, yaitu `auth-db` untuk `auth-service` dan `item-db` untuk `item-service`, sehingga setiap service memiliki tanggung jawab data masing-masing.
 
 ## 📊 Monitoring
 
-- **Structured Logging**: JSON format with correlation ID
-- **Metrics**: `/metrics` endpoint per service (request count, error rate, latency p50/p95/p99)
-- **Health Dashboard**: `/status` page with auto-refresh
-- **Circuit Breaker**: Item Service → Auth Service with retry + backoff
-
-## 👥 Tim
-
-| Nama | NIM | Peran | Kontribusi Utama |
-|------|-----|-------|-----------------|
-| [Nama] | [NIM] | Lead Backend | Auth Service, Item Service, API design |
-| [Nama] | [NIM] | Lead Frontend | React UI, Status Page, UX |
-| [Nama] | [NIM] | Lead DevOps | Docker, Nginx Gateway, Railway deploy |
-| [Nama] | [NIM] | Lead QA & Docs | Testing, CI pipeline, documentation |
+- **Structured Logging**: Log request dicatat dalam format JSON agar lebih mudah dibaca, dicari, dan dianalisis. Setiap log memuat informasi seperti `timestamp`, `level`, `service`, `message`, `method`, `path`, `status_code`, `duration_ms`, dan `correlation_id`.
+- **Correlation ID**: Setiap request memiliki ID pelacakan yang digunakan untuk menelusuri alur request dan mempermudah proses debugging ketika terjadi error.
+- **Metrics Endpoint**: Setiap service memiliki endpoint `/metrics` untuk menampilkan data monitoring seperti jumlah request, jumlah error, error rate, status code, latency, dan statistik endpoint.
+- **Health Check**: Setiap service memiliki endpoint `/health` untuk mengecek status kesehatan service dan dependency yang digunakan.
+- **Health Dashboard**: Halaman `/status` digunakan untuk menampilkan status service secara lebih mudah melalui tampilan dashboard.
+- **Circuit Breaker**: `item-service` memiliki mekanisme circuit breaker saat berkomunikasi dengan `auth-service`, sehingga service dapat menghindari pemanggilan berulang ketika service tujuan sedang bermasalah.
+- **Retry dan Backoff**: Komunikasi antar-service dilengkapi mekanisme retry dan jeda bertahap untuk meningkatkan ketahanan sistem saat terjadi gangguan sementara.
 
 ## 📄 Documentation
 
@@ -197,6 +176,14 @@ All requests go through the gateway with prefix:
 - [Operations Guide](docs/operations-guide.md)
 - [API Contract](docs/api-contract.md)
 - [Release Notes](docs/release-notes-m3.md)
+- [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
+- [Dokumentasi UI testing](docs/ui-test-results.md)
+- [Dokumentasi Auth testing](docs/auth-test-results.md)
+- [Docker Cheatsheet](docs/docker-cheatsheet.md)
+- [Setup Guide](docs/setup-guide.md)
+- [Testing Guide](docs/testing-guide.md)
+- [Production Test](docs/production-test.md)
+- [Git Workflow](docs/git-workflow.md)
 
 ## 📅 Roadmap
 
@@ -225,7 +212,6 @@ Berikut perintah dasar Docker Compose yang digunakan:
 | `docker compose logs` | Menampilkan log semua service |
 | `docker compose ps` | Menampilkan status container |
 | `docker compose up -d --build` | Build ulang image lalu menjalankan service |
-
 
 ## 📦 Modul Aplikasi
 
@@ -504,49 +490,99 @@ Halaman ini menampilkan fitur Faskes Map pada aplikasi ByeByeVirus yang digunaka
 
 ---
 
-##  👨‍💻  Developer Workflow
+## 🚀 Deployment
 
-Mulai dari modul 9 ini, kita menggunakan **Github Flow**. Setiap anggota tim wajib menjalankan pengecekan lokal menggunakan 'Makefile' sebelum melakukan push kode ke branch fitur.
+Deployment aplikasi dilakukan menggunakan layanan cloud yang telah dikonfigurasi pada project. Proses deployment terhubung dengan GitHub Actions, sehingga setiap perubahan yang masuk ke branch `main` dapat memicu pipeline otomatis untuk melakukan pengecekan, build, dan deployment aplikasi.
+
+### Alur Deployment
+
+1. Developer melakukan push atau merge perubahan ke branch `main`.
+2. GitHub Actions menjalankan pipeline CI/CD secara otomatis.
+3. Pipeline melakukan pengujian pada backend dan frontend.
+4. Docker image dibangun untuk memastikan aplikasi dapat berjalan pada environment container.
+5. Jika seluruh proses berhasil, aplikasi akan dideploy ke platform cloud yang digunakan.
+
+### Live Demo
+
+| Service | URL |
+|---|---|
+| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
+| Backend API | Belum tersedia |
+| API Docs (Swagger) | Belum tersedia |
+
+### Catatan Deployment
+
+Jika proses deployment gagal, lakukan pengecekan pada tab **Actions** di GitHub untuk melihat log error. Beberapa penyebab umum kegagalan deployment antara lain kesalahan environment variables, dependency backend atau frontend yang belum sesuai, kegagalan build Docker image, atau konfigurasi deployment yang belum lengkap.
+
+## 👨‍💻 Developer Workflow
+
+Project ini menggunakan alur kerja **GitHub Flow**. Setiap anggota tim membuat branch sesuai tugas masing-masing, melakukan perubahan pada branch tersebut, lalu mengajukan Pull Request agar dapat direview sebelum digabungkan ke branch `main`.
 
 ### Perintah Makefile
 
-Gunakan perintah berikut di terminal:
+Sebelum melakukan push atau membuat Pull Request, anggota tim disarankan menjalankan pengecekan lokal menggunakan Makefile.
 
-*   `make lint` : Menjalankan linter (flake8) untuk mengecek kerapian dan standar penulisan kode di backend.
-*   `make test` : Menjalankan unit testing (saat ini masih berupa placeholder).
-*   `make pr-check` : **Wajib dijalankan sebelum push!** Perintah ini akan membangun ulang (build) Docker container, lalu menjalankan linting dan testing secara otomatis.
+| Command | Keterangan |
+|---|---|
+| `make lint` | Menjalankan linter untuk mengecek kerapian dan standar penulisan kode backend |
+| `make test` | Menjalankan unit testing yang tersedia pada project |
+| `make pr-check` | Menjalankan pengecekan sebelum Pull Request, termasuk build Docker, linting, dan testing |
 
 ### Cara Berkontribusi
-1. Ambil update terbaru dari main: `git checkout main && git pull origin main`.
-2. Buat branch baru: `git checkout -b tipe/nama-fitur`.
-3. Lakukan perubahan kode.
-4. **Verifikasi kode** dengan menjalankan `make pr-check`.
-5. Jika berhasil (muncul ✅), lakukan commit dan push.
-6. Buat Pull Request di GitHub dan minta review dari teman tim.
 
-## 🌐 Live Demo
+1. Ambil update terbaru dari branch `main`.
 
-| Service | URL |
-|---------|-----|
-| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
-| Backend API | |
-| API Docs (Swagger) | |
+```bash
+git checkout main
+git pull origin main
+```
+
+2. Buat branch baru sesuai tugas yang dikerjakan.
+
+```bash
+git checkout -b tipe/nama-fitur
+```
+
+Contoh:
+
+```bash
+git checkout -b docs/update-readme
+```
+
+3. Lakukan perubahan kode atau dokumentasi sesuai kebutuhan.
+
+4. Jalankan pengecekan lokal sebelum push.
+
+```bash
+make pr-check
+```
+
+5. Jika pengecekan berhasil, lakukan commit.
+
+```bash
+git add .
+git commit -m "docs: update README"
+```
+
+6. Push branch ke GitHub.
+
+```bash
+git push origin tipe/nama-fitur
+```
+
+7. Buat Pull Request di GitHub dan minta review dari anggota tim lain.
 
 ## 🔄 CI/CD
 
-Pipeline otomatis berjalan saat push ke main:
-1. ✅ Test backend (pytest)
-2. ✅ Test frontend (Vitest)
-3. ✅ Build Docker images
-4. 🚀 Deploy ke Railway
----
-## 📋 Dokumentasi
-- [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
-- [Dokumentasi UI testing](docs/ui-test-results.md)
-- [Dokumentasi Auth testing](docs/auth-test-results.md)
-- [Docker Cheatsheet](docs/docker-cheatsheet.md)
-- [Setup Guide](docs/setup-guide.md)
-- [Testing Guide](docs/testing-guide.md)
-- [Production Test](docs/production-test.md)
-- [Git Workflow](docs/git-workflow.md)
+Pipeline CI/CD berjalan secara otomatis melalui GitHub Actions ketika terdapat push atau Pull Request ke branch utama. Pipeline ini digunakan untuk memastikan kode yang masuk tetap aman, dapat diuji, dan siap dijalankan.
 
+### Tahapan Pipeline
+
+1. ✅ Menjalankan pengujian backend menggunakan `pytest`.
+2. ✅ Menjalankan pengujian frontend menggunakan `Vitest`.
+3. ✅ Melakukan build Docker image untuk memastikan aplikasi dapat berjalan di environment container.
+4. 🚀 Melakukan deployment ke platform cloud jika seluruh proses sebelumnya berhasil.
+
+### Catatan CI/CD
+
+Jika pipeline gagal, anggota tim perlu membuka tab **Actions** pada repository GitHub untuk melihat detail log error. Error yang muncul dapat berasal dari dependency yang belum terpasang, test yang gagal, konfigurasi environment yang belum sesuai, atau proses build Docker yang bermasalah.
