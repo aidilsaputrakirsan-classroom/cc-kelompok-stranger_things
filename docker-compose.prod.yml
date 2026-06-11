@@ -22,6 +22,7 @@ services:
       - ENV=production
       - DEBUG=false
       - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://prod_user_secure:prod_password_super_secret@auth-db:5432/bye_virus
 
   item-service:
     restart: always
@@ -30,6 +31,7 @@ services:
       - ENV=production
       - DEBUG=false
       - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://prod_user_secure:prod_password_super_secret@item-db:5432/bye_virus
 
   frontend:
     restart: always

@@ -7,6 +7,7 @@ import logging  # ← TAMBAHKAN INI
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db, Base
 from models import Item, Child, ImmunizationLog
@@ -108,7 +109,10 @@ async def health_check():
         db = next(get_db())
         db.execute(text("SELECT 1"))
         db.close()
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"HEALTHCHECK DB ERROR: {e}")
+        traceback.print_exc()
         db_status = "disconnected"
 
     # Menentukan status kesehatan sistem keseluruhan
