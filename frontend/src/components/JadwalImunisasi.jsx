@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { fetchChildren, deleteChild } from "../services/api"
 import Navbar from "../components/Navbar"
+import DegradedBanner from "../components/DegradedBanner"
 
 function GirlAvatar() {
   return (
@@ -149,25 +150,44 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
   )
 }
 
-export default function JadwalImunisasi({ onLogout, activePage, setActivePage }) {
+// ── Utility: apakah error termasuk service-down?
+function isServiceDownError(err) {
+  return (
+    err?.message?.includes("503") ||
+    err?.message?.includes("Service temporarily unavailable") ||
+    err?.message?.includes("Failed to fetch")
+  )
+}
+
+export default function JadwalImunisasi({ onLogout, activePage, setActivePage, serviceDown: serviceDownProp = false }) {
   const [childrenList, setChildrenList] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [fetchServiceDown, setFetchServiceDown] = useState(false)
   const { notif, showNotif, closeNotif } = useNotification()
   const [confirmDialog, setConfirmDialog] = useState({ message: "", child: null })
+
+  // Gabungkan: serviceDown dari App ATAU dari fetch lokal
+  const isServiceDown = serviceDownProp || fetchServiceDown
 
   useEffect(() => { loadChildren() }, [])
 
   const loadChildren = async () => {
     setLoading(true)
     setError(null)
+    setFetchServiceDown(false)
     try {
       const data = await fetchChildren()
       setChildrenList(data ?? [])
     } catch (err) {
       console.error(err)
-      setError("Gagal memuat data anak.")
+      if (isServiceDownError(err)) {
+        setFetchServiceDown(true)
+        setError("Layanan sedang tidak tersedia. Data mungkin belum terbaru.")
+      } else {
+        setError("Gagal memuat data anak.")
+      }
     } finally {
       setLoading(false)
     }
@@ -181,8 +201,12 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
       if (selectedChild?.id === child.id) setSelectedChild(null)
       loadChildren()
       showNotif(`Data ${child.name} berhasil dihapus`, "success")
-    } catch {
-      showNotif("Gagal menghapus data anak.", "error")
+    } catch (err) {
+      if (isServiceDownError(err)) {
+        showNotif("Layanan tidak tersedia. Coba beberapa saat lagi.", "error")
+      } else {
+        showNotif("Gagal menghapus data anak.", "error")
+      }
     }
   }
 
@@ -197,14 +221,45 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
 
       <Navbar activePage={activePage} setActivePage={setActivePage} onLogout={onLogout} />
 
+      {/* Banner service down */}
+      {isServiceDown && (
+        <DegradedBanner
+          message="Layanan sedang bermasalah. Data anak mungkin tidak ter-update."
+          isDark={false}
+        />
+      )}
+
       <div style={s.main}>
         {/* Left: Daftar Anak */}
         <div style={s.leftPanel}>
           <div style={s.daftarHeader}>Daftar anak</div>
           <div style={s.daftarBody}>
             {loading && <p style={s.emptyText}>Memuat data...</p>}
-            {!loading && error && <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>}
-            {!loading && !error && childrenList.length === 0 && (
+
+            {/* Error state: service down */}
+            {!loading && isServiceDown && childrenList.length === 0 && (
+              <div style={s.errorState}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                  stroke="#854F0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <p style={{ color: "#854F0B", margin: 0, fontSize: "12px", lineHeight: 1.5 }}>
+                  Tidak dapat memuat data. Periksa koneksi server.
+                </p>
+                <button style={s.retryBtn} onClick={loadChildren}>
+                  🔄 Coba lagi
+                </button>
+              </div>
+            )}
+
+            {/* Error state: error biasa (bukan service down) */}
+            {!loading && error && !isServiceDown && (
+              <p style={{ ...s.emptyText, color: "#e53935" }}>{error}</p>
+            )}
+
+            {!loading && !error && childrenList.length === 0 && !isServiceDown && (
               <p style={s.emptyText}>Belum ada data anak.</p>
             )}
 
@@ -249,7 +304,12 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
               </div>
             ))}
 
-            <button style={s.tambahAnakBtn} onClick={() => setActivePage?.("dataAnak")}>
+            <button
+              style={s.tambahAnakBtn}
+              onClick={() => setActivePage?.("dataAnak")}
+              disabled={isServiceDown}
+              title={isServiceDown ? "Layanan tidak tersedia" : ""}
+            >
               <span style={s.tambahAnakPlus}>+</span>
               Tambah data anak
             </button>
@@ -262,7 +322,10 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
             <div style={s.emptyCenter}>
               <span style={{ fontSize: "48px" }}>👶</span>
               <p style={{ color: "#e91e8c", fontWeight: "600", marginTop: "1rem" }}>
-                Pilih anak untuk melihat profil
+                {isServiceDown
+                  ? "Data tidak dapat dimuat saat ini"
+                  : "Pilih anak untuk melihat profil"
+                }
               </p>
             </div>
           ) : (
@@ -270,8 +333,13 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
               <div style={s.profileHeader}>
                 <h2 style={s.profileTitle}>Profil Data Anak</h2>
                 <button
-                  style={s.jadwalBtn}
+                  style={{
+                    ...s.jadwalBtn,
+                    opacity: isServiceDown ? 0.6 : 1,
+                    cursor: isServiceDown ? "not-allowed" : "pointer",
+                  }}
                   onClick={() => {
+                    if (isServiceDown) return
                     if (selectedChild) {
                       localStorage.setItem("selectedChild", JSON.stringify(selectedChild))
                     }
@@ -280,7 +348,9 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
                 >
                   <div>
                     <div style={{ fontWeight: 700, fontSize: "14px" }}>Jadwal Imunisasi</div>
-                    <div style={{ fontSize: "11px", opacity: 0.85 }}>Lihat detail jadwal</div>
+                    <div style={{ fontSize: "11px", opacity: 0.85 }}>
+                      {isServiceDown ? "Tidak tersedia" : "Lihat detail jadwal"}
+                    </div>
                   </div>
                   <span style={s.jadwalChevron}>›</span>
                 </button>
@@ -317,18 +387,22 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage })
         <div style={s.rightPanel}>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Tinggi Terkini</div>
-            <div style={s.statCardValue}>{selectedChild?.heightNow ? `${selectedChild.heightNow} cm` : "— cm"}</div>
+            <div style={s.statCardValue}>
+              {isServiceDown ? "—" : selectedChild?.heightNow ? `${selectedChild.heightNow} cm` : "— cm"}
+            </div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
-              <span style={s.deltaText}>{selectedChild?.heightDelta ?? "-"}</span>
+              <span style={s.deltaText}>{isServiceDown ? "-" : selectedChild?.heightDelta ?? "-"}</span>
             </div>
           </div>
           <div style={s.statCard}>
             <div style={s.statCardTitle}>Berat Terkini</div>
-            <div style={s.statCardValue}>{selectedChild?.weightNow ? `${selectedChild.weightNow} kg` : "— kg"}</div>
+            <div style={s.statCardValue}>
+              {isServiceDown ? "—" : selectedChild?.weightNow ? `${selectedChild.weightNow} kg` : "— kg"}
+            </div>
             <div style={s.statCardDelta}>
               <span style={s.arrowUp}>↑</span>
-              <span style={s.deltaText}>{selectedChild?.weightDelta ?? "-"}</span>
+              <span style={s.deltaText}>{isServiceDown ? "-" : selectedChild?.weightDelta ?? "-"}</span>
             </div>
           </div>
         </div>
@@ -376,6 +450,28 @@ const s = {
   emptyText: {
     color: "#aaa", fontSize: "13px",
     textAlign: "center", padding: "1rem 0", margin: 0,
+  },
+  errorState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "8px",
+    padding: "1rem",
+    background: "#FAEEDA",
+    borderRadius: "10px",
+    border: "1px solid #EF9F27",
+    textAlign: "center",
+  },
+  retryBtn: {
+    background: "none",
+    border: "1px solid #854F0B",
+    borderRadius: "6px",
+    color: "#854F0B",
+    padding: "5px 14px",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "4px",
   },
   childRow: {
     display: "flex", alignItems: "center", gap: "10px",

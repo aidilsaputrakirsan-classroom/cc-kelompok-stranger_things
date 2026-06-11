@@ -1,12 +1,10 @@
-// DashboardBidan.jsx
-// Navigasi antar halaman menggunakan prop onNavigate(page)
-
 import { useEffect, useState } from "react";
 import {
   fetchChildren,
   fetchImmunizations,
   fetchVaccineTypes,
 } from "../services/api";
+import DegradedBanner from "./DegradedBanner";
 
 /* ── SVG Icon Components ── */
 function HomeIcon() {
@@ -90,7 +88,7 @@ function NurseIllustration() {
 }
 
 /* ── Main Component ── */
-function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
+function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization, serviceDown }) {
   const [summary, setSummary] = useState({
     anak: 0,
     selesai: 0,
@@ -100,11 +98,11 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeNav, setActiveNav] = useState("Beranda");
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 1. Ambil semua jenis vaksin untuk mapping id → nama
         let vaccineMap = {};
         try {
           const vt = await fetchVaccineTypes();
@@ -113,11 +111,9 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
           });
         } catch (_) {}
 
-        // 2. Ambil semua data anak
         const children = await fetchChildren();
         const allImun = [];
 
-        // 3. Untuk tiap anak, ambil semua jadwal imunisasinya
         for (const child of children || []) {
           try {
             const imuns = await fetchImmunizations(child.id);
@@ -138,22 +134,18 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
           } catch (_) {}
         }
 
-        // 4. Hitung ringkasan statistik
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
         const in30Days = new Date(today);
         in30Days.setDate(in30Days.getDate() + 30);
 
         const selesai = allImun.filter((i) => i.status === "completed").length;
-
         const mendatang = allImun.filter((i) => {
           if (!i.scheduled_date) return false;
           const d = new Date(i.scheduled_date);
           d.setHours(0, 0, 0, 0);
           return d >= today && d <= in30Days && i.status !== "completed";
         }).length;
-
         const terlambat = allImun.filter((i) => {
           if (!i.scheduled_date || i.status === "completed") return false;
           const d = new Date(i.scheduled_date);
@@ -163,9 +155,6 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
 
         setSummary({ anak: children.length, selesai, mendatang, terlambat });
 
-        // 5. Filter jadwal HARI INI:
-        //    - scheduled_date == today
-        //    - status bukan "completed"
         const todayList = allImun.filter((i) => {
           if (!i.scheduled_date || i.status === "completed") return false;
           const d = new Date(i.scheduled_date);
@@ -174,8 +163,17 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
         });
 
         setTodaySchedules(todayList);
+        setFetchError(false);
       } catch (err) {
         console.error(err);
+        // Tandai error fetch agar bisa ditampilkan di UI
+        if (
+          err.message?.includes("503") ||
+          err.message?.includes("Service temporarily unavailable") ||
+          err.message?.includes("Failed to fetch")
+        ) {
+          setFetchError(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -190,6 +188,9 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
     { label: "Data Anak",     icon: PersonIcon,   page: "dataAnakBidan"     },
     { label: "Profil",        icon: ProfileIcon,  page: "profilBidan"       },
   ];
+
+  // Gabungkan: serviceDown dari App ATAU fetchError lokal
+  const isServiceDown = serviceDown || fetchError;
 
   return (
     <div style={s.root}>
@@ -233,6 +234,14 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
 
       {/* CONTENT */}
       <div style={s.content}>
+        {/* BANNER SERVICE DOWN — muncul di paling atas area konten */}
+        {isServiceDown && (
+          <DegradedBanner
+            message="Layanan sedang bermasalah. Data jadwal mungkin tidak ter-update."
+            isDark={false}
+          />
+        )}
+
         {/* TOPBAR */}
         <header style={s.topbar}>
           <div />
@@ -256,8 +265,13 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
             <div>
               <h1 style={s.heroTitle}>Halo, {user?.name || "Bidan"} 👋</h1>
               <p style={s.heroSub}>
-                Ada {loading ? "..." : todaySchedules.length} jadwal imunisasi hari ini.<br />
-                Mari pastikan semua berjalan lancar.
+                {isServiceDown
+                  ? "Koneksi ke server bermasalah. Menampilkan data terakhir yang tersedia."
+                  : <>
+                      Ada {loading ? "..." : todaySchedules.length} jadwal imunisasi hari ini.<br />
+                      Mari pastikan semua berjalan lancar.
+                    </>
+                }
               </p>
             </div>
             <NurseIllustration />
@@ -270,7 +284,9 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
                 <CalendarIcon />
               </div>
               <div>
-                <div style={s.statNum}>{loading ? "..." : todaySchedules.length}</div>
+                <div style={s.statNum}>
+                  {loading ? "..." : isServiceDown ? "—" : todaySchedules.length}
+                </div>
                 <div style={s.statLabel}>Jadwal hari ini</div>
               </div>
             </div>
@@ -280,7 +296,9 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
                 <PersonIcon />
               </div>
               <div>
-                <div style={s.statNum}>{loading ? "..." : summary.anak}</div>
+                <div style={s.statNum}>
+                  {loading ? "..." : isServiceDown ? "—" : summary.anak}
+                </div>
                 <div style={s.statLabel}>Total anak</div>
               </div>
             </div>
@@ -290,7 +308,9 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
                 <BellIcon />
               </div>
               <div>
-                <div style={s.statNum}>{loading ? "..." : summary.terlambat}</div>
+                <div style={s.statNum}>
+                  {loading ? "..." : isServiceDown ? "—" : summary.terlambat}
+                </div>
                 <div style={s.statLabel}>Jadwal terlambat</div>
               </div>
             </div>
@@ -300,11 +320,25 @@ function DashboardBidan({ user, onLogout, onNavigate, onSelectImmunization }) {
           <div style={s.scheduleSection}>
             <div style={s.sectionHeader}>
               <span style={s.sectionTitle}>Jadwal imunisasi hari ini</span>
-              <span style={s.sectionBadge}>{loading ? "..." : todaySchedules.length} anak</span>
+              <span style={s.sectionBadge}>
+                {loading ? "..." : isServiceDown ? "—" : `${todaySchedules.length} anak`}
+              </span>
             </div>
 
             {loading ? (
               <p style={s.emptyText}>Memuat...</p>
+            ) : isServiceDown ? (
+              <div style={s.errorState}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                  stroke="#854F0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <p style={{ color: "#854F0B", margin: 0, fontSize: "13px" }}>
+                  Tidak dapat memuat jadwal. Periksa koneksi server.
+                </p>
+              </div>
             ) : todaySchedules.length === 0 ? (
               <p style={s.emptyText}>Tidak ada jadwal hari ini.</p>
             ) : (
@@ -358,8 +392,6 @@ const s = {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     fontSize: "13.5px",
   },
-
-  /* SIDEBAR */
   sidebar: {
     width: "196px",
     background: "white",
@@ -374,14 +406,12 @@ const s = {
     padding: "0 1rem 1.25rem",
   },
   logoIcon: {
-    width: "28px", height: "28px",
-    borderRadius: "7px",
+    width: "28px", height: "28px", borderRadius: "7px",
     background: TEAL_LIGHT,
     display: "flex", alignItems: "center", justifyContent: "center",
     color: TEAL_TEXT,
   },
   logoText: { fontSize: "15px", fontWeight: "700", color: TEAL_TEXT },
-
   nav: {
     display: "flex", flexDirection: "column", gap: "1px",
     padding: "0 0.6rem", flex: 1,
@@ -396,7 +426,6 @@ const s = {
   navBtnActive: { background: TEAL_LIGHT, color: TEAL_TEXT, fontWeight: "600" },
   navIcon: { color: "#bbb", display: "flex", alignItems: "center", flexShrink: 0 },
   navIconActive: { color: TEAL_TEXT },
-
   sidebarBottom: {
     padding: "0.75rem 0.6rem 0",
     borderTop: "1px solid #f5f5f5",
@@ -409,11 +438,7 @@ const s = {
     fontSize: "12.5px", cursor: "pointer", width: "100%",
   },
   logoutIcon: { color: "#c0392b", display: "flex", alignItems: "center" },
-
-  /* CONTENT */
   content: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-
-  /* TOPBAR */
   topbar: {
     height: "48px",
     background: "white",
@@ -441,15 +466,11 @@ const s = {
     color: TEAL_TEXT, fontSize: "11px", fontWeight: "600",
   },
   topbarName: { fontSize: "12.5px", fontWeight: "600", color: "#333" },
-
-  /* MAIN */
   main: {
     flex: 1, padding: "1.25rem 1.5rem",
     display: "flex", flexDirection: "column", gap: "1rem",
     overflowY: "auto",
   },
-
-  /* HERO */
   heroBanner: {
     background: TEAL_DARK,
     borderRadius: "14px",
@@ -459,8 +480,6 @@ const s = {
   },
   heroTitle: { fontSize: "18px", fontWeight: "700", color: "#9FE1CB", marginBottom: "4px" },
   heroSub:   { fontSize: "12px", color: "#5DCAA5", lineHeight: 1.6 },
-
-  /* STATS */
   statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
@@ -483,8 +502,6 @@ const s = {
   statIconAmber: { background: "#FAEEDA",  color: "#854F0B" },
   statNum:   { fontSize: "20px", fontWeight: "700", color: "#1a1a2e", lineHeight: 1 },
   statLabel: { fontSize: "11px", color: "#888", marginTop: "3px" },
-
-  /* SCHEDULE */
   scheduleSection: {
     background: "white",
     border: "1px solid #f0f0f0",
@@ -501,7 +518,13 @@ const s = {
     padding: "2px 9px", borderRadius: "6px", fontWeight: "600",
   },
   emptyText: { color: "#aaa", padding: "0.5rem 0", fontSize: "13px" },
-
+  errorState: {
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "0.75rem 1rem",
+    background: "#FAEEDA",
+    borderRadius: "8px",
+    border: "1px solid #EF9F27",
+  },
   schedList: { display: "flex", flexDirection: "column", gap: "7px" },
   schedCard: {
     display: "flex", alignItems: "center", gap: "10px",
