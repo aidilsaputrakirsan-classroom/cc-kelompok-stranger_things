@@ -29,7 +29,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000); // Refresh setiap 10 detik
+    const interval = setInterval(fetchStatus, 10000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
@@ -117,4 +117,6 @@ export default function StatusPage() {
       </p>
     </div>
   );
+
 }
+
