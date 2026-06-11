@@ -31,11 +31,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
   useEffect(() => {
     fetchStatus();
-feature/Health-Dashboard
     const interval = setInterval(fetchStatus, 10000);
-
-    const interval = setInterval(fetchStatus, 10000); // Refresh setiap 10 detik
-main
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
@@ -123,8 +119,5 @@ export default function StatusPage() {
       </p>
     </div>
   );
-feature/Health-Dashboard
 }
 
-}
-main
