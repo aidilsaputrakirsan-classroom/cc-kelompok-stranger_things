@@ -14,30 +14,109 @@ function useIsMobile() {
   return isMobile;
 }
 
-/* ── Constants (sama persis dengan KelolaJadwalBidan) ── */
-const TEAL_DARK  = "#085041";
-const TEAL_MID   = "#1D9E75";
-const TEAL_LIGHT = "#E1F5EE";
-const TEAL_TEXT  = "#0F6E56";
+/* ─── Design tokens (sama dengan KelolaJadwalBidan) ─── */
+const C = {
+  forest:        "#063D30",
+  forestMid:     "#085041",
+  teal:          "#10B981",
+  tealLight:     "#D1FAE5",
+  tealMid:       "#6EE7B7",
+  tealSoft:      "#ECFDF5",
+  pageBg:        "#F0FAF6",
+  surface:       "#FFFFFF",
+  surfaceAlt:    "#F8FFFE",
+  border:        "#E2F0EB",
+  borderStrong:  "#C4DDD5",
+  textPrimary:   "#0C1F1A",
+  textSecondary: "#3D6657",
+  textMuted:     "#7BA898",
+  amber:         "#F59E0B",
+  amberLight:    "#FEF3C7",
+  rose:          "#F43F5E",
+  roseLight:     "#FFE4E6",
+  blue:          "#3B82F6",
+  blueLight:     "#DBEAFE",
+  blueSoft:      "#EFF6FF",
+  sidebarBg:     "#052E24",
+  sidebarHover:  "#0A4034",
+};
 
-/* ── Icons (sama dengan KelolaJadwalBidan) ── */
-function HomeIcon()     { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>; }
-function CalendarIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>; }
-function PersonIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>; }
-function ProfileIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>; }
-function BellIcon()     { return <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>; }
-function LogoutIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>; }
-function ShieldIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>; }
-function ChevronDown()  { return <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>; }
-function SearchIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>; }
-function ChevronLeftIcon()  { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>; }
-function ChevronRightIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>; }
-function ArrowLeft()    { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>; }
+const T = {
+  hero:     { fontSize: "22px",   fontWeight: "700", lineHeight: "1.25", letterSpacing: "-0.3px" },
+  h2:       { fontSize: "15px",   fontWeight: "700", letterSpacing: "-0.1px" },
+  label:    { fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" },
+  body:     { fontSize: "13.5px", fontWeight: "400", lineHeight: "1.6" },
+  bodyMed:  { fontSize: "13.5px", fontWeight: "600" },
+  small:    { fontSize: "12px",   fontWeight: "400", lineHeight: "1.5" },
+  smallMed: { fontSize: "12px",   fontWeight: "600" },
+  xs:       { fontSize: "11px",   fontWeight: "500" },
+};
+
+/* ── Icons ── */
+const HomeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const CalendarIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const UsersIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const LogoutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+  </svg>
+);
+const ArrowLeft = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const SearchIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const ChevronLeftIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+const ChevronRightIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+const FilterIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+  </svg>
+);
 
 /* ── Constants ── */
 const PAGE_SIZE = 5;
 
-/* ── Sample fallback data ── */
 const SAMPLE_CHILDREN = [
   {
     id: 1,
@@ -47,9 +126,9 @@ const SAMPLE_CHILDREN = [
     address: "Jl. Mawar No. 12, Bandung",
     photo: null,
     immunizations: [
-      { id: 1, vaccine_name: "DPT",        scheduled_date: "2023-04-16", status: "completed" },
-      { id: 2, vaccine_name: "BCG",        scheduled_date: "2023-04-16", status: "completed" },
-      { id: 3, vaccine_name: "Hepatitis B",scheduled_date: "2023-04-16", status: "scheduled" },
+      { id: 1, vaccine_name: "DPT",         scheduled_date: "2023-04-16", status: "completed" },
+      { id: 2, vaccine_name: "BCG",         scheduled_date: "2023-04-16", status: "completed" },
+      { id: 3, vaccine_name: "Hepatitis B", scheduled_date: "2023-04-16", status: "scheduled" },
     ],
   },
   {
@@ -66,20 +145,29 @@ const SAMPLE_CHILDREN = [
   },
 ];
 
+const statusConfig = {
+  completed: { label: "Selesai",   color: C.forestMid, bg: C.tealLight  },
+  scheduled: { label: "Terjadwal", color: "#854F0B",   bg: C.amberLight },
+  pending:   { label: "Tertunda",  color: C.textMuted, bg: C.border     },
+};
+
 /* ── Main Component ── */
 function DataAnakImunisasi({ user, onLogout, onNavigate }) {
   const isMobile = useIsMobile();
-  const [activeNav, setActiveNav] = useState("Data Anak");
-  const [search, setSearch]       = useState("");
-  const [children, setChildren]   = useState(SAMPLE_CHILDREN);
-  const [loading, setLoading]     = useState(false);
+  const [activeNav, setActiveNav]     = useState("Data Anak");
+  const [search, setSearch]           = useState("");
+  const [children, setChildren]       = useState(SAMPLE_CHILDREN);
+  const [loading, setLoading]         = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const displayName = user?.name || "Bidan";
+  const initials = displayName.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "BD";
 
   const navItems = [
     { label: "Beranda",       icon: HomeIcon,     page: "dashboardBidan"    },
     { label: "Kelola Jadwal", icon: CalendarIcon, page: "kelolaJadwalBidan" },
-    { label: "Data Anak",     icon: PersonIcon,   page: "dataAnakBidan"     },
-    { label: "Profil",        icon: ProfileIcon,  page: "profilBidan"       },
+    { label: "Data Anak",     icon: UsersIcon,    page: "dataAnakBidan"     },
+    { label: "Profil",        icon: UserIcon,     page: "profilBidan"       },
   ];
 
   useEffect(() => {
@@ -93,10 +181,7 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
         } catch (_) {}
 
         const fetchedChildren = await fetchChildren();
-        if (!fetchedChildren || fetchedChildren.length === 0) {
-          setChildren([]);
-          return;
-        }
+        if (!fetchedChildren || fetchedChildren.length === 0) { setChildren([]); return; }
 
         const result = [];
         for (const child of fetchedChildren) {
@@ -136,17 +221,10 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" });
   };
-
   const formatDateShort = (dateStr) => {
     if (!dateStr) return "-";
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-  };
-
-  const statusConfig = {
-    completed: { label: "Selesai",    color: TEAL_TEXT,  bg: TEAL_LIGHT, icon: "✓" },
-    scheduled: { label: "Terjadwal",  color: "#854F0B",  bg: "#FAEEDA",  icon: "●" },
-    pending:   { label: "Tertunda",   color: "#5F5E5A",  bg: "#F1EFE8",  icon: "!" },
   };
 
   const handleNav = (label, page) => {
@@ -154,65 +232,112 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
     onNavigate && onNavigate(page);
   };
 
-  /* ── Render child card (shared mobile + desktop) ── */
+  /* ── Child card ── */
   const renderCard = (child) => {
     const motherName = child.mother_name || child.motherName || "—";
     const address    = child.address || child.alamat || "—";
     const imuns      = child.immunizations || [];
+    const completed  = imuns.filter(i => i.status === "completed").length;
 
     return (
-      <div key={child.id} style={isMobile ? m.childCard : s.childCard}>
-        {/* Header */}
-        <div style={isMobile ? m.cardHead : s.cardHead}>
-          <div style={s.childPhotoWrap}>
+      <div key={child.id} style={{
+        background: C.surface,
+        borderRadius: "14px",
+        border: `1px solid ${C.border}`,
+        overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(6,61,48,0.05)",
+      }}>
+        {/* Card head */}
+        <div style={{
+          display: "flex", alignItems: "center",
+          padding: "14px 18px",
+          borderBottom: `1px solid ${C.border}`,
+          background: C.surfaceAlt,
+          gap: "12px",
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: "38px", height: "38px", borderRadius: "50%",
+            background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "white", fontSize: "13px", fontWeight: "700", flexShrink: 0,
+          }}>
             {child.photo
-              ? <img src={child.photo} alt={child.name} style={s.childImg} />
-              : <div style={s.childImgPlaceholder}><PersonIcon /></div>
+              ? <img src={child.photo} alt={child.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+              : child.name?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()
             }
           </div>
-          <div style={s.childInfo}>
-            <div style={isMobile ? m.childName : s.childName}>{child.name}</div>
-            <div style={s.metaRow}>
-              <span style={s.metaLabel}>Lahir</span>
-              <span style={s.metaValue}>{formatDate(child.birth_date || child.birthDate)}</span>
+
+          {/* Info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ ...T.bodyMed, color: C.textPrimary, marginBottom: "2px" }}>{child.name}</div>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <span style={{ ...T.xs, color: C.textMuted }}>
+                Lahir: <span style={{ color: C.textSecondary }}>{formatDate(child.birth_date || child.birthDate)}</span>
+              </span>
+              <span style={{ ...T.xs, color: C.textMuted }}>
+                Ibu: <span style={{ color: C.textSecondary }}>{motherName}</span>
+              </span>
+              {!isMobile && (
+                <span style={{ ...T.xs, color: C.textMuted }}>
+                  Alamat: <span style={{ color: C.textSecondary }}>{address}</span>
+                </span>
+              )}
             </div>
-            <div style={s.metaRow}>
-              <span style={s.metaLabel}>Ibu</span>
-              <span style={s.metaValue}>{motherName}</span>
-            </div>
-            {!isMobile && (
-              <div style={s.metaRow}>
-                <span style={s.metaLabel}>Alamat</span>
-                <span style={s.metaValue}>{address}</span>
-              </div>
+          </div>
+
+          {/* Badge */}
+          <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+            <span style={{ ...T.xs, background: C.tealLight, color: C.teal, padding: "3px 10px", borderRadius: "20px" }}>
+              {imuns.length} imunisasi
+            </span>
+            {imuns.length > 0 && (
+              <span style={{ ...T.xs, color: C.textMuted }}>
+                {completed}/{imuns.length} selesai
+              </span>
             )}
           </div>
-          <span style={s.imunCountBadge}>
-            {imuns.length} imunisasi
-          </span>
         </div>
 
-        {/* Immunization table */}
-        <div style={s.cardBody}>
-          <div style={s.imunHeader}>
-            <div style={s.imunHeaderIcon}><ShieldIcon /></div>
-            <span style={s.imunTitle}>Riwayat imunisasi</span>
+        {/* Card body — immunization list */}
+        <div style={{ padding: "14px 18px" }}>
+          {/* Section label */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+            <div style={{
+              width: "22px", height: "22px", borderRadius: "6px",
+              background: C.tealLight, color: C.teal,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <ShieldIcon />
+            </div>
+            <span style={{ ...T.smallMed, color: C.textPrimary }}>Riwayat imunisasi</span>
           </div>
 
           {imuns.length === 0 ? (
-            <p style={{ color: "#aaa", fontSize: "12.5px", margin: "0.5rem 0 0" }}>
-              Belum ada riwayat imunisasi.
-            </p>
+            <p style={{ ...T.small, color: C.textMuted, margin: 0 }}>Belum ada riwayat imunisasi.</p>
           ) : (
-            <div style={s.imunList}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               {imuns.map((imun, idx) => {
                 const badge = statusConfig[imun.status] || statusConfig.pending;
                 return (
-                  <div key={imun.id || idx} style={s.imunRow}>
-                    <span style={s.imunName}>{imun.vaccine_name || "—"}</span>
-                    <span style={s.imunDate}>{isMobile ? formatDateShort(imun.scheduled_date) : formatDate(imun.scheduled_date)}</span>
-                    <span style={{ ...s.statusBadge, color: badge.color, background: badge.bg }}>
-                      {badge.icon} {badge.label}
+                  <div key={imun.id || idx} style={{
+                    display: "flex", alignItems: "center", gap: "10px",
+                    padding: "7px 10px",
+                    background: C.surfaceAlt,
+                    borderRadius: "8px",
+                    border: `1px solid ${C.border}`,
+                  }}>
+                    <span style={{ ...T.smallMed, color: C.textPrimary, flex: 1 }}>
+                      {imun.vaccine_name || "—"}
+                    </span>
+                    <span style={{ ...T.xs, color: C.textMuted, flexShrink: 0 }}>
+                      {isMobile ? formatDateShort(imun.scheduled_date) : formatDate(imun.scheduled_date)}
+                    </span>
+                    <span style={{
+                      ...T.xs, padding: "3px 10px", borderRadius: "20px", flexShrink: 0,
+                      background: badge.bg, color: badge.color,
+                    }}>
+                      {badge.label}
                     </span>
                   </div>
                 );
@@ -224,93 +349,203 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
     );
   };
 
+  /* ── Shared: Empty state ── */
+  const EmptyState = () => (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      padding: "40px 24px", gap: "12px",
+      background: C.surfaceAlt, borderRadius: "14px",
+      border: `1.5px dashed ${C.border}`,
+    }}>
+      <div style={{ color: C.borderStrong }}><UsersIcon /></div>
+      <div style={{ ...T.h2, color: C.textSecondary }}>Tidak ada data anak</div>
+      <div style={{ ...T.small, color: C.textMuted, textAlign: "center" }}>
+        {search ? "Tidak ada anak yang sesuai pencarian." : "Belum ada data anak tersedia."}
+      </div>
+    </div>
+  );
+
+  /* ── Shared: Pagination ── */
+  const Pagination = ({ mobile }) => {
+    if (loading || filtered.length <= PAGE_SIZE) return null;
+    return mobile ? (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "8px 0" }}>
+        <button
+          style={{ width: "34px", height: "34px", borderRadius: "9px", border: `1px solid ${C.border}`, background: C.surface, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: currentPage === 1 ? 0.4 : 1 }}
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        ><ChevronLeftIcon /></button>
+        <span style={{ ...T.xs, color: C.textMuted }}>{currentPage} / {totalPages}</span>
+        <button
+          style={{ width: "34px", height: "34px", borderRadius: "9px", border: `1px solid ${C.border}`, background: C.surface, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: currentPage === totalPages ? 0.4 : 1 }}
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+        ><ChevronRightIcon /></button>
+      </div>
+    ) : (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
+        <span style={{ ...T.xs, color: C.textMuted }}>
+          {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} dari {filtered.length} anak
+        </span>
+        <div style={{ display: "flex", gap: "4px" }}>
+          <button
+            style={{ width: "30px", height: "30px", borderRadius: "8px", border: `1px solid ${C.border}`, background: C.surface, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: currentPage === 1 ? 0.4 : 1 }}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          ><ChevronLeftIcon /></button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button key={page}
+              style={{ width: "30px", height: "30px", borderRadius: "8px", border: `1px solid ${page === currentPage ? C.forest : C.border}`, background: page === currentPage ? C.forest : C.surface, color: page === currentPage ? C.tealMid : C.textSecondary, ...T.xs, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              onClick={() => setCurrentPage(page)}
+            >{page}</button>
+          ))}
+          <button
+            style={{ width: "30px", height: "30px", borderRadius: "8px", border: `1px solid ${C.border}`, background: C.surface, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: currentPage === totalPages ? 0.4 : 1 }}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          ><ChevronRightIcon /></button>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── Sidebar (identical to KelolaJadwalBidan) ── */
+  const Sidebar = () => (
+    <aside style={{ width: "208px", flexShrink: 0, background: C.sidebarBg, display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" }}>
+      <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: C.teal, display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+            <ShieldIcon />
+          </div>
+          <div>
+            <div style={{ fontSize: "14px", fontWeight: "700", color: "white", letterSpacing: "-0.2px" }}>Imunisasi</div>
+            <div style={{ fontSize: "10px", color: C.tealMid, letterSpacing: "0.04em", marginTop: "1px" }}>DASHBOARD BIDAN</div>
+          </div>
+        </div>
+      </div>
+      <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+        {navItems.map(({ label, icon: Icon, page }) => {
+          const isActive = activeNav === label;
+          return (
+            <button key={label}
+              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "9px", border: "none", cursor: "pointer", width: "100%", fontSize: "13px", fontWeight: isActive ? "600" : "400", background: isActive ? C.teal : "transparent", color: isActive ? "white" : "rgba(255,255,255,0.55)", transition: "all 0.15s", textAlign: "left" }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = C.sidebarHover; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; } }}
+              onClick={() => handleNav(label, page)}
+            >
+              <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}><Icon /></span>
+              <span>{label}</span>
+            </button>
+          );
+        })}
+      </nav>
+      <div style={{ padding: "12px 10px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <button
+          style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "9px", border: "none", cursor: "pointer", width: "100%", fontSize: "13px", fontWeight: "400", background: "transparent", color: "rgba(255,255,255,0.4)", transition: "all 0.15s", textAlign: "left" }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,63,94,0.12)"; e.currentTarget.style.color = "#FDA4AF"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+          onClick={() => onLogout && onLogout()}
+        >
+          <LogoutIcon /><span>Keluar</span>
+        </button>
+      </div>
+    </aside>
+  );
+
+  /* ── Topbar (shared) ── */
+  const Topbar = ({ mobile }) => (
+    <header style={{
+      height: "56px", background: C.surface, borderBottom: `1px solid ${C.border}`,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: mobile ? "0 16px" : "0 28px",
+      flexShrink: 0, position: mobile ? "sticky" : "relative", top: 0, zIndex: 100,
+      boxShadow: "0 1px 0 rgba(6,61,48,0.04)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {mobile && (
+          <button
+            style={{ background: C.tealLight, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "8px", color: C.teal }}
+            onClick={() => onNavigate && onNavigate("dashboardBidan")}
+          ><ArrowLeft /></button>
+        )}
+        <span style={mobile ? { ...T.bodyMed, color: C.textPrimary } : { ...T.label, color: C.textMuted }}>
+          Data Anak
+        </span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: mobile ? "12px" : "16px" }}>
+        <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: C.textSecondary, display: "flex", alignItems: "center" }}>
+          <BellIcon />
+          <span style={{ position: "absolute", top: "4px", right: "4px", width: "7px", height: "7px", borderRadius: "50%", background: C.rose, border: "1.5px solid white" }} />
+        </button>
+        {mobile ? (
+          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "11px", fontWeight: "700" }}>
+            {initials}
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "5px 12px 5px 5px", background: C.tealSoft, borderRadius: "40px", border: `1px solid ${C.border}` }}>
+            <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "11px", fontWeight: "700" }}>
+              {initials}
+            </div>
+            <span style={{ fontSize: "13px", fontWeight: "600", color: C.textPrimary }}>{displayName}</span>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+
   /* ── MOBILE LAYOUT ── */
   if (isMobile) {
     return (
-      <div style={m.root}>
-        {/* Topbar */}
-        <header style={m.topbar}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <button style={m.backBtn} onClick={() => onNavigate && onNavigate("dashboardBidan")}>
-              <ArrowLeft />
-            </button>
-            <span style={m.pageTitle}>Data anak</span>
-          </div>
-          <div style={m.topbarRight}>
-            <div style={{ position: "relative", color: "#555", display: "flex" }}>
-              <BellIcon />
-              <span style={m.bellBadge}>3</span>
-            </div>
-            <div style={m.topbarAvatar}>BD</div>
-          </div>
-        </header>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.pageBg, fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", fontSize: "13.5px", color: C.textPrimary }}>
+        <Topbar mobile />
 
         {/* Search bar */}
-        <div style={m.searchBar}>
-          <span style={m.searchIcon}><SearchIcon /></span>
-          <input
-            type="text"
-            style={m.searchInput}
-            placeholder="Cari nama anak atau ibu..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-          />
+        <div style={{ padding: "10px 16px", background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ position: "relative" }}>
+            <span style={{ position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)", color: C.textMuted, display: "flex", pointerEvents: "none" }}><SearchIcon /></span>
+            <input
+              type="text" value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              placeholder="Cari nama anak atau ibu…"
+              style={{ width: "100%", padding: "9px 12px 9px 32px", borderRadius: "9px", border: `1px solid ${C.border}`, background: C.surfaceAlt, fontSize: "13px", color: C.textPrimary, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }}
+            />
+          </div>
         </div>
 
         {/* Result count */}
-        <div style={m.actionBar}>
-          <span style={m.resultCount}>{filtered.length} anak ditemukan</span>
+        <div style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: "8px", background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+          <FilterIcon color={C.textMuted} />
+          <span style={{ ...T.xs, color: C.textMuted }}>{filtered.length} anak ditemukan</span>
         </div>
 
         {/* List */}
-        <main style={m.main}>
-          {loading ? (
-            <p style={{ color: "#aaa", fontSize: "13px" }}>Memuat data...</p>
-          ) : paginated.length === 0 ? (
-            <div style={m.emptyState}>
-              <PersonIcon />
-              <p style={{ color: "#bbb", fontSize: "13px", marginTop: "8px" }}>Tidak ada data anak ditemukan.</p>
-            </div>
-          ) : (
-            paginated.map(renderCard)
-          )}
-
-          {/* Pagination */}
-          {!loading && filtered.length > PAGE_SIZE && (
-            <div style={m.pagination}>
-              <button
-                style={{ ...m.pageBtn, opacity: currentPage === 1 ? 0.4 : 1 }}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeftIcon />
-              </button>
-              <span style={m.pageInfo}>{currentPage} / {totalPages}</span>
-              <button
-                style={{ ...m.pageBtn, opacity: currentPage === totalPages ? 0.4 : 1 }}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRightIcon />
-              </button>
-            </div>
-          )}
+        <main style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: "12px", paddingBottom: "88px" }}>
+          {loading
+            ? <p style={{ ...T.small, color: C.textMuted }}>Memuat data…</p>
+            : paginated.length === 0
+              ? <EmptyState />
+              : paginated.map(renderCard)
+          }
+          <Pagination mobile />
         </main>
 
-        {/* Bottom Nav */}
-        <nav style={m.bottomNav}>
-          {navItems.map(({ label, icon: Icon, page }) => (
-            <button key={label}
-              style={{ ...m.bottomNavBtn, ...(activeNav === label ? m.bottomNavBtnActive : {}) }}
-              onClick={() => handleNav(label, page)}
-            >
-              <span style={{ color: activeNav === label ? TEAL_TEXT : "#aaa" }}><Icon /></span>
-              <span style={{ fontSize: "10px", color: activeNav === label ? TEAL_TEXT : "#aaa", marginTop: "2px" }}>{label}</span>
-            </button>
-          ))}
-          <button style={m.bottomNavBtn} onClick={() => onLogout && onLogout()}>
-            <span style={{ color: "#A32D2D" }}><LogoutIcon /></span>
-            <span style={{ fontSize: "10px", color: "#A32D2D", marginTop: "2px" }}>Keluar</span>
+        {/* Bottom nav */}
+        <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: C.surface, borderTop: `1px solid ${C.border}`, display: "flex", zIndex: 100 }}>
+          {navItems.map(({ label, icon: Icon, page }) => {
+            const isActive = activeNav === label;
+            return (
+              <button key={label}
+                style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", border: "none", background: isActive ? C.tealSoft : "transparent", cursor: "pointer", gap: "2px" }}
+                onClick={() => handleNav(label, page)}
+              >
+                <span style={{ color: isActive ? C.teal : C.textMuted }}><Icon /></span>
+                <span style={{ fontSize: "10px", color: isActive ? C.teal : C.textMuted }}>{label}</span>
+              </button>
+            );
+          })}
+          <button style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", border: "none", background: "transparent", cursor: "pointer", gap: "2px" }} onClick={() => onLogout && onLogout()}>
+            <span style={{ color: C.rose }}><LogoutIcon /></span>
+            <span style={{ fontSize: "10px", color: C.rose }}>Keluar</span>
           </button>
         </nav>
       </div>
@@ -319,131 +554,91 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
 
   /* ── DESKTOP LAYOUT ── */
   return (
-    <div style={s.root}>
-      {/* Sidebar */}
-      <aside style={s.sidebar}>
-        <div style={s.logoArea}>
-          <div style={s.logoIcon}><ShieldIcon /></div>
-          <span style={s.logoText}>Imunisasi</span>
-        </div>
-        <nav style={s.nav}>
-          {navItems.map(({ label, icon: Icon, page }) => (
-            <button key={label}
-              style={{ ...s.navBtn, ...(activeNav === label ? s.navBtnActive : {}) }}
-              onClick={() => handleNav(label, page)}
-            >
-              <span style={{ ...s.navIcon, ...(activeNav === label ? s.navIconActive : {}) }}><Icon /></span>
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-        <div style={s.sidebarBottom}>
-          <button style={s.logoutBtn} onClick={() => onLogout && onLogout()}>
-            <span style={s.logoutIcon}><LogoutIcon /></span>
-            <span>Keluar</span>
-          </button>
-        </div>
-      </aside>
+    <div style={{ display: "flex", minHeight: "100vh", background: C.pageBg, fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", fontSize: "13.5px", color: C.textPrimary }}>
+      <Sidebar />
 
-      {/* Content */}
-      <div style={s.content}>
-        {/* Topbar */}
-        <header style={s.topbar}>
-          <div />
-          <div style={s.topbarRight}>
-            <div style={s.bellWrap}><BellIcon /><span style={s.bellBadge}>3</span></div>
-            <div style={s.topbarUser}>
-              <div style={s.topbarAvatar}>BD</div>
-              <span style={s.topbarName}>{user?.name || "Bidan"}</span>
-              <ChevronDown />
-            </div>
-          </div>
-        </header>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <Topbar />
 
-        {/* Main */}
-        <main style={s.main}>
+        <main style={{ flex: 1, padding: "28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", maxWidth: "1100px", width: "100%" }}>
+
           {/* Page heading */}
-          <div style={s.pageHeading}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              style={{ background: C.tealLight, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", borderRadius: "10px", color: C.teal, flexShrink: 0 }}
+              onClick={() => onNavigate && onNavigate("dashboardBidan")}
+            ><ArrowLeft /></button>
             <div>
-              <h1 style={s.pageTitle}>Data anak</h1>
-              <p style={s.pageSubtitle}>Kelola data anak dan riwayat imunisasinya</p>
+              <h1 style={{ ...T.hero, color: C.textPrimary, margin: "0 0 2px" }}>Data Anak</h1>
+              <p style={{ ...T.small, color: C.textMuted, margin: 0 }}>Kelola data anak dan riwayat imunisasinya</p>
             </div>
           </div>
 
-          <div style={s.twoCol}>
-            {/* Search & info panel */}
-            <div style={s.filterCard}>
-              <p style={s.filterTitle}>Cari anak</p>
-              <div style={s.searchWrap}>
-                <span style={s.searchIcon}><SearchIcon /></span>
+          {/* Two-col layout (sama dengan KelolaJadwalBidan) */}
+          <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+
+            {/* Filter / info panel */}
+            <div style={{ background: C.surface, borderRadius: "14px", border: `1px solid ${C.border}`, padding: "18px 20px", width: "220px", flexShrink: 0, boxShadow: "0 1px 4px rgba(6,61,48,0.05)", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ width: "26px", height: "26px", borderRadius: "7px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <SearchIcon />
+                </div>
+                <span style={{ ...T.bodyMed, color: C.textPrimary }}>Cari anak</span>
+              </div>
+
+              {/* Search */}
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: C.textMuted, display: "flex", pointerEvents: "none" }}><SearchIcon /></span>
                 <input
-                  type="text"
-                  style={s.searchInput}
-                  placeholder="Nama anak / ibu..."
-                  value={search}
+                  type="text" value={search}
                   onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                  placeholder="Nama anak / ibu…"
+                  style={{ width: "100%", padding: "8px 10px 8px 30px", borderRadius: "8px", border: `1px solid ${C.border}`, background: C.surfaceAlt, fontSize: "12.5px", color: C.textPrimary, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }}
                 />
               </div>
+
               {search && (
-                <button style={s.resetBtn} onClick={() => { setSearch(""); setCurrentPage(1); }}>
-                  Reset pencarian
-                </button>
+                <button
+                  style={{ width: "100%", background: "none", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "7px", ...T.xs, color: C.textMuted, cursor: "pointer" }}
+                  onClick={() => { setSearch(""); setCurrentPage(1); }}
+                >Reset pencarian</button>
               )}
-              <div style={s.statBox}>
-                <span style={s.statLabel}>Total anak</span>
-                <span style={s.statValue}>{children.length}</span>
+
+              {/* Stat */}
+              <div style={{ background: C.tealLight, borderRadius: "10px", padding: "12px 14px" }}>
+                <div style={{ ...T.label, color: C.textSecondary, marginBottom: "4px" }}>Total anak</div>
+                <div style={{ fontSize: "26px", fontWeight: "700", color: C.forest, lineHeight: 1 }}>{children.length}</div>
+              </div>
+
+              <div style={{ background: C.surfaceAlt, borderRadius: "10px", padding: "12px 14px", border: `1px solid ${C.border}` }}>
+                <div style={{ ...T.label, color: C.textMuted, marginBottom: "4px" }}>Hasil pencarian</div>
+                <div style={{ fontSize: "20px", fontWeight: "700", color: C.textPrimary, lineHeight: 1 }}>{filtered.length}</div>
               </div>
             </div>
 
             {/* List panel */}
-            <div style={s.listPanel}>
-              <p style={s.listTitle}>
-                Daftar anak <span style={s.listCount}>{filtered.length}</span>
-              </p>
-
-              {loading ? (
-                <p style={{ color: "#aaa", fontSize: "13px" }}>Memuat data...</p>
-              ) : paginated.length === 0 ? (
-                <div style={s.emptyState}>
-                  <PersonIcon />
-                  <p style={{ color: "#bbb", fontSize: "13px", marginTop: "8px" }}>Tidak ada data anak ditemukan.</p>
-                </div>
-              ) : (
-                paginated.map(renderCard)
-              )}
-
-              {/* Pagination */}
-              {!loading && filtered.length > PAGE_SIZE && (
-                <div style={s.paginationBar}>
-                  <span style={s.paginationInfo}>
-                    {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} dari {filtered.length} anak
-                  </span>
-                  <div style={s.paginationBtns}>
-                    <button
-                      style={{ ...s.pageBtn, opacity: currentPage === 1 ? 0.4 : 1 }}
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeftIcon />
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button key={page}
-                        style={{ ...s.pageBtn, ...(currentPage === page ? s.pageBtnActive : {}) }}
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    <button
-                      style={{ ...s.pageBtn, opacity: currentPage === totalPages ? 0.4 : 1 }}
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRightIcon />
-                    </button>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Section header (sama dengan KelolaJadwalBidan) */}
+              <div style={{ background: C.surface, borderRadius: "14px", border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", boxShadow: "0 1px 4px rgba(6,61,48,0.05)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <UsersIcon />
                   </div>
+                  <span style={{ ...T.h2, color: C.textPrimary }}>Daftar anak</span>
                 </div>
-              )}
+                <div style={{ ...T.xs, background: C.tealLight, color: C.teal, padding: "4px 12px", borderRadius: "20px" }}>
+                  {filtered.length} anak
+                </div>
+              </div>
+
+              {loading
+                ? <p style={{ ...T.small, color: C.textMuted }}>Memuat data…</p>
+                : paginated.length === 0
+                  ? <EmptyState />
+                  : paginated.map(renderCard)
+              }
+
+              <Pagination />
             </div>
           </div>
         </main>
@@ -451,106 +646,5 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
     </div>
   );
 }
-
-/* ── Desktop Styles (ikut KelolaJadwalBidan) ── */
-const s = {
-  root:              { display: "flex", minHeight: "100vh", background: "#f5f7f6", fontFamily: "'Segoe UI', sans-serif", fontSize: "13.5px" },
-  sidebar:           { width: "196px", background: "white", borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column", padding: "1.1rem 0", flexShrink: 0 },
-  logoArea:          { display: "flex", alignItems: "center", gap: "8px", padding: "0 1rem 1.25rem" },
-  logoIcon:          { width: "28px", height: "28px", borderRadius: "7px", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT },
-  logoText:          { fontSize: "15px", fontWeight: "700", color: TEAL_TEXT },
-  nav:               { display: "flex", flexDirection: "column", gap: "1px", padding: "0 0.6rem", flex: 1 },
-  navBtn:            { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#888", fontSize: "12.5px", cursor: "pointer", textAlign: "left", width: "100%" },
-  navBtnActive:      { background: TEAL_LIGHT, color: TEAL_TEXT, fontWeight: "600" },
-  navIcon:           { color: "#bbb", display: "flex", alignItems: "center", flexShrink: 0 },
-  navIconActive:     { color: TEAL_TEXT },
-  sidebarBottom:     { padding: "0.75rem 0.6rem 0", borderTop: "1px solid #f5f5f5", marginTop: "auto" },
-  logoutBtn:         { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#A32D2D", fontSize: "12.5px", cursor: "pointer", width: "100%" },
-  logoutIcon:        { color: "#A32D2D", display: "flex", alignItems: "center" },
-  content:           { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-  topbar:            { height: "48px", background: "white", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1.5rem", flexShrink: 0 },
-  topbarRight:       { display: "flex", alignItems: "center", gap: "14px" },
-  bellWrap:          { position: "relative", cursor: "pointer", display: "flex", alignItems: "center", color: "#555" },
-  bellBadge:         { position: "absolute", top: "-4px", right: "-5px", background: TEAL_MID, color: "white", fontSize: "9px", fontWeight: "700", width: "13px", height: "13px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  topbarUser:        { display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" },
-  topbarAvatar:      { width: "28px", height: "28px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, fontSize: "11px", fontWeight: "600" },
-  topbarName:        { fontSize: "12.5px", fontWeight: "600", color: "#333" },
-  main:              { flex: 1, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem", overflowY: "auto" },
-  pageHeading:       { display: "flex", alignItems: "center", gap: "10px" },
-  pageTitle:         { margin: "0 0 1px", fontSize: "17px", fontWeight: "700", color: "#1a1a2e" },
-  pageSubtitle:      { margin: 0, fontSize: "11.5px", color: "#888" },
-  twoCol:            { display: "flex", gap: "1rem", alignItems: "flex-start" },
-  filterCard:        { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1.1rem", width: "200px", flexShrink: 0 },
-  filterTitle:       { margin: "0 0 0.75rem", fontSize: "13px", fontWeight: "700", color: "#1a1a2e" },
-  searchWrap:        { position: "relative", marginBottom: "0.75rem" },
-  searchIcon:        { position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#bbb", display: "flex", alignItems: "center", pointerEvents: "none" },
-  searchInput:       { width: "100%", padding: "7px 10px 7px 30px", borderRadius: "7px", border: "1px solid #eee", background: "#fafafa", fontSize: "12.5px", color: "#444", outline: "none", boxSizing: "border-box" },
-  resetBtn:          { width: "100%", marginBottom: "0.75rem", background: "none", border: "1px solid #eee", borderRadius: "7px", padding: "6px", fontSize: "11.5px", color: "#888", cursor: "pointer" },
-  statBox:           { background: TEAL_LIGHT, borderRadius: "8px", padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  statLabel:         { fontSize: "11.5px", color: TEAL_TEXT, fontWeight: "500" },
-  statValue:         { fontSize: "18px", fontWeight: "700", color: TEAL_DARK },
-  listPanel:         { flex: 1, display: "flex", flexDirection: "column", gap: "0.75rem" },
-  listTitle:         { margin: "0 0 0.25rem", fontSize: "13px", fontWeight: "700", color: "#1a1a2e", display: "flex", alignItems: "center", gap: "8px" },
-  listCount:         { background: TEAL_LIGHT, color: TEAL_TEXT, fontSize: "11px", fontWeight: "600", padding: "1px 8px", borderRadius: "20px" },
-  emptyState:        { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "2.5rem", display: "flex", flexDirection: "column", alignItems: "center", color: "#ccc" },
-
-  /* Child card */
-  childCard:         { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1rem 1.1rem" },
-  cardHead:          { display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "0.85rem", paddingBottom: "0.7rem", borderBottom: "1px solid #f5f5f5" },
-  childPhotoWrap:    { width: "36px", height: "36px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, flexShrink: 0 },
-  childImg:          { width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" },
-  childImgPlaceholder:{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" },
-  childInfo:         { flex: 1 },
-  childName:         { fontWeight: "700", fontSize: "13px", color: "#1a1a2e", marginBottom: "4px" },
-  metaRow:           { display: "flex", gap: "6px", fontSize: "11.5px", marginBottom: "2px" },
-  metaLabel:         { color: "#aaa", fontWeight: "500", width: "36px", flexShrink: 0 },
-  metaValue:         { color: "#444" },
-  imunCountBadge:    { fontSize: "11px", background: TEAL_LIGHT, color: TEAL_TEXT, padding: "2px 8px", borderRadius: "20px", fontWeight: "600", flexShrink: 0 },
-
-  /* Immunization list */
-  cardBody:          { display: "flex", flexDirection: "column", gap: "8px" },
-  imunHeader:        { display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" },
-  imunHeaderIcon:    { width: "22px", height: "22px", borderRadius: "5px", background: TEAL_LIGHT, color: TEAL_TEXT, display: "flex", alignItems: "center", justifyContent: "center" },
-  imunTitle:         { fontSize: "12px", fontWeight: "600", color: "#1a1a2e" },
-  imunList:          { display: "flex", flexDirection: "column", gap: "4px" },
-  imunRow:           { display: "flex", alignItems: "center", gap: "8px", padding: "5px 8px", background: "#f9f9f9", borderRadius: "6px" },
-  imunName:          { fontSize: "12.5px", color: "#1a1a2e", fontWeight: "500", flex: 1 },
-  imunDate:          { fontSize: "11.5px", color: "#aaa", flexShrink: 0 },
-  statusBadge:       { fontSize: "11px", fontWeight: "600", padding: "2px 8px", borderRadius: "20px", flexShrink: 0 },
-
-  /* Pagination */
-  paginationBar:     { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.25rem" },
-  paginationInfo:    { fontSize: "11.5px", color: "#aaa" },
-  paginationBtns:    { display: "flex", alignItems: "center", gap: "4px" },
-  pageBtn:           { width: "28px", height: "28px", borderRadius: "6px", border: "1px solid #eee", background: "white", color: "#555", fontSize: "12px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
-  pageBtnActive:     { background: TEAL_DARK, color: "#9FE1CB", border: `1px solid ${TEAL_DARK}` },
-};
-
-/* ── Mobile Styles (ikut KelolaJadwalBidan) ── */
-const m = {
-  root:              { display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f5f7f6", fontFamily: "'Segoe UI', sans-serif", fontSize: "13.5px" },
-  topbar:            { height: "52px", background: "white", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem", flexShrink: 0, position: "sticky", top: 0, zIndex: 100 },
-  backBtn:           { background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: TEAL_TEXT, padding: "4px", marginRight: "4px" },
-  pageTitle:         { fontSize: "15px", fontWeight: "700", color: "#1a1a2e" },
-  topbarRight:       { display: "flex", alignItems: "center", gap: "12px" },
-  bellBadge:         { position: "absolute", top: "-3px", right: "-4px", background: TEAL_MID, color: "white", fontSize: "8px", width: "12px", height: "12px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  topbarAvatar:      { width: "28px", height: "28px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, fontSize: "11px", fontWeight: "600" },
-  searchBar:         { display: "flex", alignItems: "center", gap: "8px", padding: "0.6rem 1rem", background: "white", borderBottom: "1px solid #f0f0f0", position: "relative" },
-  searchIcon:        { position: "absolute", left: "24px", color: "#bbb", display: "flex", alignItems: "center", pointerEvents: "none" },
-  searchInput:       { width: "100%", padding: "7px 10px 7px 28px", borderRadius: "7px", border: "1px solid #eee", background: "#fafafa", fontSize: "12.5px", color: "#444", outline: "none" },
-  actionBar:         { display: "flex", alignItems: "center", padding: "0.4rem 1rem", background: "white", borderBottom: "1px solid #f0f0f0" },
-  resultCount:       { fontSize: "12px", color: "#888" },
-  main:              { flex: 1, padding: "0.85rem 1rem", display: "flex", flexDirection: "column", gap: "0.75rem", overflowY: "auto", paddingBottom: "80px" },
-  childCard:         { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "0.85rem 0.95rem" },
-  cardHead:          { display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "0.75rem", paddingBottom: "0.6rem", borderBottom: "1px solid #f5f5f5" },
-  childName:         { fontWeight: "700", fontSize: "12.5px", color: "#1a1a2e", marginBottom: "4px" },
-  emptyState:        { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 0", color: "#ccc" },
-  pagination:        { display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "0.5rem 0" },
-  pageBtn:           { width: "32px", height: "32px", borderRadius: "7px", border: "1px solid #eee", background: "white", color: TEAL_TEXT, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" },
-  pageInfo:          { fontSize: "12px", color: "#888" },
-  bottomNav:         { position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #f0f0f0", display: "flex", zIndex: 100 },
-  bottomNavBtn:      { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", border: "none", background: "transparent", cursor: "pointer", gap: "2px" },
-  bottomNavBtnActive:{ background: TEAL_LIGHT },
-};
 
 export default DataAnakImunisasi;

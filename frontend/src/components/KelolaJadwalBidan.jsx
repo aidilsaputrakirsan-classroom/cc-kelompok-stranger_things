@@ -13,25 +13,120 @@ function useIsMobile() {
   return isMobile;
 }
 
-/* ── Constants ── */
-const TEAL_DARK  = "#085041";
-const TEAL_MID   = "#1D9E75";
-const TEAL_LIGHT = "#E1F5EE";
-const TEAL_TEXT  = "#0F6E56";
+/* ─── Design tokens (sama dengan DashboardBidan) ─────────────────────────── */
+const C = {
+  forest:       "#063D30",
+  forestMid:    "#085041",
+  teal:         "#10B981",
+  tealLight:    "#D1FAE5",
+  tealMid:      "#6EE7B7",
+  tealSoft:     "#ECFDF5",
+  pageBg:       "#F0FAF6",
+  surface:      "#FFFFFF",
+  surfaceAlt:   "#F8FFFE",
+  border:       "#E2F0EB",
+  borderStrong: "#C4DDD5",
+  textPrimary:  "#0C1F1A",
+  textSecondary:"#3D6657",
+  textMuted:    "#7BA898",
+  textOnDark:   "#ECFDF5",
+  amber:        "#F59E0B",
+  amberLight:   "#FEF3C7",
+  rose:         "#F43F5E",
+  roseLight:    "#FFE4E6",
+  blue:         "#3B82F6",
+  blueLight:    "#DBEAFE",
+  blueSoft:     "#EFF6FF",
+  sidebarBg:    "#052E24",
+  sidebarHover: "#0A4034",
+  sidebarActive:"#10B981",
+};
+
+const T = {
+  hero:    { fontSize: "22px",   fontWeight: "700", lineHeight: "1.25", letterSpacing: "-0.3px" },
+  h2:      { fontSize: "15px",   fontWeight: "700", letterSpacing: "-0.1px" },
+  stat:    { fontSize: "30px",   fontWeight: "700", lineHeight: "1",    letterSpacing: "-0.5px" },
+  label:   { fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" },
+  body:    { fontSize: "13.5px", fontWeight: "400", lineHeight: "1.6" },
+  bodyMed: { fontSize: "13.5px", fontWeight: "600" },
+  small:   { fontSize: "12px",   fontWeight: "400", lineHeight: "1.5" },
+  smallMed:{ fontSize: "12px",   fontWeight: "600" },
+  xs:      { fontSize: "11px",   fontWeight: "500" },
+};
 
 /* ── Icons ── */
-function HomeIcon()     { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>; }
-function CalendarIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>; }
-function PersonIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>; }
-function ProfileIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>; }
-function BellIcon()     { return <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>; }
-function LogoutIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>; }
-function ShieldIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>; }
-function ChevronDown()  { return <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>; }
-function EditIcon()     { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>; }
-function TrashIcon()    { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>; }
-function ArrowLeft()    { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>; }
-function FilterIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>; }
+const HomeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const CalendarIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const UsersIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const LogoutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+  </svg>
+);
+const EditIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
+const ArrowLeft = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const FilterIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+  </svg>
+);
+const ChevronDownIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+const AlertIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+/* ── Status config ── */
+const statusConfig = {
+  tersedia: { label: "Tersedia", color: C.teal,         bg: C.tealLight   },
+  penuh:    { label: "Penuh",    color: C.amber,        bg: C.amberLight  },
+  nonaktif: { label: "Nonaktif", color: C.textMuted,    bg: C.border      },
+};
 
 /* ── Modal ── */
 function JadwalModal({ mode, initialData, onClose, onSave, isMobile }) {
@@ -47,81 +142,135 @@ function JadwalModal({ mode, initialData, onClose, onSave, isMobile }) {
     onSave({ ...rest, vaccines });
   };
 
-  const modalStyle = isMobile
-    ? { ...ms.modal, maxWidth: "100%", borderRadius: "16px 16px 0 0", position: "fixed", bottom: 0, left: 0, right: 0, maxHeight: "90vh" }
-    : { ...ms.modal, maxWidth: "460px" };
+  const overlayStyle = {
+    position: "fixed", inset: 0,
+    background: "rgba(6,61,48,0.45)",
+    display: "flex",
+    alignItems: isMobile ? "flex-end" : "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: isMobile ? 0 : "1rem",
+  };
 
-  const overlayStyle = isMobile
-    ? { ...ms.overlay, alignItems: "flex-end" }
-    : ms.overlay;
+  const modalStyle = {
+    background: C.surface,
+    borderRadius: isMobile ? "20px 20px 0 0" : "18px",
+    padding: "24px",
+    width: "100%",
+    maxWidth: isMobile ? "100%" : "460px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    boxShadow: "0 8px 40px rgba(6,61,48,0.18)",
+  };
+
+  const inputStyle = {
+    padding: "9px 12px",
+    borderRadius: "9px",
+    border: `1px solid ${C.border}`,
+    background: C.surfaceAlt,
+    fontSize: "13.5px",
+    color: C.textPrimary,
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
+  };
 
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <div style={ms.modalHeader}>
-          <h3 style={ms.modalTitle}>{mode === "add" ? "Tambah jadwal" : "Edit jadwal"}</h3>
-          <button style={ms.closeBtn} onClick={onClose}>✕</button>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+          <h3 style={{ ...T.h2, color: C.textPrimary, margin: 0 }}>
+            {mode === "add" ? "Tambah jadwal" : "Edit jadwal"}
+          </h3>
+          <button
+            style={{
+              background: C.border, border: "none", width: "28px", height: "28px",
+              borderRadius: "50%", cursor: "pointer", fontSize: "13px",
+              color: C.textSecondary, display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+            onClick={onClose}
+          >✕</button>
         </div>
 
-        <div style={ms.field}>
-          <label style={ms.label}>Tanggal</label>
-          <input type="date" style={ms.input} value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })} />
-        </div>
-
-        <div style={ms.row}>
-          <div style={{ ...ms.field, flex: 1 }}>
-            <label style={ms.label}>Jam mulai</label>
-            <input type="time" style={ms.input} value={form.timeStart}
-              onChange={(e) => setForm({ ...form, timeStart: e.target.value })} />
+        {/* Fields */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Tanggal</label>
+            <input type="date" style={inputStyle} value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })} />
           </div>
-          <div style={{ ...ms.field, flex: 1 }}>
-            <label style={ms.label}>Jam selesai</label>
-            <input type="time" style={ms.input} value={form.timeEnd}
-              onChange={(e) => setForm({ ...form, timeEnd: e.target.value })} />
+
+          <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Jam mulai</label>
+              <input type="time" style={inputStyle} value={form.timeStart}
+                onChange={(e) => setForm({ ...form, timeStart: e.target.value })} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Jam selesai</label>
+              <input type="time" style={inputStyle} value={form.timeEnd}
+                onChange={(e) => setForm({ ...form, timeEnd: e.target.value })} />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>
+              Jenis imunisasi (pisahkan dengan koma)
+            </label>
+            <input type="text" style={inputStyle} placeholder="contoh: DPT, Polio, BCG"
+              value={form.vaccineInput}
+              onChange={(e) => setForm({ ...form, vaccineInput: e.target.value })} />
+          </div>
+
+          <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Total slot</label>
+              <input type="number" style={inputStyle} value={form.slotTotal} min={1}
+                onChange={(e) => setForm({ ...form, slotTotal: Number(e.target.value) })} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Slot terpakai</label>
+              <input type="number" style={inputStyle} value={form.slotUsed} min={0}
+                onChange={(e) => setForm({ ...form, slotUsed: Number(e.target.value) })} />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Status</label>
+            <select style={inputStyle} value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <option value="tersedia">Tersedia</option>
+              <option value="penuh">Penuh</option>
+              <option value="nonaktif">Nonaktif</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Keterangan</label>
+            <input type="text" style={inputStyle} placeholder="Contoh: Imunisasi lanjutan"
+              value={form.keterangan}
+              onChange={(e) => setForm({ ...form, keterangan: e.target.value })} />
           </div>
         </div>
 
-        <div style={ms.field}>
-          <label style={ms.label}>Jenis imunisasi (pisahkan dengan koma)</label>
-          <input type="text" style={ms.input} placeholder="contoh: DPT, Polio, BCG"
-            value={form.vaccineInput}
-            onChange={(e) => setForm({ ...form, vaccineInput: e.target.value })} />
-        </div>
-
-        <div style={ms.row}>
-          <div style={{ ...ms.field, flex: 1 }}>
-            <label style={ms.label}>Total slot</label>
-            <input type="number" style={ms.input} value={form.slotTotal} min={1}
-              onChange={(e) => setForm({ ...form, slotTotal: Number(e.target.value) })} />
-          </div>
-          <div style={{ ...ms.field, flex: 1 }}>
-            <label style={ms.label}>Slot terpakai</label>
-            <input type="number" style={ms.input} value={form.slotUsed} min={0}
-              onChange={(e) => setForm({ ...form, slotUsed: Number(e.target.value) })} />
-          </div>
-        </div>
-
-        <div style={ms.field}>
-          <label style={ms.label}>Status</label>
-          <select style={ms.input} value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            <option value="tersedia">Tersedia</option>
-            <option value="penuh">Penuh</option>
-            <option value="nonaktif">Nonaktif</option>
-          </select>
-        </div>
-
-        <div style={ms.field}>
-          <label style={ms.label}>Keterangan</label>
-          <input type="text" style={ms.input} placeholder="Contoh: Imunisasi lanjutan"
-            value={form.keterangan}
-            onChange={(e) => setForm({ ...form, keterangan: e.target.value })} />
-        </div>
-
-        <div style={ms.modalFooter}>
-          <button style={ms.cancelBtn} onClick={onClose}>Batal</button>
-          <button style={ms.saveBtn} onClick={handleSave}>Simpan</button>
+        {/* Footer */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
+          <button
+            style={{
+              background: C.border, color: C.textSecondary, border: "none",
+              borderRadius: "9px", padding: "9px 20px", ...T.smallMed, cursor: "pointer",
+            }}
+            onClick={onClose}
+          >Batal</button>
+          <button
+            style={{
+              background: C.forest, color: C.tealMid, border: "none",
+              borderRadius: "9px", padding: "9px 24px", ...T.smallMed, cursor: "pointer",
+            }}
+            onClick={handleSave}
+          >Simpan</button>
         </div>
       </div>
     </div>
@@ -130,27 +279,37 @@ function JadwalModal({ mode, initialData, onClose, onSave, isMobile }) {
 
 /* ── Filter Sheet (mobile) ── */
 function FilterSheet({ filterStatus, filterDate, onChange, onClose }) {
+  const inputStyle = {
+    padding: "9px 12px", borderRadius: "9px", border: `1px solid ${C.border}`,
+    background: C.surfaceAlt, fontSize: "13.5px", color: C.textPrimary,
+    outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit",
+  };
   return (
-    <div style={{ ...ms.overlay, alignItems: "flex-end" }}>
-      <div style={{ background: "white", borderRadius: "16px 16px 0 0", padding: "1.25rem 1rem 2rem", width: "100%" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <span style={{ fontSize: "14px", fontWeight: "700", color: "#1a1a2e" }}>Filter jadwal</span>
-          <button style={ms.closeBtn} onClick={onClose}>✕</button>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(6,61,48,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
+      <div style={{ background: C.surface, borderRadius: "20px 20px 0 0", padding: "22px 20px 32px", width: "100%" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+          <span style={{ ...T.h2, color: C.textPrimary }}>Filter jadwal</span>
+          <button style={{ background: C.border, border: "none", width: "28px", height: "28px", borderRadius: "50%", cursor: "pointer", fontSize: "13px", color: C.textSecondary, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={onClose}>✕</button>
         </div>
-        <label style={ms.label}>Status</label>
-        <select style={{ ...ms.input, marginBottom: "0.85rem" }} value={filterStatus}
-          onChange={(e) => onChange("status", e.target.value)}>
-          <option value="semua">Semua status</option>
-          <option value="tersedia">Tersedia</option>
-          <option value="penuh">Penuh</option>
-          <option value="nonaktif">Nonaktif</option>
-        </select>
-        <label style={ms.label}>Tanggal</label>
-        <input type="date" style={ms.input} value={filterDate}
-          onChange={(e) => onChange("date", e.target.value)} />
-        <button style={{ ...ms.saveBtn, width: "100%", marginTop: "1rem", textAlign: "center" }} onClick={onClose}>
-          Terapkan
-        </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Status</label>
+            <select style={inputStyle} value={filterStatus} onChange={(e) => onChange("status", e.target.value)}>
+              <option value="semua">Semua status</option>
+              <option value="tersedia">Tersedia</option>
+              <option value="penuh">Penuh</option>
+              <option value="nonaktif">Nonaktif</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Tanggal</label>
+            <input type="date" style={inputStyle} value={filterDate} onChange={(e) => onChange("date", e.target.value)} />
+          </div>
+        </div>
+        <button
+          style={{ background: C.forest, color: C.tealMid, border: "none", borderRadius: "9px", padding: "10px", width: "100%", marginTop: "20px", ...T.smallMed, cursor: "pointer" }}
+          onClick={onClose}
+        >Terapkan</button>
       </div>
     </div>
   );
@@ -161,20 +320,23 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
   const isMobile = useIsMobile();
   const [activeNav, setActiveNav] = useState("Kelola Jadwal");
   const [filterStatus, setFilterStatus] = useState("semua");
-  const [filterDate, setFilterDate]     = useState("");
-  const [showFilter, setShowFilter]     = useState(false);
+  const [filterDate, setFilterDate] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
   const [jadwalList, setJadwalList] = useState([
     { id: 1, date: "2025-07-29", timeStart: "08:00", timeEnd: "14:00", vaccines: ["DPT", "Polio"], status: "tersedia", slotTotal: 15, slotUsed: 12, keterangan: "Imunisasi lanjutan" },
     { id: 2, date: "2025-07-30", timeStart: "09:00", timeEnd: "13:00", vaccines: ["BCG"], status: "penuh", slotTotal: 10, slotUsed: 10, keterangan: "" },
   ]);
-  const [modal, setModal]               = useState(null);
+  const [modal, setModal] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const displayName = user?.name || "Bidan";
+  const initials = displayName.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "BD";
 
   const navItems = [
     { label: "Beranda",       icon: HomeIcon,     page: "dashboardBidan"    },
     { label: "Kelola Jadwal", icon: CalendarIcon, page: "kelolaJadwalBidan" },
-    { label: "Data Anak",     icon: PersonIcon,   page: "dataAnakBidan"     },
-    { label: "Profil",        icon: ProfileIcon,  page: "profilBidan"       },
+    { label: "Data Anak",     icon: UsersIcon,    page: "dataAnakBidan"     },
+    { label: "Profil",        icon: UserIcon,     page: "profilBidan"       },
   ];
 
   const filtered = jadwalList.filter((j) => {
@@ -220,12 +382,6 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
     return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
   };
 
-  const statusConfig = {
-    tersedia: { label: "Tersedia", color: TEAL_TEXT,  bg: TEAL_LIGHT },
-    penuh:    { label: "Penuh",    color: "#854F0B",  bg: "#FAEEDA"  },
-    nonaktif: { label: "Nonaktif", color: "#5F5E5A",  bg: "#F1EFE8"  },
-  };
-
   /* ── Shared card renderer ── */
   const renderCard = (j) => {
     const badge    = statusConfig[j.status] || statusConfig.tersedia;
@@ -233,69 +389,131 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
     const slotPct  = Math.round((j.slotUsed / j.slotTotal) * 100);
 
     return (
-      <div key={j.id} style={isMobile ? m.jadwalCard : s.jadwalCard}>
-        {/* Head */}
-        <div style={isMobile ? m.cardHead : s.cardHead}>
-          <div style={s.cardDateWrap}>
-            <div style={s.cardDateIcon}><CalendarIcon /></div>
-            <span style={isMobile ? m.cardDate : s.cardDate}>
+      <div key={j.id} style={{
+        background: C.surface,
+        borderRadius: "14px",
+        border: `1px solid ${C.border}`,
+        overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(6,61,48,0.05)",
+      }}>
+        {/* Card head */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 18px",
+          borderBottom: `1px solid ${C.border}`,
+          background: C.surfaceAlt,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "32px", height: "32px", borderRadius: "9px",
+              background: C.tealLight, color: C.teal,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <CalendarIcon />
+            </div>
+            <span style={{ ...T.bodyMed, color: C.textPrimary }}>
               {isMobile ? formatDateShort(j.date) : formatDate(j.date)}
             </span>
           </div>
-          <span style={{ ...s.statusBadge, color: badge.color, background: badge.bg }}>
+          <div style={{
+            ...T.xs,
+            background: badge.bg, color: badge.color,
+            padding: "4px 12px", borderRadius: "20px",
+          }}>
             {badge.label}
-          </span>
+          </div>
         </div>
 
-        {/* Body */}
-        <div style={s.cardBody}>
-          <div style={s.cardRow}>
-            <span style={s.metaLabel}>Waktu</span>
-            <span style={s.metaValue}>{j.timeStart} – {j.timeEnd}</span>
+        {/* Card body */}
+        <div style={{ padding: "14px 18px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {/* Waktu */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0 }}>Waktu</span>
+            <span style={{ ...T.small, color: C.textPrimary }}>{j.timeStart} – {j.timeEnd}</span>
           </div>
-          <div style={s.cardRow}>
-            <span style={s.metaLabel}>Imunisasi</span>
-            <div style={s.vaccineTags}>
+
+          {/* Imunisasi */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+            <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0, paddingTop: "2px" }}>Imunisasi</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", flex: 1 }}>
               {j.vaccines.length > 0
-                ? j.vaccines.map((v) => <span key={v} style={s.vaccineTag}>{v}</span>)
-                : <span style={s.metaValue}>—</span>
+                ? j.vaccines.map((v) => (
+                  <span key={v} style={{
+                    ...T.xs, background: C.blueSoft, color: C.blue,
+                    padding: "3px 10px", borderRadius: "20px",
+                  }}>{v}</span>
+                ))
+                : <span style={{ ...T.small, color: C.textMuted }}>—</span>
               }
             </div>
           </div>
-          <div style={s.cardRow}>
-            <span style={s.metaLabel}>Slot</span>
+
+          {/* Slot */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+            <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0, paddingTop: "2px" }}>Slot</span>
             <div style={{ flex: 1 }}>
-              <div style={s.slotRow}>
-                <span style={s.metaValue}>{j.slotUsed}/{j.slotTotal}</span>
-                <span style={s.slotSisa}>{slotSisa} tersisa</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                <span style={{ ...T.small, color: C.textPrimary }}>{j.slotUsed}/{j.slotTotal}</span>
+                <span style={{ ...T.xs, color: C.textMuted }}>{slotSisa} tersisa</span>
               </div>
-              <div style={s.progressBg}>
-                <div style={{ ...s.progressFill, width: `${slotPct}%`, background: slotPct >= 100 ? "#854F0B" : TEAL_MID }} />
+              <div style={{ height: "4px", background: C.border, borderRadius: "4px", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: "4px",
+                  width: `${slotPct}%`,
+                  background: slotPct >= 100 ? C.amber : C.teal,
+                }} />
               </div>
             </div>
           </div>
-          {j.keterangan ? (
-            <div style={s.cardRow}>
-              <span style={s.metaLabel}>Keterangan</span>
-              <span style={s.metaValue}>{j.keterangan}</span>
+
+          {/* Keterangan */}
+          {j.keterangan && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+              <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0 }}>Keterangan</span>
+              <span style={{ ...T.small, color: C.textSecondary, flex: 1 }}>{j.keterangan}</span>
             </div>
-          ) : null}
+          )}
         </div>
 
-        {/* Actions */}
-        <div style={s.cardActions}>
+        {/* Card actions */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "8px",
+          padding: "12px 18px",
+          borderTop: `1px solid ${C.border}`,
+          background: C.surfaceAlt,
+        }}>
           <button
-            style={{ ...s.toggleBtn, background: j.status === "nonaktif" ? TEAL_LIGHT : "#F1EFE8", color: j.status === "nonaktif" ? TEAL_TEXT : "#5F5E5A" }}
+            style={{
+              border: "none", borderRadius: "8px", padding: "6px 14px",
+              ...T.xs, cursor: "pointer",
+              background: j.status === "nonaktif" ? C.tealLight : C.border,
+              color: j.status === "nonaktif" ? C.teal : C.textMuted,
+            }}
             onClick={() => handleToggleStatus(j.id)}
           >
             {j.status === "nonaktif" ? "Aktifkan" : "Nonaktifkan"}
           </button>
           <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
-            <button style={s.iconBtn} title="Edit" onClick={() => setModal({ mode: "edit", data: j })}>
+            <button
+              title="Edit"
+              style={{
+                background: C.tealLight, color: C.teal, border: "none",
+                borderRadius: "8px", width: "32px", height: "32px",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              }}
+              onClick={() => setModal({ mode: "edit", data: j })}
+            >
               <EditIcon />
             </button>
-            <button style={{ ...s.iconBtn, color: "#A32D2D", background: "#FCEBEB" }} title="Hapus"
-              onClick={() => setDeleteConfirm(j.id)}>
+            <button
+              title="Hapus"
+              style={{
+                background: "#FFE4E6", color: C.rose, border: "none",
+                borderRadius: "8px", width: "32px", height: "32px",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+              }}
+              onClick={() => setDeleteConfirm(j.id)}
+            >
               <TrashIcon />
             </button>
           </div>
@@ -304,178 +522,363 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
     );
   };
 
+  /* ── Delete confirm modal ── */
+  const DeleteModal = () => (
+    <div style={{
+      position: "fixed", inset: 0, background: "rgba(6,61,48,0.45)",
+      display: "flex", alignItems: isMobile ? "flex-end" : "center",
+      justifyContent: "center", zIndex: 1000, padding: isMobile ? 0 : "1rem",
+    }}>
+      <div style={{
+        background: C.surface, borderRadius: isMobile ? "20px 20px 0 0" : "18px",
+        padding: "24px", width: "100%", maxWidth: isMobile ? "100%" : "380px",
+        boxShadow: "0 8px 40px rgba(6,61,48,0.18)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+          <div style={{
+            width: "36px", height: "36px", borderRadius: "10px",
+            background: "#FFE4E6", color: C.rose,
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <AlertIcon />
+          </div>
+          <h3 style={{ ...T.h2, color: C.textPrimary, margin: 0 }}>Hapus jadwal?</h3>
+        </div>
+        <p style={{ ...T.small, color: C.textMuted, margin: "0 0 22px" }}>
+          Tindakan ini tidak dapat dibatalkan. Yakin ingin menghapus jadwal ini?
+        </p>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            style={{ flex: 1, background: C.border, color: C.textSecondary, border: "none", borderRadius: "9px", padding: "9px", ...T.smallMed, cursor: "pointer" }}
+            onClick={() => setDeleteConfirm(null)}
+          >Batal</button>
+          <button
+            style={{ flex: 1, background: C.rose, color: "white", border: "none", borderRadius: "9px", padding: "9px", ...T.smallMed, cursor: "pointer" }}
+            onClick={() => handleDelete(deleteConfirm)}
+          >Hapus</button>
+        </div>
+      </div>
+    </div>
+  );
+
   /* ── MOBILE LAYOUT ── */
   if (isMobile) {
     const activeFilters = (filterStatus !== "semua" ? 1 : 0) + (filterDate ? 1 : 0);
     return (
-      <div style={m.root}>
-        {/* TOPBAR */}
-        <header style={m.topbar}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <button style={m.backBtn} onClick={() => onNavigate && onNavigate("dashboardBidan")}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.pageBg, fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", fontSize: "13.5px", color: C.textPrimary }}>
+
+        {/* Topbar */}
+        <header style={{
+          height: "56px", background: C.surface, borderBottom: `1px solid ${C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 16px", flexShrink: 0, position: "sticky", top: 0, zIndex: 100,
+          boxShadow: "0 1px 0 rgba(6,61,48,0.04)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              style={{ background: C.tealLight, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "8px", color: C.teal, flexShrink: 0 }}
+              onClick={() => onNavigate && onNavigate("dashboardBidan")}
+            >
               <ArrowLeft />
             </button>
-            <span style={m.pageTitle}>Kelola jadwal</span>
+            <span style={{ ...T.bodyMed, color: C.textPrimary }}>Kelola Jadwal</span>
           </div>
-          <div style={m.topbarRight}>
-            <div style={{ position: "relative", color: "#555", display: "flex" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: C.textSecondary, display: "flex", alignItems: "center" }}>
               <BellIcon />
-              <span style={m.bellBadge}>3</span>
+              <span style={{ position: "absolute", top: "4px", right: "4px", width: "7px", height: "7px", borderRadius: "50%", background: C.rose, border: "1.5px solid white" }} />
+            </button>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "11px", fontWeight: "700" }}>
+              {initials}
             </div>
-            <div style={m.topbarAvatar}>BD</div>
           </div>
         </header>
 
-        {/* ACTION BAR */}
-        <div style={m.actionBar}>
-          <button style={m.filterBtn} onClick={() => setShowFilter(true)}>
-            <FilterIcon />
-            <span>Filter</span>
-            {activeFilters > 0 && <span style={m.filterBadge}>{activeFilters}</span>}
+        {/* Action bar */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "10px",
+          padding: "12px 16px",
+          background: C.surface, borderBottom: `1px solid ${C.border}`,
+        }}>
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              background: C.tealLight, color: C.teal, border: "none",
+              borderRadius: "8px", padding: "7px 12px", ...T.xs, cursor: "pointer",
+              position: "relative",
+            }}
+            onClick={() => setShowFilter(true)}
+          >
+            <FilterIcon /><span>Filter</span>
+            {activeFilters > 0 && (
+              <span style={{ background: C.forest, color: C.tealMid, fontSize: "9px", width: "14px", height: "14px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {activeFilters}
+              </span>
+            )}
           </button>
-          <span style={m.resultCount}>{filtered.length} jadwal</span>
-          <button style={m.addBtnMobile} onClick={() => setModal({ mode: "add" })}>
-            + Tambah
-          </button>
+          <span style={{ ...T.xs, color: C.textMuted, flex: 1 }}>{filtered.length} jadwal</span>
+          <button
+            style={{ background: C.forest, color: C.tealMid, border: "none", borderRadius: "9px", padding: "7px 16px", ...T.smallMed, cursor: "pointer" }}
+            onClick={() => setModal({ mode: "add" })}
+          >+ Tambah</button>
         </div>
 
-        {/* LIST */}
-        <main style={m.main}>
+        {/* List */}
+        <main style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: "12px", paddingBottom: "80px" }}>
           {filtered.length === 0 ? (
-            <div style={m.emptyState}>
-              <CalendarIcon />
-              <p style={{ color: "#bbb", fontSize: "13px", marginTop: "8px" }}>Tidak ada jadwal ditemukan.</p>
+            <div style={{
+              display: "flex", flexDirection: "column", alignItems: "center",
+              padding: "40px 24px", gap: "12px",
+              background: C.surfaceAlt, borderRadius: "12px",
+              border: `1.5px dashed ${C.border}`,
+            }}>
+              <div style={{ color: C.borderStrong }}><CalendarIcon /></div>
+              <div style={{ ...T.h2, color: C.textSecondary }}>Tidak ada jadwal</div>
+              <div style={{ ...T.small, color: C.textMuted, textAlign: "center" }}>Tidak ada jadwal yang sesuai filter.</div>
             </div>
-          ) : (
-            filtered.map(renderCard)
-          )}
+          ) : filtered.map(renderCard)}
         </main>
 
-        {/* BOTTOM NAV */}
-        <nav style={m.bottomNav}>
-          {navItems.map(({ label, icon: Icon, page }) => (
-            <button key={label}
-              style={{ ...m.bottomNavBtn, ...(activeNav === label ? m.bottomNavBtnActive : {}) }}
-              onClick={() => handleNav(label, page)}
-            >
-              <span style={{ color: activeNav === label ? TEAL_TEXT : "#aaa" }}><Icon /></span>
-              <span style={{ fontSize: "10px", color: activeNav === label ? TEAL_TEXT : "#aaa", marginTop: "2px" }}>{label}</span>
-            </button>
-          ))}
-          <button style={m.bottomNavBtn} onClick={() => onLogout && onLogout()}>
-            <span style={{ color: "#A32D2D" }}><LogoutIcon /></span>
-            <span style={{ fontSize: "10px", color: "#A32D2D", marginTop: "2px" }}>Keluar</span>
+        {/* Bottom nav */}
+        <nav style={{
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          background: C.surface, borderTop: `1px solid ${C.border}`,
+          display: "flex", zIndex: 100,
+        }}>
+          {navItems.map(({ label, icon: Icon, page }) => {
+            const isActive = activeNav === label;
+            return (
+              <button key={label}
+                style={{
+                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                  justifyContent: "center", padding: "8px 4px",
+                  border: "none", background: isActive ? C.tealSoft : "transparent",
+                  cursor: "pointer", gap: "2px",
+                }}
+                onClick={() => handleNav(label, page)}
+              >
+                <span style={{ color: isActive ? C.teal : C.textMuted }}><Icon /></span>
+                <span style={{ fontSize: "10px", color: isActive ? C.teal : C.textMuted }}>{label}</span>
+              </button>
+            );
+          })}
+          <button style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", border: "none", background: "transparent", cursor: "pointer", gap: "2px" }} onClick={() => onLogout && onLogout()}>
+            <span style={{ color: C.rose }}><LogoutIcon /></span>
+            <span style={{ fontSize: "10px", color: C.rose }}>Keluar</span>
           </button>
         </nav>
 
-        {/* Filter Sheet */}
-        {showFilter && (
-          <FilterSheet
-            filterStatus={filterStatus}
-            filterDate={filterDate}
-            onChange={(key, val) => key === "status" ? setFilterStatus(val) : setFilterDate(val)}
-            onClose={() => setShowFilter(false)}
-          />
-        )}
-
-        {/* Modal */}
+        {showFilter && <FilterSheet filterStatus={filterStatus} filterDate={filterDate} onChange={(key, val) => key === "status" ? setFilterStatus(val) : setFilterDate(val)} onClose={() => setShowFilter(false)} />}
         {modal && <JadwalModal mode={modal.mode} initialData={modal.data} onClose={() => setModal(null)} onSave={handleSave} isMobile={true} />}
-
-        {/* Delete Confirm */}
-        {deleteConfirm && (
-          <div style={{ ...ms.overlay, alignItems: "flex-end" }}>
-            <div style={{ background: "white", borderRadius: "16px 16px 0 0", padding: "1.25rem 1rem 2rem", width: "100%" }}>
-              <p style={{ fontSize: "15px", fontWeight: "700", color: "#1a1a2e", marginBottom: "8px" }}>Hapus jadwal?</p>
-              <p style={{ fontSize: "13px", color: "#666", marginBottom: "1.25rem" }}>Tindakan ini tidak dapat dibatalkan.</p>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button style={{ ...ms.cancelBtn, flex: 1 }} onClick={() => setDeleteConfirm(null)}>Batal</button>
-                <button style={{ ...ms.saveBtn, flex: 1, background: "#A32D2D", textAlign: "center" }} onClick={() => handleDelete(deleteConfirm)}>Hapus</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {deleteConfirm && <DeleteModal />}
       </div>
     );
   }
 
   /* ── DESKTOP LAYOUT ── */
   return (
-    <div style={s.root}>
-      <aside style={s.sidebar}>
-        <div style={s.logoArea}>
-          <div style={s.logoIcon}><ShieldIcon /></div>
-          <span style={s.logoText}>Imunisasi</span>
+    <div style={{ display: "flex", minHeight: "100vh", background: C.pageBg, fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", fontSize: "13.5px", color: C.textPrimary }}>
+
+      {/* ── SIDEBAR (sama persis dengan DashboardBidan) ── */}
+      <aside style={{
+        width: "208px", flexShrink: 0,
+        background: C.sidebarBg,
+        display: "flex", flexDirection: "column",
+        position: "sticky", top: 0, height: "100vh",
+      }}>
+        {/* Logo */}
+        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: C.teal, display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+              <ShieldIcon />
+            </div>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: "700", color: "white", letterSpacing: "-0.2px" }}>Imunisasi</div>
+              <div style={{ fontSize: "10px", color: C.tealMid, letterSpacing: "0.04em", marginTop: "1px" }}>DASHBOARD BIDAN</div>
+            </div>
+          </div>
         </div>
-        <nav style={s.nav}>
-          {navItems.map(({ label, icon: Icon, page }) => (
-            <button key={label}
-              style={{ ...s.navBtn, ...(activeNav === label ? s.navBtnActive : {}) }}
-              onClick={() => handleNav(label, page)}
-            >
-              <span style={{ ...s.navIcon, ...(activeNav === label ? s.navIconActive : {}) }}><Icon /></span>
-              <span>{label}</span>
-            </button>
-          ))}
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+          {navItems.map(({ label, icon: Icon, page }) => {
+            const isActive = activeNav === label;
+            return (
+              <button
+                key={label}
+                style={{
+                  display: "flex", alignItems: "center", gap: "10px",
+                  padding: "9px 12px", borderRadius: "9px",
+                  border: "none", cursor: "pointer", width: "100%",
+                  fontSize: "13px", fontWeight: isActive ? "600" : "400",
+                  background: isActive ? C.teal : "transparent",
+                  color: isActive ? "white" : "rgba(255,255,255,0.55)",
+                  transition: "all 0.15s", textAlign: "left",
+                }}
+                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = C.sidebarHover; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; } }}
+                onClick={() => handleNav(label, page)}
+              >
+                <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}><Icon /></span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
         </nav>
-        <div style={s.sidebarBottom}>
-          <button style={s.logoutBtn} onClick={() => onLogout && onLogout()}>
-            <span style={s.logoutIcon}><LogoutIcon /></span>
+
+        {/* Logout */}
+        <div style={{ padding: "12px 10px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              padding: "9px 12px", borderRadius: "9px",
+              border: "none", cursor: "pointer", width: "100%",
+              fontSize: "13px", fontWeight: "400",
+              background: "transparent", color: "rgba(255,255,255,0.4)",
+              transition: "all 0.15s", textAlign: "left",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,63,94,0.12)"; e.currentTarget.style.color = "#FDA4AF"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+            onClick={() => onLogout && onLogout()}
+          >
+            <LogoutIcon />
             <span>Keluar</span>
           </button>
         </div>
       </aside>
 
-      <div style={s.content}>
-        <header style={s.topbar}>
-          <div />
-          <div style={s.topbarRight}>
-            <div style={s.bellWrap}><BellIcon /><span style={s.bellBadge}>3</span></div>
-            <div style={s.topbarUser}>
-              <div style={s.topbarAvatar}>BD</div>
-              <span style={s.topbarName}>{user?.name || "Bidan"}</span>
-              <ChevronDown />
+      {/* ── CONTENT ── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+
+        {/* Topbar */}
+        <header style={{
+          height: "56px", background: C.surface, borderBottom: `1px solid ${C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 28px", flexShrink: 0,
+          boxShadow: "0 1px 0 rgba(6,61,48,0.04)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ ...T.label, color: C.textMuted }}>Kelola Jadwal</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: C.textSecondary, display: "flex", alignItems: "center" }}>
+              <BellIcon />
+              <span style={{ position: "absolute", top: "4px", right: "4px", width: "7px", height: "7px", borderRadius: "50%", background: C.rose, border: "1.5px solid white" }} />
+            </button>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "9px",
+              padding: "5px 12px 5px 5px",
+              background: C.tealSoft, borderRadius: "40px",
+              border: `1px solid ${C.border}`,
+            }}>
+              <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "11px", fontWeight: "700" }}>
+                {initials}
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: C.textPrimary }}>{displayName}</span>
             </div>
           </div>
         </header>
 
-        <main style={s.main}>
-          <div style={s.pageHeading}>
-            <button style={s.backBtn} onClick={() => onNavigate && onNavigate("dashboardBidan")}><ArrowLeft /></button>
-            <div>
-              <h1 style={s.pageTitle}>Kelola jadwal</h1>
-              <p style={s.pageSubtitle}>Kelola jadwal pelayanan imunisasi puskesmas</p>
+        {/* Main */}
+        <main style={{ flex: 1, padding: "28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", maxWidth: "1100px", width: "100%" }}>
+
+          {/* Page heading */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              style={{ background: C.tealLight, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", borderRadius: "10px", color: C.teal, flexShrink: 0 }}
+              onClick={() => onNavigate && onNavigate("dashboardBidan")}
+            >
+              <ArrowLeft />
+            </button>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ ...T.hero, color: C.textPrimary, margin: "0 0 2px" }}>Kelola Jadwal</h1>
+              <p style={{ ...T.small, color: C.textMuted, margin: 0 }}>Kelola jadwal pelayanan imunisasi puskesmas</p>
             </div>
-            <button style={s.addBtn} onClick={() => setModal({ mode: "add" })}>+ Tambah jadwal</button>
+            <button
+              style={{ background: C.forest, color: C.tealMid, border: "none", borderRadius: "10px", padding: "10px 20px", ...T.smallMed, cursor: "pointer" }}
+              onClick={() => setModal({ mode: "add" })}
+            >+ Tambah jadwal</button>
           </div>
 
-          <div style={s.twoCol}>
-            {/* Filter */}
-            <div style={s.filterCard}>
-              <p style={s.filterTitle}>Filter jadwal</p>
-              <div style={s.filterField}>
-                <label style={s.filterLabel}>Status</label>
-                <select style={s.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                  <option value="semua">Semua status</option>
-                  <option value="tersedia">Tersedia</option>
-                  <option value="penuh">Penuh</option>
-                  <option value="nonaktif">Nonaktif</option>
-                </select>
+          {/* Two-col layout */}
+          <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+
+            {/* Filter panel */}
+            <div style={{
+              background: C.surface, borderRadius: "14px",
+              border: `1px solid ${C.border}`,
+              padding: "18px 20px",
+              width: "220px", flexShrink: 0,
+              boxShadow: "0 1px 4px rgba(6,61,48,0.05)",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+                <div style={{ width: "26px", height: "26px", borderRadius: "7px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <FilterIcon />
+                </div>
+                <span style={{ ...T.bodyMed, color: C.textPrimary }}>Filter jadwal</span>
               </div>
-              <div style={s.filterField}>
-                <label style={s.filterLabel}>Tanggal</label>
-                <input type="date" style={s.filterSelect} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div>
+                  <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Status</label>
+                  <select
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: `1px solid ${C.border}`, background: C.surfaceAlt, fontSize: "12.5px", color: C.textPrimary, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }}
+                    value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+                  >
+                    <option value="semua">Semua status</option>
+                    <option value="tersedia">Tersedia</option>
+                    <option value="penuh">Penuh</option>
+                    <option value="nonaktif">Nonaktif</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Tanggal</label>
+                  <input
+                    type="date"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: `1px solid ${C.border}`, background: C.surfaceAlt, fontSize: "12.5px", color: C.textPrimary, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }}
+                    value={filterDate} onChange={(e) => setFilterDate(e.target.value)}
+                  />
+                </div>
+                {(filterStatus !== "semua" || filterDate) && (
+                  <button
+                    style={{ width: "100%", background: "none", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "7px", ...T.xs, color: C.textMuted, cursor: "pointer" }}
+                    onClick={() => { setFilterStatus("semua"); setFilterDate(""); }}
+                  >Reset filter</button>
+                )}
               </div>
-              {(filterStatus !== "semua" || filterDate) && (
-                <button style={s.resetBtn} onClick={() => { setFilterStatus("semua"); setFilterDate(""); }}>Reset filter</button>
-              )}
             </div>
 
-            {/* List */}
-            <div style={s.listPanel}>
-              <p style={s.listTitle}>Daftar jadwal <span style={s.listCount}>{filtered.length}</span></p>
+            {/* List panel */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Section header */}
+              <div style={{
+                background: C.surface, borderRadius: "14px",
+                border: `1px solid ${C.border}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "14px 20px",
+                boxShadow: "0 1px 4px rgba(6,61,48,0.05)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CalendarIcon />
+                  </div>
+                  <span style={{ ...T.h2, color: C.textPrimary }}>Daftar jadwal</span>
+                </div>
+                <div style={{ ...T.xs, background: C.tealLight, color: C.teal, padding: "4px 12px", borderRadius: "20px" }}>
+                  {filtered.length} jadwal
+                </div>
+              </div>
+
               {filtered.length === 0 ? (
-                <div style={s.emptyState}>
-                  <CalendarIcon /><p style={{ color: "#bbb", fontSize: "13px", marginTop: "8px" }}>Tidak ada jadwal.</p>
+                <div style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  padding: "40px 24px", gap: "12px",
+                  background: C.surfaceAlt, borderRadius: "14px",
+                  border: `1.5px dashed ${C.border}`,
+                }}>
+                  <div style={{ color: C.borderStrong }}><CalendarIcon /></div>
+                  <div style={{ ...T.h2, color: C.textSecondary }}>Tidak ada jadwal</div>
+                  <div style={{ ...T.small, color: C.textMuted }}>Tidak ada jadwal yang sesuai filter yang dipilih.</div>
                 </div>
               ) : filtered.map(renderCard)}
             </div>
@@ -484,127 +887,9 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
       </div>
 
       {modal && <JadwalModal mode={modal.mode} initialData={modal.data} onClose={() => setModal(null)} onSave={handleSave} isMobile={false} />}
-
-      {deleteConfirm && (
-        <div style={ms.overlay}>
-          <div style={{ ...ms.modal, maxWidth: 360 }}>
-            <div style={ms.modalHeader}>
-              <h3 style={ms.modalTitle}>Hapus jadwal?</h3>
-              <button style={ms.closeBtn} onClick={() => setDeleteConfirm(null)}>✕</button>
-            </div>
-            <p style={{ color: "#666", fontSize: "13px", margin: "0.5rem 0 1.25rem" }}>
-              Tindakan ini tidak dapat dibatalkan. Yakin ingin menghapus jadwal ini?
-            </p>
-            <div style={ms.modalFooter}>
-              <button style={ms.cancelBtn} onClick={() => setDeleteConfirm(null)}>Batal</button>
-              <button style={{ ...ms.saveBtn, background: "#A32D2D" }} onClick={() => handleDelete(deleteConfirm)}>Hapus</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {deleteConfirm && <DeleteModal />}
     </div>
   );
 }
-
-/* ── Desktop Styles ── */
-const s = {
-  root:         { display: "flex", minHeight: "100vh", background: "#f5f7f6", fontFamily: "'Segoe UI', sans-serif", fontSize: "13.5px" },
-  sidebar:      { width: "196px", background: "white", borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column", padding: "1.1rem 0", flexShrink: 0 },
-  logoArea:     { display: "flex", alignItems: "center", gap: "8px", padding: "0 1rem 1.25rem" },
-  logoIcon:     { width: "28px", height: "28px", borderRadius: "7px", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT },
-  logoText:     { fontSize: "15px", fontWeight: "700", color: TEAL_TEXT },
-  nav:          { display: "flex", flexDirection: "column", gap: "1px", padding: "0 0.6rem", flex: 1 },
-  navBtn:       { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#888", fontSize: "12.5px", cursor: "pointer", textAlign: "left", width: "100%" },
-  navBtnActive: { background: TEAL_LIGHT, color: TEAL_TEXT, fontWeight: "600" },
-  navIcon:      { color: "#bbb", display: "flex", alignItems: "center", flexShrink: 0 },
-  navIconActive:{ color: TEAL_TEXT },
-  sidebarBottom:{ padding: "0.75rem 0.6rem 0", borderTop: "1px solid #f5f5f5", marginTop: "auto" },
-  logoutBtn:    { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#A32D2D", fontSize: "12.5px", cursor: "pointer", width: "100%" },
-  logoutIcon:   { color: "#A32D2D", display: "flex", alignItems: "center" },
-  content:      { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-  topbar:       { height: "48px", background: "white", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1.5rem", flexShrink: 0 },
-  topbarRight:  { display: "flex", alignItems: "center", gap: "14px" },
-  bellWrap:     { position: "relative", cursor: "pointer", display: "flex", alignItems: "center", color: "#555" },
-  bellBadge:    { position: "absolute", top: "-4px", right: "-5px", background: TEAL_MID, color: "white", fontSize: "9px", fontWeight: "700", width: "13px", height: "13px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  topbarUser:   { display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" },
-  topbarAvatar: { width: "28px", height: "28px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, fontSize: "11px", fontWeight: "600" },
-  topbarName:   { fontSize: "12.5px", fontWeight: "600", color: "#333" },
-  main:         { flex: 1, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem", overflowY: "auto" },
-  pageHeading:  { display: "flex", alignItems: "center", gap: "10px" },
-  backBtn:      { background: "#F1EFE8", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "8px", color: TEAL_TEXT, flexShrink: 0 },
-  pageTitle:    { margin: "0 0 1px", fontSize: "17px", fontWeight: "700", color: "#1a1a2e" },
-  pageSubtitle: { margin: 0, fontSize: "11.5px", color: "#888" },
-  addBtn:       { marginLeft: "auto", background: TEAL_DARK, color: "#9FE1CB", border: "none", borderRadius: "8px", padding: "8px 16px", fontWeight: "600", fontSize: "12.5px", cursor: "pointer" },
-  twoCol:       { display: "flex", gap: "1rem", alignItems: "flex-start" },
-  filterCard:   { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1.1rem", width: "200px", flexShrink: 0 },
-  filterTitle:  { margin: "0 0 0.9rem", fontSize: "13px", fontWeight: "700", color: "#1a1a2e" },
-  filterField:  { marginBottom: "0.75rem" },
-  filterLabel:  { display: "block", fontSize: "11.5px", color: "#888", marginBottom: "5px" },
-  filterSelect: { width: "100%", padding: "7px 10px", borderRadius: "7px", border: "1px solid #eee", background: "#fafafa", fontSize: "12.5px", color: "#444", outline: "none", boxSizing: "border-box" },
-  resetBtn:     { width: "100%", marginTop: "4px", background: "none", border: "1px solid #eee", borderRadius: "7px", padding: "6px", fontSize: "11.5px", color: "#888", cursor: "pointer" },
-  listPanel:    { flex: 1, display: "flex", flexDirection: "column", gap: "0.75rem" },
-  listTitle:    { margin: "0 0 0.25rem", fontSize: "13px", fontWeight: "700", color: "#1a1a2e", display: "flex", alignItems: "center", gap: "8px" },
-  listCount:    { background: TEAL_LIGHT, color: TEAL_TEXT, fontSize: "11px", fontWeight: "600", padding: "1px 8px", borderRadius: "20px" },
-  emptyState:   { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "2.5rem", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#ccc" },
-  jadwalCard:   { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1rem 1.1rem" },
-  cardHead:     { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.85rem", paddingBottom: "0.7rem", borderBottom: "1px solid #f5f5f5" },
-  cardDateWrap: { display: "flex", alignItems: "center", gap: "7px" },
-  cardDateIcon: { width: "28px", height: "28px", borderRadius: "7px", background: TEAL_LIGHT, color: TEAL_TEXT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  cardDate:     { fontWeight: "600", fontSize: "13px", color: "#1a1a2e" },
-  statusBadge:  { fontSize: "11px", fontWeight: "600", padding: "3px 10px", borderRadius: "20px" },
-  cardBody:     { display: "flex", flexDirection: "column", gap: "8px", marginBottom: "0.85rem" },
-  cardRow:      { display: "flex", alignItems: "flex-start", gap: "8px" },
-  metaLabel:    { fontSize: "11.5px", color: "#aaa", fontWeight: "500", width: "72px", flexShrink: 0, paddingTop: "1px" },
-  metaValue:    { fontSize: "13px", color: "#1a1a2e", fontWeight: "500", flex: 1 },
-  vaccineTags:  { display: "flex", flexWrap: "wrap", gap: "5px", flex: 1 },
-  vaccineTag:   { fontSize: "11px", background: "#E6F1FB", color: "#185FA5", padding: "2px 8px", borderRadius: "5px", fontWeight: "500" },
-  slotRow:      { display: "flex", alignItems: "center", gap: "8px", marginBottom: "5px" },
-  slotSisa:     { fontSize: "11px", color: "#aaa" },
-  progressBg:   { height: "4px", background: "#f0f0f0", borderRadius: "4px", overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: "4px" },
-  cardActions:  { display: "flex", alignItems: "center", gap: "8px", paddingTop: "0.7rem", borderTop: "1px solid #f5f5f5" },
-  toggleBtn:    { border: "none", borderRadius: "7px", padding: "6px 14px", fontWeight: "600", fontSize: "12px", cursor: "pointer" },
-  iconBtn:      { background: TEAL_LIGHT, color: TEAL_TEXT, border: "none", borderRadius: "7px", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" },
-};
-
-/* ── Mobile Styles ── */
-const m = {
-  root:             { display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f5f7f6", fontFamily: "'Segoe UI', sans-serif", fontSize: "13.5px" },
-  topbar:           { height: "52px", background: "white", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1rem", flexShrink: 0, position: "sticky", top: 0, zIndex: 100 },
-  backBtn:          { background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: TEAL_TEXT, padding: "4px", marginRight: "4px" },
-  pageTitle:        { fontSize: "15px", fontWeight: "700", color: "#1a1a2e" },
-  topbarRight:      { display: "flex", alignItems: "center", gap: "12px" },
-  bellBadge:        { position: "absolute", top: "-3px", right: "-4px", background: TEAL_MID, color: "white", fontSize: "8px", width: "12px", height: "12px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  topbarAvatar:     { width: "28px", height: "28px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, fontSize: "11px", fontWeight: "600" },
-  actionBar:        { display: "flex", alignItems: "center", gap: "8px", padding: "0.6rem 1rem", background: "white", borderBottom: "1px solid #f0f0f0" },
-  filterBtn:        { display: "flex", alignItems: "center", gap: "5px", background: TEAL_LIGHT, color: TEAL_TEXT, border: "none", borderRadius: "7px", padding: "6px 12px", fontSize: "12px", fontWeight: "600", cursor: "pointer", position: "relative" },
-  filterBadge:      { background: TEAL_DARK, color: "white", fontSize: "9px", width: "14px", height: "14px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  resultCount:      { fontSize: "12px", color: "#888", flex: 1 },
-  addBtnMobile:     { background: TEAL_DARK, color: "#9FE1CB", border: "none", borderRadius: "7px", padding: "6px 14px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
-  main:             { flex: 1, padding: "0.85rem 1rem", display: "flex", flexDirection: "column", gap: "0.75rem", overflowY: "auto", paddingBottom: "80px" },
-  jadwalCard:       { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "0.85rem 0.95rem" },
-  cardHead:         { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", paddingBottom: "0.6rem", borderBottom: "1px solid #f5f5f5" },
-  cardDate:         { fontWeight: "600", fontSize: "12.5px", color: "#1a1a2e" },
-  emptyState:       { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 0", color: "#ccc" },
-  bottomNav:        { position: "fixed", bottom: 0, left: 0, right: 0, background: "white", borderTop: "1px solid #f0f0f0", display: "flex", zIndex: 100 },
-  bottomNavBtn:     { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 4px", border: "none", background: "transparent", cursor: "pointer", gap: "2px" },
-  bottomNavBtnActive:{ background: TEAL_LIGHT },
-};
-
-/* ── Modal Styles ── */
-const ms = {
-  overlay:     { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" },
-  modal:       { background: "white", borderRadius: "14px", padding: "1.4rem", width: "100%", maxHeight: "90vh", overflowY: "auto" },
-  modalHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.1rem" },
-  modalTitle:  { margin: 0, fontSize: "15px", fontWeight: "700", color: "#1a1a2e" },
-  closeBtn:    { background: "#f5f5f5", border: "none", width: "26px", height: "26px", borderRadius: "50%", cursor: "pointer", fontSize: "12px", color: "#888", display: "flex", alignItems: "center", justifyContent: "center" },
-  field:       { marginBottom: "0.85rem", display: "flex", flexDirection: "column", gap: "4px" },
-  row:         { display: "flex", gap: "10px", marginBottom: "0.85rem" },
-  label:       { fontSize: "12px", fontWeight: "600", color: "#555" },
-  input:       { padding: "8px 12px", borderRadius: "8px", border: "1px solid #eee", background: "#fafafa", fontSize: "13px", color: "#333", outline: "none", width: "100%", boxSizing: "border-box" },
-  modalFooter: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "1.1rem" },
-  cancelBtn:   { background: "#f5f5f5", color: "#555", border: "none", borderRadius: "8px", padding: "8px 18px", fontWeight: "600", fontSize: "13px", cursor: "pointer" },
-  saveBtn:     { background: TEAL_DARK, color: "#9FE1CB", border: "none", borderRadius: "8px", padding: "8px 22px", fontWeight: "600", fontSize: "13px", cursor: "pointer" },
-};
 
 export default KelolaJadwalBidan;
