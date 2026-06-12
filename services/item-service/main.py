@@ -3,18 +3,31 @@ Item Service — Handles inventory management.
 Berkomunikasi dengan Auth Service untuk verifikasi token.
 """
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query
+import logging  # ← TAMBAHKAN INI
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db, Base
-from models import Item, Child, ImmunizationLog
+from models import Item, Child, ImmunizationLog, PuskesmasSchedule
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse,
     ChildCreate, ChildResponse, ChildListResponse,
-    ImmunizationLogCreate, ImmunizationLogResponse, ImmunizationListResponse
+    ImmunizationLogCreate, ImmunizationLogResponse, ImmunizationListResponse,
+    PuskesmasScheduleCreate, PuskesmasScheduleUpdate, PuskesmasScheduleResponse, PuskesmasScheduleListResponse
 )
 from auth_client import verify_token_with_auth_service
+from auth_client import auth_circuit  # Import circuit breaker instance
+
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -59,7 +72,7 @@ def init_default_vaccines():
         db.commit()
     except Exception as e:
         db.rollback()
-        print(f"[WARN] Failed to initialize vaccines: {e}")
+        logger.error(f"Failed to initialize vaccines: {e}")
     finally:
         db.close()
 
@@ -69,7 +82,36 @@ app = FastAPI(
     title="Item Service",
     description="Inventory microservice — CRUD items with auth via Auth Service",
     version="2.0.0",
+    docs_url=None,  # Disable default docs to use custom below
 )
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html(req: Request):
+    html_response = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+    )
+    html = html_response.body.decode("utf-8")
+    custom_js = """
+    <script>
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.innerText === "Authorize" && e.target.tagName === "BUTTON") {
+            var authContainer = e.target.closest(".auth-container");
+            if (authContainer) {
+                var input = authContainer.querySelector("input[type=text], input[type=password]");
+                if (input && !input.value.trim()) {
+                    alert("Login anda ditolak! Harap masukkan token JWT Anda!");
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        }
+    }, true);
+    </script>
+    """
+    html = html.replace("</body>", f"{custom_js}</body>")
+    return HTMLResponse(html)
 
 # CORS
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
@@ -81,19 +123,58 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(RequestLoggingMiddleware)
 
 # =====================
 # ENDPOINTS
 # =====================
 
 @app.get("/health")
-def health_check():
+async def health_check():
+    """Health check dengan dependency status."""
+    # Mengambil status Circuit Breaker dari Auth Service
+    auth_status = auth_circuit.get_status()
+
+    # Memeriksa koneksi ke database secara langsung
+    db_status = "connected"
+    try:
+        db = next(get_db())
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception as e:
+        logger.exception(f"HEALTHCHECK DB ERROR: {e}")
+        db_status = "disconnected"
+
+    # Menentukan status kesehatan sistem keseluruhan
+    overall = "healthy"
+    if auth_status["state"] != "CLOSED":
+        overall = "degraded"
+    if db_status != "connected":
+        overall = "unhealthy"
+
     return {
-        "status": "healthy",
+        "status": overall,
         "service": "item-service",
-        "version": "2.0.0",
+        "version": "2.1.0",
+        "dependencies": {
+            "auth-service": {
+                "status": "available" if auth_status["state"] == "CLOSED" else "unavailable",
+                "circuit_breaker": auth_status,
+            },
+            "database": {
+                "status": db_status,
+            },
+        },
     }
 
+
+@app.get("/metrics")
+def get_metrics():
+    """Return application metrics."""
+    return {
+        "service": "item-service",
+        **metrics.get_metrics(),
+    }
 
 @app.post("/items", response_model=ItemResponse, status_code=201)
 async def create_item(
@@ -233,8 +314,11 @@ async def get_user_children(
     user: dict = Depends(verify_token_with_auth_service),
     db: Session = Depends(get_db),
 ):
-    """Ambil daftar anak milik parent yang login."""
-    children = db.query(Child).filter(Child.parent_id == user["user_id"]).all()
+    """Ambil daftar anak (Parent: anak sendiri, Midwife: semua anak)."""
+    if user.get("role") == "midwife":
+        children = db.query(Child).all()
+    else:
+        children = db.query(Child).filter(Child.parent_id == user["user_id"]).all()
     return ChildListResponse(total=len(children), children=children)
 
 
@@ -245,9 +329,12 @@ async def get_child(
     db: Session = Depends(get_db),
 ):
     """Ambil detail anak berdasarkan ID."""
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     return child
@@ -261,9 +348,13 @@ async def update_child(
     db: Session = Depends(get_db),
 ):
     """Update data anak."""
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -306,10 +397,14 @@ async def create_immunization(
     db: Session = Depends(get_db),
 ):
     """Buat immunization log untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is a midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -333,10 +428,14 @@ async def get_child_immunizations(
     db: Session = Depends(get_db),
 ):
     """Ambil daftar immunization logs untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -353,10 +452,14 @@ async def get_pending_immunizations(
     db: Session = Depends(get_db),
 ):
     """Ambil daftar immunization yang pending untuk anak."""
-    # Verify the child belongs to the user
-    child = db.query(Child).filter(
-        Child.id == child_id, Child.parent_id == user["user_id"]
-    ).first()
+    # Verify the child belongs to the user OR user is midwife
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
     if not child:
         raise HTTPException(status_code=404, detail="Child not found")
     
@@ -365,3 +468,117 @@ async def get_pending_immunizations(
         ImmunizationLog.status == "pending"
     ).all()
     return ImmunizationListResponse(total=len(immunizations), immunizations=immunizations)
+
+@app.put("/children/{child_id}/immunization/{immun_id}", response_model=ImmunizationLogResponse)
+async def update_immunization(
+    child_id: int,
+    immun_id: int,
+    immun_data: ImmunizationLogCreate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Update status immunization (khusus untuk Bidan/Parent yang sah)."""
+    if user.get("role") == "midwife":
+        child = db.query(Child).filter(Child.id == child_id).first()
+    else:
+        child = db.query(Child).filter(
+            Child.id == child_id, Child.parent_id == user["user_id"]
+        ).first()
+        
+    if not child:
+        raise HTTPException(status_code=404, detail="Child not found")
+        
+    immunization = db.query(ImmunizationLog).filter(
+        ImmunizationLog.id == immun_id,
+        ImmunizationLog.child_id == child_id
+    ).first()
+    
+    if not immunization:
+        raise HTTPException(status_code=404, detail="Immunization not found")
+        
+    immunization.vaccine_id = immun_data.vaccine_id
+    immunization.status = immun_data.status
+    immunization.scheduled_date = immun_data.scheduled_date
+    immunization.notes = immun_data.notes
+    
+    db.commit()
+    db.refresh(immunization)
+    return immunization
+
+
+# ==================== PUSKESMAS SCHEDULE ENDPOINTS ====================
+
+@app.post("/schedules", status_code=201, response_model=PuskesmasScheduleResponse)
+async def create_schedule(
+    schedule_data: PuskesmasScheduleCreate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Buat jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat membuat jadwal pelayanan.")
+    
+    db_schedule = PuskesmasSchedule(
+        midwife_id=user["user_id"],
+        vaccine_id=schedule_data.vaccine_id,
+        date=schedule_data.date,
+        time_start=schedule_data.time_start,
+        time_end=schedule_data.time_end,
+        location=schedule_data.location,
+        quota=schedule_data.quota
+    )
+    db.add(db_schedule)
+    db.commit()
+    db.refresh(db_schedule)
+    return db_schedule
+
+
+@app.get("/schedules", response_model=PuskesmasScheduleListResponse)
+async def get_schedules(
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Ambil daftar jadwal pelayanan (Bidan & Parent)."""
+    schedules = db.query(PuskesmasSchedule).all()
+    return PuskesmasScheduleListResponse(total=len(schedules), schedules=schedules)
+
+
+@app.put("/schedules/{schedule_id}", response_model=PuskesmasScheduleResponse)
+async def update_schedule(
+    schedule_id: int,
+    schedule_data: PuskesmasScheduleUpdate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Update jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat mengedit jadwal pelayanan.")
+    
+    schedule = db.query(PuskesmasSchedule).filter(PuskesmasSchedule.id == schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Jadwal tidak ditemukan")
+        
+    for field, value in schedule_data.model_dump(exclude_unset=True).items():
+        setattr(schedule, field, value)
+        
+    db.commit()
+    db.refresh(schedule)
+    return schedule
+
+
+@app.delete("/schedules/{schedule_id}", status_code=204)
+async def delete_schedule(
+    schedule_id: int,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Hapus jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat menghapus jadwal pelayanan.")
+        
+    schedule = db.query(PuskesmasSchedule).filter(PuskesmasSchedule.id == schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Jadwal tidak ditemukan")
+        
+    db.delete(schedule)
+    db.commit()

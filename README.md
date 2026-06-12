@@ -1,25 +1,16 @@
-# ☁️ Cloud App - [Bye bye virus]
+# ☁️ Cloud App — Kelompok Stranger Things
+
+> Aplikasi cloud-native untuk manajemen inventory, dibangun dengan arsitektur
+> microservices sebagai proyek mata kuliah Komputasi Awan — Institut Teknologi
+> Kalimantan.
 
 ![CI](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-stranger_things/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-stranger_things/actions/workflows/ci.yml/badge.svg?branch=main)
+
 
 Bye bye Virus adalah aplikasi yang dirancang untuk memantau dan mengelola imunisasi orang tua serta tumbuh kembang anak. Aplikasi ini menyediakan solusi komperehensif yang bertujuan untuk memastikan bahwa setiap anak menerima perlindungan kesehatan yang memadai dan mencapai potensi perkembangannya secara maksimal.
 
 Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan sedang bekerja, biasanya sering terlewat jadwal imunisasi dikarenakan tidak adanya informasi atau pengingat secara berkala. Aplikasi ini hadir untuk memudahkan para orang tua (ibu rumah tangga maupun yang sedang bekerja) dalam merencanakan dan menjadwalkan imunisasi anak mereka.
-
----
-## 📅 Roadmap
-
-| Minggu | Target                 | Status |
-| ------ | ---------------------- | ------ |
-| 1      | Setup & Hello World    | ✅     |
-| 2      | REST API + Database    | ✅     |
-| 3      | React Frontend         | ✅     |
-| 4      | Full-Stack Integration | ✅     |
-| 5-7    | Docker & Compose       | ✅     |
-| 8      | UTS Demo               | ✅     |
-| 9-11   | CI/CD Pipeline         | ✅     |
-| 12-14  | Microservices          | ⬜     |
-| 15-16  | Final & UAS            | ⬜     |
 
 ---
 
@@ -32,167 +23,210 @@ Masalah yang sering dihadapi orang tua terutama yang baru memiliki anak dan seda
 | Cintya Widhi Astuti  | 10231026 | Lead DevOps    |
 | Verina Rahma Dinah   | 10231090 | Lead QA & Docs |
 
+## 🏗️ Architecture
+```mermaid
+flowchart TD
+    USER["👤 User"] --> GW["🚪 API Gateway<br/>Nginx"]
+    GW -->|"/auth/*"| AUTH["🔐 Auth Service<br/>FastAPI :8001"]
+    GW -->|"/items/*"| ITEM["📦 Item Service<br/>FastAPI :8002"]
+    GW -->|"/"| FE["⚛️ Frontend<br/>React :3000"]
+    AUTH --> ADB[("auth_db<br/>PostgreSQL")]
+    ITEM --> IDB[("item_db<br/>PostgreSQL")]
+    ITEM -.->|"HTTP /verify"| AUTH
+```
+
+### Architecture Evolution
+
+| Phase | Weeks | Architecture |
+|-------|-------|-------------|
+| Foundation | 1-4 | Monolith (FastAPI + React + PostgreSQL) |
+| Containerization | 5-7 | Docker Compose (3 containers) |
+| CI/CD | 9-11 | GitHub Actions + Railway deployment |
+| Microservices | 12-14 | 2 services + gateway + monitoring |
+| Final | 15-16 | Security hardened + production ready |
+
 ## 🛠️ Tech Stack
 
-| Teknologi      | Fungsi           | Keterangan                                                                                                                                   |
-| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| FastAPI        | Backend REST API | Membangun layanan backend berbasis REST API yang menangani logika aplikasi, pengolahan data, dan komunikasi dengan database                  |
-| React          | Frontend SPA     | Membangun antarmuka pengguna berbasis Single Page Application yang interaktif, responsif, dan mampu berkomunikasi dengan backend melalui API |
-| PostgreSQL     | Database         | Menyimpan data aplikasi secara terstruktur                                                                                                   |
-| Docker         | Containerization | Mengemas aplikasi dan seluruh dependensinya ke dalam container sehingga aplikasi bisa berjalan konsisten di lingkungan manapun               |
-| GitHub Actions | CI/CD            | Mengotomatiskan proses pengujian, build, dan deployment aplikasi                                                                             |
-| Railway/Render | Cloud Deployment | Melakukan deployment aplikasi ke cloud agar backend dan frontend dapat berjalan dan diakses secara online                                    |
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | React + Vite | Single Page Application |
+| Backend | FastAPI (Python) | REST API microservices |
+| Database | PostgreSQL 16 | Relational database (per service) |
+| Gateway | Nginx | Reverse proxy + rate limiting |
+| Container | Docker + Docker Compose | Containerization |
+| CI/CD | GitHub Actions | Automated test + deploy |
+| Cloud | Railway | PaaS deployment |
+| Monitoring | Custom metrics + dashboard | Observability |
 
-## 🏗️ Architecture
+## 🚀 Quick Start
 
-Aplikasi ini menggunakan arsitektur full-stack berbasis service:
-
-```text
-┌───────────────┐
-│   Frontend    │
-│   React       │
-│ Port: 3000    │
-└───────┬───────┘
-        │ HTTP Request
-        ▼
-┌───────────────┐
-│   Backend     │
-│   FastAPI     │
-│ Port: 8000    │
-└───────┬───────┘
-        │ SQL Query
-        ▼
-┌───────────────┐
-│   Database    │
-│ PostgreSQL    │
-│ Port: 5432    │
-└───────────────┘
-```
-
-## 📁 Struktur File
-
-```
-cc-kelompok-stranger_things/
-│
-├── backend/
-│   ├── __pycache__/
-│   ├── .venv/
-│   ├── venv/
-│   ├── scripts/
-│   │
-│   ├── .dockerignore
-│   ├── .env
-│   ├── .env.example
-│   ├── .env.docker
-│   ├── .env.docker.example
-│   │
-│   ├── auth.py
-│   ├── crud.py
-│   ├── database.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── main.py
-│   ├── run.py
-│   │
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   │
-│   └── test.db
-│
-├── frontend/
-│   ├── node_modules/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── DataAnak.jsx
-│   │   │   ├── EditAnak.jsx
-│   │   │   ├── FaskesMap.jsx
-│   │   │   ├── Header.jsx
-│   │   │   ├── ItemCard.jsx
-│   │   │   ├── ItemForm.jsx
-│   │   │   ├── ItemList.jsx
-│   │   │   ├── JadwalImunisasi.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── SearchBar.jsx
-│   │   │   └── SplashPage.jsx
-│   │   │
-│   │   ├── services/
-│   │   │   └── (API integration files)
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   ├── App.css
-│   │   └── index.css
-│   │
-│   ├── .dockerignore
-│   ├── .env
-│   ├── .env.example
-│   ├── .env.development
-│   │
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── vite.config.js
-│   ├── eslint.config.js
-│   └── index.html
-│
-├── docs/
-│   ├── image/
-│   ├── api-test-results.md
-│   ├── auth-test-result.md
-│   ├── docker-cheatsheet.md
-│   ├── env-setup.md
-│   ├── image-comparison.md
-│   ├── setup-guide.md
-│   ├── ui-test-results.md
-│   ├── member-[cintya].md
-│   ├── member-[daffa].md
-│   ├── member-[nazwa].md
-│   └── member-[verina].md
-│
-├── docker-compose.yml
-├── .gitignore
-└── README.md
-```
-
-## 📖 Quick Start
-
-Pastikan **Docker Desktop** sudah terpasang dan sedang berjalan.
-
-### Menjalankan aplikasi
-
-Gunakan perintah berikut untuk membangun dan menjalankan seluruh service:
+### Prerequisites
+- Docker & Docker Compose
+- Git
+  
+### Run Locally
 
 ```bash
-docker compose up -d --build
+# Clone repository
+git clone https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-stranger_things.git
+cd cc-kelompok-stranger_things
+
+# Copy environment file
+cp .env.example .env
+# Edit .env with your values
+
+# Start all services
+docker compose up -d
+
+# Verify
+docker compose ps
+curl http://localhost/health
 ```
-Setelah proses selesai, aplikasi dapat diakses melalui:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
 
-### Menghentikan aplikasi
+Open http://localhost in your browser.
 
-Untuk menghentikan seluruh service, gunakan perintah berikut:
+### Run Without Docker
+
 ```bash
-docker compose down
+# Backend (Auth Service)
+cd services/auth-service
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8001
+
+# Backend (Item Service)  
+cd services/item-service
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8002
+
+# Frontend
+cd frontend
+npm install
+npm run dev
 ```
+
+## 📡 API Documentation
+
+### Auth Service (port 8001)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/register` | Register user baru | ❌ |
+| POST | `/login` | Login, return JWT token | ❌ |
+| GET | `/verify` | Verify JWT token (internal) | ✅ |
+| GET | `/health` | Health check | ❌ |
+| GET | `/metrics` | Service metrics | ❌ |
+
+### Item Service (port 8002)
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| GET | `/health` | Health check item-service | ❌ |
+| GET | `/metrics` | Menampilkan metrics item-service | ❌ |
+| POST | `/children` | Menambahkan data anak | ✅ |
+| GET | `/children` | Menampilkan daftar anak milik user | ✅ |
+| GET | `/children/{child_id}` | Menampilkan detail data anak | ✅ |
+| PUT | `/children/{child_id}` | Memperbarui data anak | ✅ |
+| DELETE | `/children/{child_id}` | Menghapus data anak | ✅ |
+| POST | `/children/{child_id}/immunization` | Menambahkan data imunisasi anak | ✅ |
+| GET | `/children/{child_id}/immunization` | Menampilkan data imunisasi anak | ✅ |
+| GET | `/children/{child_id}/immunization/pending` | Menampilkan imunisasi yang masih pending | ✅ |
+| PUT | `/children/{child_id}/immunization/{immun_id}` | Memperbarui data imunisasi anak | ✅ |
+
+### Via Gateway (port 80)
+
+| Service | Direct URL | Gateway URL |
+|---|---|---|
+| Gateway Health | - | `http://localhost/health` |
+| Auth Health | `http://localhost:8001/health` | `http://localhost/auth/health` |
+| Auth Metrics | `http://localhost:8001/metrics` | `http://localhost/auth/metrics` |
+| Item Health | `http://localhost:8002/health` | `http://localhost/items/health` |
+| Item Metrics | `http://localhost:8002/metrics` | `http://localhost/items/metrics` |
+
+## 🔐 Keamanan
+
+- **Autentikasi menggunakan JWT** untuk mengamankan akses user setelah login.
+- **Token memiliki masa berlaku** sehingga akses pengguna dapat dibatasi dalam periode tertentu.
+- **Password disimpan menggunakan hashing bcrypt**, sehingga password tidak disimpan dalam bentuk asli atau plain text.
+- **Rate limiting menggunakan Nginx** untuk membatasi jumlah request, terutama pada endpoint autentikasi dan API utama.
+- **Validasi input menggunakan Pydantic** agar data yang masuk ke service sesuai dengan format yang dibutuhkan.
+- **CORS dikonfigurasi sesuai environment** untuk mengatur akses antara frontend dan backend.
+- **Konfigurasi sensitif disimpan melalui environment variables**, sehingga secret seperti database URL, JWT secret, dan konfigurasi lain tidak ditulis langsung di dalam kode.
+- **Database dipisahkan per service**, yaitu `auth-db` untuk `auth-service` dan `item-db` untuk `item-service`, sehingga setiap service memiliki tanggung jawab data masing-masing.
+
+## 📊 Monitoring
+
+- **Structured Logging**: Log request dicatat dalam format JSON agar lebih mudah dibaca, dicari, dan dianalisis. Setiap log memuat informasi seperti `timestamp`, `level`, `service`, `message`, `method`, `path`, `status_code`, `duration_ms`, dan `correlation_id`.
+- **Correlation ID**: Setiap request memiliki ID pelacakan yang digunakan untuk menelusuri alur request dan mempermudah proses debugging ketika terjadi error.
+- **Metrics Endpoint**: Setiap service memiliki endpoint `/metrics` untuk menampilkan data monitoring seperti jumlah request, jumlah error, error rate, status code, latency, dan statistik endpoint.
+- **Health Check**: Setiap service memiliki endpoint `/health` untuk mengecek status kesehatan service dan dependency yang digunakan.
+- **Health Dashboard**: Halaman `/status` digunakan untuk menampilkan status service secara lebih mudah melalui tampilan dashboard.
+- **Circuit Breaker**: `item-service` memiliki mekanisme circuit breaker saat berkomunikasi dengan `auth-service`, sehingga service dapat menghindari pemanggilan berulang ketika service tujuan sedang bermasalah.
+- **Retry dan Backoff**: Komunikasi antar-service dilengkapi mekanisme retry dan jeda bertahap untuk meningkatkan ketahanan sistem saat terjadi gangguan sementara.
+
+## 📄 Documentation
+
+- [Architecture Guide](docs/architecture.md)
+- [Deployment Guide](docs/deployment-guide.md)
+- [Operations Guide](docs/operations-guide.md)
+- [API Contract](docs/api-contract.md)
+- [Release Notes](docs/release-notes-m3.md)
+- [Git Workflow](docs/git-workflow.md)
+
+## 📅 Roadmap
+
+| Week | Target | Status |
+|------|--------|--------|
+| 1 | Setup & Hello World | ✅ |
+| 2 | REST API + Database | ✅ |
+| 3 | React Frontend | ✅ |
+| 4 | Full-Stack Integration + Auth | ✅ |
+| 5-7 | Docker & Compose | ✅ |
+| 8 | UTS Demo (Milestone 1) | ✅ |
+| 9-11 | CI/CD & Cloud Deployment | ✅ |
+| 12-14 | Microservices & Monitoring | ✅ |
+| 15 | Final Polish & Security | ✅ |
+| 16 | UAS Demo (Milestone 3) | ⬜ |
 
 ## 🐳 Docker Compose Commands
 
 Berikut perintah dasar Docker Compose yang digunakan:
 
+### Menjalankan & Menghentikan Service
 | Command | Keterangan |
 |---------|------------|
 | `docker compose up` | Menjalankan semua service |
 | `docker compose up -d` | Menjalankan di background (detached) |
 | `docker compose down` | Menghentikan dan menghapus container |
-| `docker compose logs` | Menampilkan log semua service |
-| `docker compose ps` | Menampilkan status container |
-| `docker compose up -d --build` | Build ulang image lalu menjalankan service |
+| `docker compose start` | Menyalakan container yang sudah ada |
+| `docker compose stop` | Menghentikan container tanpa menghapusnya |
+| `docker compose restart` | Restart container tertentu atau semua container |
 
+### Build & Update Image
+| Command | Keterangan |
+|---------|------------|
+| `docker compose build` | Membuat / rebuild image tanpa menjalankan container |
+| `docker compose up -d --build` | Build ulang image lalu menjalankan service |
+| `docker compose pull` | Mengambil image terbaru dari registry sebelum run |
+
+### Mengecek Status & Log
+| Command | Keterangan |
+|---------|------------|
+| `docker compose ps` | Menampilkan status container |
+| `docker compose logs` | Menampilkan log semua service |
+| `docker compose logs -f <service>` | Menampilkan log service secara realtime (follow) |
+| `docker compose top` | Menampilkan proses yang berjalan di container |
+
+### Menjalankan Command di Container
+| Command | Keterangan |
+|---------|------------|
+| `docker compose exec <service> <command>` | Menjalankan command di dalam container service tertentu |
+| `docker compose run <service> <command>` | Menjalankan container sekali untuk command tertentu (tidak persist) |
+
+### Lain-lain
+| Command | Keterangan |
+|---------|------------|
+| `docker compose rm` | Menghapus container yang sudah berhenti |
+| `docker compose config` | Menampilkan konfigurasi Compose setelah merge dan parsing |
 
 ## 📦 Modul Aplikasi
 
@@ -334,185 +368,6 @@ Berikut perintah dasar Docker Compose yang digunakan:
 | 4 | Artikel Edukasi | Menampilkan artikel terbaru |
 
 
-## 🗂️ ERD
-<img src="./docs/image/NEW ERD CC.drawio.png" />
-
-Berikut adalah detail arsitektur database PostgreSQL yang digunakan oleh aplikasi **Bye Bye Virus** berdasarkan model SQLAlchemy yang digunakan pada backend.
-
-### Tabel: Roles
-
-| Atribut     | Tipe | Keterangan          |
-| ----------- | ---- | ------------------- |
-| id          | PK   | Primary key         |
-| name        | -    | Nama peran pengguna |
-| description | -    | Deskripsi peran     |
-| created_at  | -    | Waktu dibuat        |
-
-### Tabel: Users
-
-| Atribut         | Tipe | Keterangan                     |
-| --------------- | ---- | ------------------------------ |
-| id              | PK   | Primary key                    |
-| email           | -    | Email pengguna                 |
-| name            | -    | Nama pengguna                  |
-| hashed_password | -    | Password yang sudah dienkripsi |
-| role_id         | FK   | Relasi ke `roles.id`           |
-| is_active       | -    | Status aktif pengguna          |
-| created_at      | -    | Waktu dibuat                   |
-
-### Tabel: Children
-
-| Atribut         | Tipe | Keterangan           |
-| --------------- | ---- | -------------------- |
-| id              | PK   | Primary key          |
-| parent_id       | FK   | Relasi ke `users.id` |
-| name            | -    | Nama anak            |
-| birth_date      | -    | Tanggal lahir        |
-| gender          | -    | Jenis kelamin        |
-| blood_type      | -    | Golongan darah       |
-| height_at_birth | -    | Tinggi saat lahir    |
-| weight_at_birth | -    | Berat saat lahir     |
-| notes           | -    | Catatan              |
-| is_active       | -    | Status aktif         |
-| created_at      | -    | Waktu dibuat         |
-| updated_at      | -    | Waktu diperbarui     |
-
-### Tabel: healthcare_facilities
-
-| Atribut         | Tipe | Keterangan        |
-| --------------- | ---- | ----------------- |
-| id              | PK   | Primary key       |
-| name            | -    | Nama fasilitas    |
-| type            | -    | Jenis fasilitas   |
-| address         | -    | Alamat            |
-| phone           | -    | Nomor telepon     |
-| latitude        | -    | Koordinat lintang |
-| longitude       | -    | Koordinat bujur   |
-| operating_hours | -    | Jam operasional   |
-| notes           | -    | Catatan           |
-| is_active       | -    | Status aktif      |
-| created_at      | -    | Waktu dibuat      |
-| updated_at      | -    | Waktu diperbarui  |
-
-
-### Tabel: Vaccine_types
-
-| Atribut       | Tipe | Keterangan            |
-| ------------- | ---- | --------------------- |
-| id            | PK   | Primary key           |
-| name          | -    | Nama vaksin           |
-| description   | -    | Deskripsi             |
-| age_month_min | -    | Usia minimum (bulan)  |
-| age_month_max | -    | Usia maksimum (bulan) |
-| notes         | -    | Catatan               |
-| is_active     | -    | Status aktif          |
-| created_at    | -    | Waktu dibuat          |
-
-### Tabel: vaccine_schedules
-
-| Atribut     | Tipe | Keterangan                   |
-| ----------- | ---- | ---------------------------- |
-| id          | PK   | Primary key                  |
-| vaccine_id  | FK   | Relasi ke `vaccine_types.id` |
-| age_month   | -    | Usia pemberian (bulan)       |
-| dose_number | -    | Dosis ke-                    |
-| description | -    | Deskripsi                    |
-| notes       | -    | Catatan                      |
-| is_active   | -    | Status aktif                 |
-| created_at  | -    | Waktu dibuat                 |
-| updated_at  | -    | Waktu diperbarui             |
-
-### Tabel: immunization_logs
-
-| Atribut              | Tipe | Keterangan                           |
-| -------------------- | ---- | ------------------------------------ |
-| id                   | PK   | Primary key                          |
-| child_id             | FK   | Relasi ke `children.id`              |
-| vaccine_id           | FK   | Relasi ke `vaccine_types.id`         |
-| schedule_id          | FK   | Relasi ke `vaccine_schedules.id`     |
-| facility_id          | FK   | Relasi ke `healthcare_facilities.id` |
-| healthcare_worker_id | FK   | Relasi ke `users.id`                 |
-| status               | -    | Status imunisasi                     |
-| scheduled_date       | -    | Tanggal jadwal                       |
-| completion_date      | -    | Tanggal selesai                      |
-| notes                | -    | Catatan                              |
-| created_at           | -    | Waktu dibuat                         |
-| updated_at           | -    | Waktu diperbarui                     |
-
-### Tabel: growth_records
-
-| Atribut            | Tipe | Keterangan              |
-| ------------------ | ---- | ----------------------- |
-| id                 | PK   | Primary key             |
-| child_id           | FK   | Relasi ke `children.id` |
-| age_month          | -    | Usia (bulan)            |
-| weight             | -    | Berat badan             |
-| height             | -    | Tinggi badan            |
-| head_circumference | -    | Lingkar kepala          |
-| recorded_date      | -    | Tanggal pencatatan      |
-| notes              | -    | Catatan                 |
-| created_at         | -    | Waktu dibuat            |
-| updated_at         | -    | Waktu diperbarui        |
-
-### Tabel: reminders
-
-| Atribut             | Tipe | Keterangan                       |
-| ------------------- | ---- | -------------------------------- |
-| id                  | PK   | Primary key                      |
-| immunization_log_id | FK   | Relasi ke `immunization_logs.id` |
-| reminder_type       | -    | Jenis pengingat                  |
-| reminder_date       | -    | Tanggal pengingat                |
-| is_sent             | -    | Status terkirim                  |
-| sent_at             | -    | Waktu dikirim                    |
-| status              | -    | Status pengingat                 |
-| created_at          | -    | Waktu dibuat                     |
-
-### Tabel: articles
-
-| Atribut      | Tipe | Keterangan           |
-| ------------ | ---- | -------------------- |
-| id           | PK   | Primary key          |
-| title        | -    | Judul artikel        |
-| content      | -    | Isi artikel          |
-| author_id    | FK   | Relasi ke `users.id` |
-| category     | -    | Kategori             |
-| is_published | -    | Status publikasi     |
-| created_at   | -    | Waktu dibuat         |
-| updated_at   | -    | Waktu diperbarui     |
-| published_at | -    | Waktu publikasi      |
-
-### Tabel: audit_logs
-
-| Atribut    | Tipe | Keterangan           |
-| ---------- | ---- | -------------------- |
-| id         | PK   | Primary key          |
-| user_id    | FK   | Relasi ke `users.id` |
-| action     | -    | Aksi yang dilakukan  |
-| table_name | -    | Nama tabel           |
-| record_id  | -    | ID data              |
-| old_values | -    | Data lama            |
-| new_values | -    | Data baru            |
-| ip_address | -    | Alamat IP            |
-| created_at | -    | Waktu dibuat         |
-
-### Ringkasan Relasi Utama:
-
-| Relasi                                    | Kardinalitas | Penjelasan                                                                           |
-| ----------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
-| roles → users                             | 1 : N        | Satu role dapat dimiliki oleh banyak user, tetapi satu user hanya memiliki satu role |
-| users → children                          | 1 : N        | Satu user (orang tua) dapat memiliki banyak anak                                     |
-| children → growth_records                 | 1 : N        | Satu anak memiliki banyak catatan pertumbuhan                                        |
-| children → immunization_logs              | 1 : N        | Satu anak memiliki banyak riwayat imunisasi                                          |
-| vaccine_types → vaccine_schedules         | 1 : N        | Satu jenis vaksin memiliki banyak jadwal                                             |
-| vaccine_types → immunization_logs         | 1 : N        | Satu jenis vaksin dapat digunakan pada banyak riwayat imunisasi                      |
-| vaccine_schedules → immunization_logs     | 1 : N        | Satu jadwal vaksin dapat digunakan pada banyak imunisasi                             |
-| healthcare_facilities → immunization_logs | 1 : N        | Satu fasilitas melayani banyak imunisasi                                             |
-| users → immunization_logs                 | 1 : N        | Satu user (tenaga kesehatan) dapat menangani banyak imunisasi                        |
-| immunization_logs → reminders             | 1 : N        | Satu riwayat imunisasi memiliki banyak pengingat                                     |
-| users → articles                          | 1 : N        | Satu user dapat menulis banyak artikel                                               |
-| users → audit_logs                        | 1 : N        | Satu user memiliki banyak catatan aktivitas                                          |
-
-
 ## 🔗 API Endpoints
 
 ### Health Check
@@ -650,48 +505,99 @@ Halaman ini menampilkan fitur Faskes Map pada aplikasi ByeByeVirus yang digunaka
 
 ---
 
-##  👨‍💻  Developer Workflow
+## 🚀 Deployment
 
-Mulai dari modul 9 ini, kita menggunakan **Github Flow**. Setiap anggota tim wajib menjalankan pengecekan lokal menggunakan 'Makefile' sebelum melakukan push kode ke branch fitur.
+Deployment aplikasi dilakukan menggunakan layanan cloud yang telah dikonfigurasi pada project. Proses deployment terhubung dengan GitHub Actions, sehingga setiap perubahan yang masuk ke branch `main` dapat memicu pipeline otomatis untuk melakukan pengecekan, build, dan deployment aplikasi.
+
+### Alur Deployment
+
+1. Developer melakukan push atau merge perubahan ke branch `main`.
+2. GitHub Actions menjalankan pipeline CI/CD secara otomatis.
+3. Pipeline melakukan pengujian pada backend dan frontend.
+4. Docker image dibangun untuk memastikan aplikasi dapat berjalan pada environment container.
+5. Jika seluruh proses berhasil, aplikasi akan dideploy ke platform cloud yang digunakan.
+
+### Live Demo
+
+| Service | URL |
+|---|---|
+| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
+| Backend API | Belum tersedia |
+| API Docs (Swagger) | Belum tersedia |
+
+### Catatan Deployment
+
+Jika proses deployment gagal, lakukan pengecekan pada tab **Actions** di GitHub untuk melihat log error. Beberapa penyebab umum kegagalan deployment antara lain kesalahan environment variables, dependency backend atau frontend yang belum sesuai, kegagalan build Docker image, atau konfigurasi deployment yang belum lengkap.
+
+## 👨‍💻 Developer Workflow
+
+Project ini menggunakan alur kerja **GitHub Flow**. Setiap anggota tim membuat branch sesuai tugas masing-masing, melakukan perubahan pada branch tersebut, lalu mengajukan Pull Request agar dapat direview sebelum digabungkan ke branch `main`.
 
 ### Perintah Makefile
 
-Gunakan perintah berikut di terminal:
+Sebelum melakukan push atau membuat Pull Request, anggota tim disarankan menjalankan pengecekan lokal menggunakan Makefile.
 
-*   `make lint` : Menjalankan linter (flake8) untuk mengecek kerapian dan standar penulisan kode di backend.
-*   `make test` : Menjalankan unit testing (saat ini masih berupa placeholder).
-*   `make pr-check` : **Wajib dijalankan sebelum push!** Perintah ini akan membangun ulang (build) Docker container, lalu menjalankan linting dan testing secara otomatis.
+| Command | Keterangan |
+|---|---|
+| `make lint` | Menjalankan linter untuk mengecek kerapian dan standar penulisan kode backend |
+| `make test` | Menjalankan unit testing yang tersedia pada project |
+| `make pr-check` | Menjalankan pengecekan sebelum Pull Request, termasuk build Docker, linting, dan testing |
 
 ### Cara Berkontribusi
-1. Ambil update terbaru dari main: `git checkout main && git pull origin main`.
-2. Buat branch baru: `git checkout -b tipe/nama-fitur`.
-3. Lakukan perubahan kode.
-4. **Verifikasi kode** dengan menjalankan `make pr-check`.
-5. Jika berhasil (muncul ✅), lakukan commit dan push.
-6. Buat Pull Request di GitHub dan minta review dari teman tim.
 
-## 🌐 Live Demo
+1. Ambil update terbaru dari branch `main`.
 
-| Service | URL |
-|---------|-----|
-| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
-| Backend API | |
-| API Docs (Swagger) | |
+```bash
+git checkout main
+git pull origin main
+```
+
+2. Buat branch baru sesuai tugas yang dikerjakan.
+
+```bash
+git checkout -b tipe/nama-fitur
+```
+
+Contoh:
+
+```bash
+git checkout -b docs/update-readme
+```
+
+3. Lakukan perubahan kode atau dokumentasi sesuai kebutuhan.
+
+4. Jalankan pengecekan lokal sebelum push.
+
+```bash
+make pr-check
+```
+
+5. Jika pengecekan berhasil, lakukan commit.
+
+```bash
+git add .
+git commit -m "docs: update README"
+```
+
+6. Push branch ke GitHub.
+
+```bash
+git push origin tipe/nama-fitur
+```
+
+7. Buat Pull Request di GitHub dan minta review dari anggota tim lain.
 
 ## 🔄 CI/CD
 
-Pipeline otomatis berjalan saat push ke main:
-1. ✅ Test backend (pytest)
-2. ✅ Test frontend (Vitest)
-3. ✅ Build Docker images
-4. 🚀 Deploy ke Railway
----
-## 📋 Dokumentasi
-- [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
-- [Dokumentasi UI testing](docs/ui-test-results.md)
-- [Dokumentasi Auth testing](docs/auth-test-results.md)
-- [Docker Cheatsheet](docs/docker-cheatsheet.md)
-- [Setup Guide](docs/setup-guide.md)
-- [Testing Guide](docs/testing-guide.md)
-- [Production Test](docs/production-test.md)
-- [Git Workflow](docs/git-workflow.md)
+Pipeline CI/CD berjalan secara otomatis melalui GitHub Actions ketika terdapat push atau Pull Request ke branch utama. Pipeline ini digunakan untuk memastikan kode yang masuk tetap aman, dapat diuji, dan siap dijalankan.
+
+### Tahapan Pipeline
+
+1. ✅ Menjalankan pengujian backend menggunakan `pytest`.
+2. ✅ Menjalankan pengujian frontend menggunakan `Vitest`.
+3. ✅ Melakukan build Docker image untuk memastikan aplikasi dapat berjalan di environment container.
+4. 🚀 Melakukan deployment ke platform cloud jika seluruh proses sebelumnya berhasil.
+
+### Catatan CI/CD
+
+Jika pipeline gagal, anggota tim perlu membuka tab **Actions** pada repository GitHub untuk melihat detail log error. Error yang muncul dapat berasal dari dependency yang belum terpasang, test yang gagal, konfigurasi environment yang belum sesuai, atau proses build Docker yang bermasalah.

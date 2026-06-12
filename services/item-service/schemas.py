@@ -1,7 +1,8 @@
 """Pydantic schemas for Item Service."""
+# pyrefly: ignore [missing-import]
+import datetime
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
-from datetime import date, datetime
 
 
 class ItemCreate(BaseModel):
@@ -9,6 +10,40 @@ class ItemCreate(BaseModel):
     description: Optional[str] = ""
     price: float
     quantity: Optional[int] = 0
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v):
+        if len(v.strip()) < 1:
+            raise ValueError("Nama item tidak boleh kosong")
+        if len(v) > 300:
+            raise ValueError("Nama item maksimal 300 karakter")
+        return v.strip()
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, v):
+        if v and len(v) > 2000:
+            raise ValueError("Deskripsi maksimal 2000 karakter")
+        return v
+
+    @field_validator("price")
+    @classmethod
+    def validate_price(cls, v):
+        if v < 0:
+            raise ValueError("Harga tidak boleh negatif")
+        if v > 999_999_999:
+            raise ValueError("Harga terlalu besar")
+        return round(v, 2)
+
+    @field_validator("quantity")
+    @classmethod
+    def validate_quantity(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Quantity tidak boleh negatif")
+        if v is not None and v > 999_999:
+            raise ValueError("Quantity terlalu besar")
+        return v
 
 
 class ItemUpdate(BaseModel):
@@ -47,7 +82,7 @@ class ItemStatsResponse(BaseModel):
 class ChildCreate(BaseModel):
     """Schema untuk membuat data anak baru."""
     name: str = Field(..., min_length=1, max_length=100, title="Nama Anak")
-    birth_date: date = Field(..., title="Tanggal Lahir", description="Format: YYYY-MM-DD")
+    birth_date: datetime.date = Field(..., title="Tanggal Lahir Anak", description="Format: YYYY-MM-DD")
     gender: str = Field(..., title="Jenis Kelamin", description="Isi dengan: male atau female")
     blood_type: Optional[str] = Field(None, title="Golongan Darah", description="Contoh: A, B, AB, O")
     height: Optional[float] = Field(None, title="Tinggi Badan (cm)")
@@ -68,7 +103,7 @@ class ChildResponse(BaseModel):
     id: int
     parent_id: int
     name: str
-    birth_date: date
+    birth_date: datetime.date
     gender: str
     blood_type: Optional[str] = None
     height: Optional[float] = None
@@ -91,7 +126,7 @@ class ChildListResponse(BaseModel):
 class ImmunizationLogCreate(BaseModel):
     """Schema untuk membuat immunization log."""
     vaccine_id: int = Field(..., title="ID Vaksin")
-    scheduled_date: date = Field(..., title="Tanggal Dijadwalkan", description="Format: YYYY-MM-DD")
+    scheduled_date: datetime.date = Field(..., title="Tanggal Jadwalkan", description="Format: YYYY-MM-DD")
     status: Optional[str] = Field("pending", title="Status", description="pending atau completed")
     notes: Optional[str] = Field(None, title="Catatan")
 
@@ -102,10 +137,10 @@ class ImmunizationLogResponse(BaseModel):
     child_id: int
     vaccine_id: int
     status: str
-    scheduled_date: date
-    completion_date: Optional[date] = None
+    scheduled_date: datetime.date
+    completion_date: Optional[datetime.date] = None
     notes: Optional[str] = None
-    created_at: Optional[datetime] = None
+    created_at: Optional[datetime.datetime] = None
 
     class Config:
         from_attributes = True
@@ -115,3 +150,44 @@ class ImmunizationListResponse(BaseModel):
     """Schema untuk list immunization logs."""
     total: int
     immunizations: list[ImmunizationLogResponse]
+
+
+# ==================== PUSKESMAS SCHEDULE SCHEMAS ====================
+
+class PuskesmasScheduleCreate(BaseModel):
+    vaccine_id: int = Field(..., title="ID Vaksin")
+    date: datetime.date = Field(..., title="Tanggal Pelaksanaan", description="Format: YYYY-MM-DD")
+    time_start: str = Field(..., title="Waktu Mulai", description="Contoh: 08:00")
+    time_end: str = Field(..., title="Waktu Selesai", description="Contoh: 10:00")
+    location: str = Field(..., title="Lokasi")
+    quota: Optional[int] = Field(0, title="Kuota Peserta")
+
+
+class PuskesmasScheduleUpdate(BaseModel):
+    vaccine_id: Optional[int] = None
+    date: Optional[datetime.date] = None
+    time_start: Optional[str] = None
+    time_end: Optional[str] = None
+    location: Optional[str] = None
+    quota: Optional[int] = None
+
+
+class PuskesmasScheduleResponse(BaseModel):
+    id: int
+    midwife_id: int
+    vaccine_id: int
+    date: datetime.date
+    time_start: str
+    time_end: str
+    location: str
+    quota: int
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class PuskesmasScheduleListResponse(BaseModel):
+    total: int
+    schedules: list[PuskesmasScheduleResponse]

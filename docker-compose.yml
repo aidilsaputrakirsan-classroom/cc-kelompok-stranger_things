@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   # ==================== AUTH DATABASE ====================
   auth-db:
     image: postgres:16-alpine
@@ -20,7 +21,13 @@ services:
       test: ["CMD-SHELL", "pg_isready"] 
       interval: 5s
       timeout: 5s
-      retries: 10                      
+      retries: 10
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== ITEM DATABASE ====================
   item-db:
@@ -41,7 +48,13 @@ services:
       test: ["CMD-SHELL", "pg_isready"] 
       interval: 5s
       timeout: 5s
-      retries: 10                     
+      retries: 10 
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ==================== AUTH SERVICE ====================
   auth-service:
@@ -53,6 +66,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@auth-db:5432/bye_virus"
+      SERVICE_NAME: auth-service
+      LOG_LEVEL: INFO
     ports:
       - "8001:8001"
     depends_on:
@@ -71,8 +86,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    # ➕ Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
-  # ==================== ITEM SERVICE ====================
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
+
+# ==================== ITEM SERVICE ====================
   item-service:
     build:
       context: ./services/item-service
@@ -82,6 +110,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@item-db:5432/bye_virus"
+      SERVICE_NAME: item-service
+      LOG_LEVEL: INFO
     ports:
       - "8002:8002"
     depends_on:
@@ -100,6 +130,20 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+    #  Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "item-service"
 
   # ==================== FRONTEND ====================
   frontend:
@@ -121,6 +165,13 @@ services:
     networks:
       - cloudnet
 
+    #  Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
   # ==================== GATEWAY (NGINX) ====================
   gateway:
     image: nginx:alpine
@@ -140,6 +191,13 @@ services:
     networks:
       - cloudnet
 
+    # Menambahkan pembatasan resource
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
 # ==================== VOLUMES ====================
 volumes:
   auth_pgdata:
@@ -149,3 +207,4 @@ volumes:
 networks:
   cloudnet:
     driver: bridge
+
