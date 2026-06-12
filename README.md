@@ -187,6 +187,104 @@ npm run dev
 | 15 | Final Polish & Security | ✅ |
 | 16 | UAS Demo (Milestone 3) | ⬜ |
 
+---
+## 🚀 Deployment
+
+Deployment aplikasi dilakukan menggunakan layanan cloud yang telah dikonfigurasi pada project. Proses deployment terhubung dengan GitHub Actions, sehingga setiap perubahan yang masuk ke branch `main` dapat memicu pipeline otomatis untuk melakukan pengecekan, build, dan deployment aplikasi.
+
+### Alur Deployment
+
+1. Developer melakukan push atau merge perubahan ke branch `main`.
+2. GitHub Actions menjalankan pipeline CI/CD secara otomatis.
+3. Pipeline melakukan pengujian pada backend dan frontend.
+4. Docker image dibangun untuk memastikan aplikasi dapat berjalan pada environment container.
+5. Jika seluruh proses berhasil, aplikasi akan dideploy ke platform cloud yang digunakan.
+
+### Live Demo
+
+| Service | URL |
+|---|---|
+| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
+| Backend API | Belum tersedia |
+| API Docs (Swagger) | Belum tersedia |
+
+### Catatan Deployment
+
+Jika proses deployment gagal, lakukan pengecekan pada tab **Actions** di GitHub untuk melihat log error. Beberapa penyebab umum kegagalan deployment antara lain kesalahan environment variables, dependency backend atau frontend yang belum sesuai, kegagalan build Docker image, atau konfigurasi deployment yang belum lengkap.
+
+## 👨‍💻 Developer Workflow
+
+Project ini menggunakan alur kerja **GitHub Flow**. Setiap anggota tim membuat branch sesuai tugas masing-masing, melakukan perubahan pada branch tersebut, lalu mengajukan Pull Request agar dapat direview sebelum digabungkan ke branch `main`.
+
+### Perintah Makefile
+
+Sebelum melakukan push atau membuat Pull Request, anggota tim disarankan menjalankan pengecekan lokal menggunakan Makefile.
+
+| Command | Keterangan |
+|---|---|
+| `make lint` | Menjalankan linter untuk mengecek kerapian dan standar penulisan kode backend |
+| `make test` | Menjalankan unit testing yang tersedia pada project |
+| `make pr-check` | Menjalankan pengecekan sebelum Pull Request, termasuk build Docker, linting, dan testing |
+
+### Cara Berkontribusi
+
+1. Ambil update terbaru dari branch `main`.
+
+```bash
+git checkout main
+git pull origin main
+```
+
+2. Buat branch baru sesuai tugas yang dikerjakan.
+
+```bash
+git checkout -b tipe/nama-fitur
+```
+
+Contoh:
+
+```bash
+git checkout -b docs/update-readme
+```
+
+3. Lakukan perubahan kode atau dokumentasi sesuai kebutuhan.
+
+4. Jalankan pengecekan lokal sebelum push.
+
+```bash
+make pr-check
+```
+
+5. Jika pengecekan berhasil, lakukan commit.
+
+```bash
+git add .
+git commit -m "docs: update README"
+```
+
+6. Push branch ke GitHub.
+
+```bash
+git push origin tipe/nama-fitur
+```
+
+7. Buat Pull Request di GitHub dan minta review dari anggota tim lain.
+
+## 🔄 CI/CD
+
+Pipeline CI/CD berjalan secara otomatis melalui GitHub Actions ketika terdapat push atau Pull Request ke branch utama. Pipeline ini digunakan untuk memastikan kode yang masuk tetap aman, dapat diuji, dan siap dijalankan.
+
+### Tahapan Pipeline
+
+1. ✅ Menjalankan pengujian backend menggunakan `pytest`.
+2. ✅ Menjalankan pengujian frontend menggunakan `Vitest`.
+3. ✅ Melakukan build Docker image untuk memastikan aplikasi dapat berjalan di environment container.
+4. 🚀 Melakukan deployment ke platform cloud jika seluruh proses sebelumnya berhasil.
+
+### Catatan CI/CD
+
+Jika pipeline gagal, anggota tim perlu membuka tab **Actions** pada repository GitHub untuk melihat detail log error. Error yang muncul dapat berasal dari dependency yang belum terpasang, test yang gagal, konfigurasi environment yang belum sesuai, atau proses build Docker yang bermasalah.
+
 ## 🐳 Docker Compose Commands
 
 Berikut perintah dasar Docker Compose yang digunakan:
@@ -505,99 +603,3 @@ Halaman ini menampilkan fitur Faskes Map pada aplikasi ByeByeVirus yang digunaka
 
 ---
 
-## 🚀 Deployment
-
-Deployment aplikasi dilakukan menggunakan layanan cloud yang telah dikonfigurasi pada project. Proses deployment terhubung dengan GitHub Actions, sehingga setiap perubahan yang masuk ke branch `main` dapat memicu pipeline otomatis untuk melakukan pengecekan, build, dan deployment aplikasi.
-
-### Alur Deployment
-
-1. Developer melakukan push atau merge perubahan ke branch `main`.
-2. GitHub Actions menjalankan pipeline CI/CD secara otomatis.
-3. Pipeline melakukan pengujian pada backend dan frontend.
-4. Docker image dibangun untuk memastikan aplikasi dapat berjalan pada environment container.
-5. Jika seluruh proses berhasil, aplikasi akan dideploy ke platform cloud yang digunakan.
-
-### Live Demo
-
-| Service | URL |
-|---|---|
-| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
-| Backend API | Belum tersedia |
-| API Docs (Swagger) | Belum tersedia |
-
-### Catatan Deployment
-
-Jika proses deployment gagal, lakukan pengecekan pada tab **Actions** di GitHub untuk melihat log error. Beberapa penyebab umum kegagalan deployment antara lain kesalahan environment variables, dependency backend atau frontend yang belum sesuai, kegagalan build Docker image, atau konfigurasi deployment yang belum lengkap.
-
-## 👨‍💻 Developer Workflow
-
-Project ini menggunakan alur kerja **GitHub Flow**. Setiap anggota tim membuat branch sesuai tugas masing-masing, melakukan perubahan pada branch tersebut, lalu mengajukan Pull Request agar dapat direview sebelum digabungkan ke branch `main`.
-
-### Perintah Makefile
-
-Sebelum melakukan push atau membuat Pull Request, anggota tim disarankan menjalankan pengecekan lokal menggunakan Makefile.
-
-| Command | Keterangan |
-|---|---|
-| `make lint` | Menjalankan linter untuk mengecek kerapian dan standar penulisan kode backend |
-| `make test` | Menjalankan unit testing yang tersedia pada project |
-| `make pr-check` | Menjalankan pengecekan sebelum Pull Request, termasuk build Docker, linting, dan testing |
-
-### Cara Berkontribusi
-
-1. Ambil update terbaru dari branch `main`.
-
-```bash
-git checkout main
-git pull origin main
-```
-
-2. Buat branch baru sesuai tugas yang dikerjakan.
-
-```bash
-git checkout -b tipe/nama-fitur
-```
-
-Contoh:
-
-```bash
-git checkout -b docs/update-readme
-```
-
-3. Lakukan perubahan kode atau dokumentasi sesuai kebutuhan.
-
-4. Jalankan pengecekan lokal sebelum push.
-
-```bash
-make pr-check
-```
-
-5. Jika pengecekan berhasil, lakukan commit.
-
-```bash
-git add .
-git commit -m "docs: update README"
-```
-
-6. Push branch ke GitHub.
-
-```bash
-git push origin tipe/nama-fitur
-```
-
-7. Buat Pull Request di GitHub dan minta review dari anggota tim lain.
-
-## 🔄 CI/CD
-
-Pipeline CI/CD berjalan secara otomatis melalui GitHub Actions ketika terdapat push atau Pull Request ke branch utama. Pipeline ini digunakan untuk memastikan kode yang masuk tetap aman, dapat diuji, dan siap dijalankan.
-
-### Tahapan Pipeline
-
-1. ✅ Menjalankan pengujian backend menggunakan `pytest`.
-2. ✅ Menjalankan pengujian frontend menggunakan `Vitest`.
-3. ✅ Melakukan build Docker image untuk memastikan aplikasi dapat berjalan di environment container.
-4. 🚀 Melakukan deployment ke platform cloud jika seluruh proses sebelumnya berhasil.
-
-### Catatan CI/CD
-
-Jika pipeline gagal, anggota tim perlu membuka tab **Actions** pada repository GitHub untuk melihat detail log error. Error yang muncul dapat berasal dari dependency yang belum terpasang, test yang gagal, konfigurasi environment yang belum sesuai, atau proses build Docker yang bermasalah.
