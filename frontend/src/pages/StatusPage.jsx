@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost';
 
-function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
+function ServiceCard({ name, icon, healthUrl, metricsUrl, isDark }) {
   const [health, setHealth] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       setHealth({ status: 'unreachable' });
     }
 
-    // FIX: guard against null metricsUrl
+    // guard against null metricsUrl
     if (metricsUrl) {
       try {
         const metricsRes = await fetch(metricsUrl);
@@ -53,16 +53,16 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
 
   return (
     <div style={{
-      border: '1px solid #e2e8f0',
+      border: `1px solid ${isDark ? '#2a2a4a' : '#f0c0d0'}`,
       borderRadius: '12px',
       padding: '20px',
       borderLeft: `4px solid ${statusColor[status] || '#6b7280'}`,
-      background: '#fff',
+      background: isDark ? '#1a1a3e' : '#fff',
       transition: 'opacity 0.3s',
       opacity: refreshing ? 0.75 : 1,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, color: '#1a1a2e' }}>
+        <h3 style={{ margin: 0, color: isDark ? '#f0f0f0' : '#1a1a2e' }}>
           {icon} {name}
           {refreshing && (
             <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px', fontWeight: 400 }}>
@@ -84,22 +84,22 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
       </div>
 
       {metrics && (
-        <div style={{ marginTop: '16px', fontSize: '14px', color: '#64748b' }}>
+        <div style={{ marginTop: '16px', fontSize: '14px', color: isDark ? '#94a3b8' : '#64748b' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <div>Requests: <strong style={{ color: '#1a1a2e' }}>{metrics.total_requests}</strong></div>
+            <div>Requests: <strong style={{ color: isDark ? '#f0f0f0' : '#1a1a2e' }}>{metrics.total_requests}</strong></div>
             <div>Errors: <strong style={{ color: metrics.total_errors > 0 ? '#ef4444' : '#22c55e' }}>
               {metrics.total_errors}
             </strong></div>
             <div>Error Rate: <strong style={{ color: errorRateColor }}>
               {errorRate}%
             </strong></div>
-            <div>Avg Latency: <strong style={{ color: (metrics.latency?.avg_ms || 0) > 500 ? '#f59e0b' : '#1a1a2e' }}>
+            <div>Avg Latency: <strong style={{ color: (metrics.latency?.avg_ms || 0) > 500 ? '#f59e0b' : (isDark ? '#f0f0f0' : '#1a1a2e') }}>
               {metrics.latency?.avg_ms || 0}ms
             </strong></div>
-            <div>p95 Latency: <strong style={{ color: (metrics.latency?.p95_ms || 0) > 1000 ? '#ef4444' : '#1a1a2e' }}>
+            <div>p95 Latency: <strong style={{ color: (metrics.latency?.p95_ms || 0) > 1000 ? '#ef4444' : (isDark ? '#f0f0f0' : '#1a1a2e') }}>
               {metrics.latency?.p95_ms || 0}ms
             </strong></div>
-            <div>Uptime: <strong style={{ color: '#1a1a2e' }}>
+            <div>Uptime: <strong style={{ color: isDark ? '#f0f0f0' : '#1a1a2e' }}>
               {Math.round((metrics.uptime_seconds || 0) / 60)}min
             </strong></div>
           </div>
@@ -126,7 +126,6 @@ export default function StatusPage() {
     return () => clearInterval(tick);
   }, []);
 
-  // FIX: satu div wrapper, hapus duplikat blok pertama
   return (
     <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', color: '#1a1a2e' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
