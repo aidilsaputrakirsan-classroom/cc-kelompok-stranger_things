@@ -665,7 +665,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, serviceDown }
           </div>
         </div>
 
-        {/* ── EduHealth ── */}
+        {/* EduHealth */}
         <div>
           <h3
             style={{
@@ -901,7 +901,6 @@ function App() {
           serviceDown={serviceDown}
         />
       )}
-
       {activePage === "profile" && (
         <ProfilPengguna
           user={user}
@@ -913,21 +912,21 @@ function App() {
         />
       )}
       {activePage === "about" && (
-  <AboutPage
-    onBack={() => setActivePage("home")}
-    activePage={activePage}
-    setActivePage={setActivePage}
-    onLogout={handleLogout}
-    theme={theme}
-  />
-)}
+        <AboutPage
+          onBack={() => setActivePage("home")}
+          activePage={activePage}
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+          theme={theme}
+        />
+      )}
       {activePage === "status" && (
-  <StatusPage
-    activePage={activePage}
-    setActivePage={setActivePage}
-    onLogout={handleLogout}
-  />
-)}
+        <StatusPage
+          activePage={activePage}
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+        />
+      )}
       {activePage === "dashboardBidan" && (
         <DashboardBidan
           user={user}
@@ -941,7 +940,6 @@ function App() {
           }}
         />
       )}
-    
       {activePage === "profilBidan" && (
         <ProfilBidan user={user} onLogout={handleLogout} onNavigate={handleBidanNavigate} />
       )}
