@@ -202,11 +202,9 @@ Deployment aplikasi dilakukan menggunakan layanan cloud yang telah dikonfigurasi
 
 ### Live Demo
 
-| Service | URL |
-|---|---|
-| Frontend | [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) |
-| Backend API | Belum tersedia |
-| API Docs (Swagger) | Belum tersedia |
+
+URL: [https://cc-kelompok-strangerthings.akhzafachrozy.my.id](https://cc-kelompok-strangerthings.akhzafachrozy.my.id) 
+
 
 ### Catatan Deployment
 
