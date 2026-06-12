@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { fetchChildren, deleteChild } from "../services/api"
 import Navbar from "../components/Navbar"
 import DegradedBanner from "../components/DegradedBanner"
+import { useTheme } from "../hooks/ThemeContext"
 
 function GirlAvatar() {
   return (
@@ -239,7 +240,204 @@ function isServiceDownError(err) {
   )
 }
 
+function getStyles(isDark) {
+  return {
+    page: {
+      background: isDark ? "#0f0f1a" : "#fff5f8",
+      minHeight: "100vh",
+      fontFamily: "'Segoe UI', Arial, sans-serif",
+      color: isDark ? "#f0f0f0" : "#1a1a2e",
+      fontSize: "14px",
+      transition: "background 0.3s, color 0.3s",
+    },
+    main: {
+      display: "grid",
+      gridTemplateColumns: "minmax(230px, 280px) minmax(0, 1fr) minmax(160px, 200px)",
+      gap: "1rem",
+      padding: "1rem 1.25rem",
+      maxWidth: "1200px",
+      margin: "0 auto",
+      alignItems: "start",
+    },
+    leftPanel: {
+      background: isDark ? "#16213e" : "white",
+      borderRadius: "16px",
+      overflow: "hidden",
+      boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.4)" : "0 2px 12px rgba(0,0,0,0.06)",
+    },
+    daftarHeader: {
+      background: "#e91e8c",
+      color: "white",
+      fontWeight: "700",
+      fontSize: "14px",
+      padding: "0.9rem 1rem",
+    },
+    daftarBody: {
+      padding: "0.9rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.55rem",
+    },
+    emptyText: {
+      color: isDark ? "#9ca3af" : "#aaa",
+      fontSize: "12px",
+      textAlign: "center",
+      padding: "0.75rem 0",
+      margin: 0,
+    },
+    errorState: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "8px",
+      padding: "1rem",
+      background: isDark ? "#2a1a00" : "#FAEEDA",
+      borderRadius: "10px",
+      border: `1px solid ${isDark ? "#f59e0b" : "#EF9F27"}`,
+      textAlign: "center",
+    },
+    retryBtn: {
+      background: "none",
+      border: `1px solid ${isDark ? "#f59e0b" : "#854F0B"}`,
+      borderRadius: "8px",
+      color: isDark ? "#f59e0b" : "#854F0B",
+      padding: "6px 14px",
+      fontSize: "12px",
+      fontWeight: "600",
+      cursor: "pointer",
+    },
+    childRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "0.55rem 0.7rem",
+      borderRadius: "20px",
+      cursor: "pointer",
+      transition: "background 0.2s",
+    },
+    childRowActive: { background: "#e91e8c" },
+    childRowInactive: { background: isDark ? "#2a2a4a" : "#f0f0f0" },
+    childAvatarWrap: {
+      width: "34px",
+      height: "34px",
+      borderRadius: "50%",
+      overflow: "hidden",
+      flexShrink: 0,
+    },
+    childName: { flex: 1, fontWeight: "600", fontSize: "12.5px", minWidth: 0 },
+    tambahAnakBtn: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      width: "100%",
+      padding: "0.65rem 1rem",
+      marginTop: "0.15rem",
+      borderRadius: "20px",
+      border: "2px dashed #f48fb1",
+      background: "transparent",
+      color: "#e91e8c",
+      fontWeight: "600",
+      fontSize: "13px",
+      cursor: "pointer",
+    },
+    tambahAnakPlus: { fontSize: "18px", fontWeight: "700", lineHeight: 1 },
+    centerPanel: {
+      background: isDark ? "#1a1a2e" : "#fce4ec",
+      borderRadius: "16px",
+      padding: "1.15rem",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+      minHeight: "300px",
+    },
+    emptyCenter: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "260px",
+    },
+    profileHeader: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "10px",
+      marginBottom: "0.9rem",
+    },
+    profileTitle: { fontSize: "16px", fontWeight: "700", color: "#e91e8c", margin: 0 },
+    jadwalBtn: {
+      background: "#e91e8c",
+      color: "white",
+      border: "none",
+      borderRadius: "20px",
+      padding: "0.55rem 0.9rem 0.55rem 1rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      cursor: "pointer",
+      textAlign: "left",
+    },
+    jadwalChevron: { fontSize: "20px", fontWeight: "700", lineHeight: 1 },
+    childFullName: {
+      fontSize: "18px",
+      fontWeight: "700",
+      color: isDark ? "#f0f0f0" : "#1a1a2e",
+      margin: "0 0 0.75rem 0",
+    },
+    infoRow: {
+      background: isDark ? "#0f0f1a" : "white",
+      borderRadius: "18px",
+      padding: "0.65rem 0.95rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      marginBottom: "0.5rem",
+      fontSize: "13px",
+      color: isDark ? "#f0f0f0" : "#333",
+    },
+    infoIcon: { fontSize: "15px" },
+    rightPanel: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.9rem",
+    },
+    statCard: {
+      background: isDark ? "#16213e" : "white",
+      borderRadius: "16px",
+      padding: "1rem 1rem",
+      boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.4)" : "0 2px 12px rgba(0,0,0,0.06)",
+    },
+    iconBtn: {
+      border: "none",
+      borderRadius: "50%",
+      width: "26px",
+      height: "26px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      fontSize: "12px",
+      padding: 0,
+      flexShrink: 0,
+    },
+    statCardTitle: {
+      fontSize: "14px",
+      fontWeight: "700",
+      color: isDark ? "#f0f0f0" : "#1a1a2e",
+      marginBottom: "6px",
+    },
+    statCardValue: { fontSize: "24px", fontWeight: "700", color: "#2196f3", marginBottom: "6px" },
+    statCardDelta: { display: "flex", alignItems: "center", gap: "6px" },
+    arrowUp: { fontSize: "16px", color: "#4caf50", fontWeight: "700" },
+    deltaText: { fontSize: "12px", color: isDark ? "#9ca3af" : "#555" },
+    desktopOnly: {},
+  }
+}
+
 export default function JadwalImunisasi({ onLogout, activePage, setActivePage, serviceDown: serviceDownProp = false }) {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+  const s = getStyles(isDark)
+
   const [childrenList, setChildrenList] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -303,7 +501,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage, s
       {isServiceDown && (
         <DegradedBanner
           message="Layanan sedang bermasalah. Data anak mungkin tidak ter-update."
-          isDark={false}
+          isDark={isDark}
         />
       )}
 
@@ -315,7 +513,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage, s
 
             {!loading && isServiceDown && childrenList.length === 0 && (
               <div style={s.errorState}>
-                <p style={{ color: "#854F0B", margin: 0, fontSize: "12px", lineHeight: 1.5 }}>
+                <p style={{ color: isDark ? "#f59e0b" : "#854F0B", margin: 0, fontSize: "12px", lineHeight: 1.5 }}>
                   Tidak dapat memuat data. Periksa koneksi server.
                 </p>
                 <button style={s.retryBtn} onClick={loadChildren}>
@@ -343,14 +541,14 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage, s
                   <div style={s.childAvatarWrap}>
                     {child.gender === "female" ? <GirlAvatar /> : <BoyAvatar />}
                   </div>
-                  <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : "#444" }}>
+                  <span style={{ ...s.childName, color: selectedChild?.id === child.id ? "white" : isDark ? "#f0f0f0" : "#444" }}>
                     {child.name}
                   </span>
                   <div style={{ display: "flex", gap: "4px" }} onClick={(e) => e.stopPropagation()}>
                     <button
                       style={{
                         ...s.iconBtn,
-                        background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : "#fff3e0",
+                        background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : isDark ? "#2a1a00" : "#fff3e0",
                         color: selectedChild?.id === child.id ? "white" : "#fb8c00",
                       }}
                       title="Edit"
@@ -364,7 +562,7 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage, s
                     <button
                       style={{
                         ...s.iconBtn,
-                        background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : "#fce4ec",
+                        background: selectedChild?.id === child.id ? "rgba(255,255,255,0.25)" : isDark ? "#2a0a0a" : "#fce4ec",
                         color: selectedChild?.id === child.id ? "white" : "#e53935",
                       }}
                       title="Hapus"
@@ -472,184 +670,4 @@ export default function JadwalImunisasi({ onLogout, activePage, setActivePage, s
       </div>
     </div>
   )
-}
-
-const s = {
-  page: {
-    background: "#fff5f8",
-    minHeight: "100vh",
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-    color: "#1a1a2e",
-    fontSize: "14px",
-  },
-  main: {
-    display: "grid",
-    gridTemplateColumns: "minmax(230px, 280px) minmax(0, 1fr) minmax(160px, 200px)",
-    gap: "1rem",
-    padding: "1rem 1.25rem",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    alignItems: "start",
-  },
-  leftPanel: {
-    background: "white",
-    borderRadius: "16px",
-    overflow: "hidden",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-  },
-  daftarHeader: {
-    background: "#e91e8c",
-    color: "white",
-    fontWeight: "700",
-    fontSize: "14px",
-    padding: "0.9rem 1rem",
-  },
-  daftarBody: {
-    padding: "0.9rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.55rem",
-  },
-  emptyText: {
-    color: "#aaa",
-    fontSize: "12px",
-    textAlign: "center",
-    padding: "0.75rem 0",
-    margin: 0,
-  },
-  errorState: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "8px",
-    padding: "1rem",
-    background: "#FAEEDA",
-    borderRadius: "10px",
-    border: "1px solid #EF9F27",
-    textAlign: "center",
-  },
-  retryBtn: {
-    background: "none",
-    border: "1px solid #854F0B",
-    borderRadius: "8px",
-    color: "#854F0B",
-    padding: "6px 14px",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-  childRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    padding: "0.55rem 0.7rem",
-    borderRadius: "20px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-  },
-  childRowActive: { background: "#e91e8c" },
-  childRowInactive: { background: "#f0f0f0" },
-  childAvatarWrap: {
-    width: "34px",
-    height: "34px",
-    borderRadius: "50%",
-    overflow: "hidden",
-    flexShrink: 0,
-  },
-  childName: { flex: 1, fontWeight: "600", fontSize: "12.5px", minWidth: 0 },
-  tambahAnakBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    width: "100%",
-    padding: "0.65rem 1rem",
-    marginTop: "0.15rem",
-    borderRadius: "20px",
-    border: "2px dashed #f48fb1",
-    background: "transparent",
-    color: "#e91e8c",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-  },
-  tambahAnakPlus: { fontSize: "18px", fontWeight: "700", lineHeight: 1 },
-  centerPanel: {
-    background: "#fce4ec",
-    borderRadius: "16px",
-    padding: "1.15rem",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-    minHeight: "300px",
-  },
-  emptyCenter: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "260px",
-  },
-  profileHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "10px",
-    marginBottom: "0.9rem",
-  },
-  profileTitle: { fontSize: "16px", fontWeight: "700", color: "#e91e8c", margin: 0 },
-  jadwalBtn: {
-    background: "#e91e8c",
-    color: "white",
-    border: "none",
-    borderRadius: "20px",
-    padding: "0.55rem 0.9rem 0.55rem 1rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    cursor: "pointer",
-    textAlign: "left",
-  },
-  jadwalChevron: { fontSize: "20px", fontWeight: "700", lineHeight: 1 },
-  childFullName: { fontSize: "18px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 0.75rem 0" },
-  infoRow: {
-    background: "white",
-    borderRadius: "18px",
-    padding: "0.65rem 0.95rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "0.5rem",
-    fontSize: "13px",
-    color: "#333",
-  },
-  infoIcon: { fontSize: "15px" },
-  rightPanel: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.9rem",
-  },
-  statCard: {
-    background: "white",
-    borderRadius: "16px",
-    padding: "1rem 1rem",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-  },
-  iconBtn: {
-    border: "none",
-    borderRadius: "50%",
-    width: "26px",
-    height: "26px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "12px",
-    padding: 0,
-    flexShrink: 0,
-  },
-  statCardTitle: { fontSize: "14px", fontWeight: "700", color: "#1a1a2e", marginBottom: "6px" },
-  statCardValue: { fontSize: "24px", fontWeight: "700", color: "#2196f3", marginBottom: "6px" },
-  statCardDelta: { display: "flex", alignItems: "center", gap: "6px" },
-  arrowUp: { fontSize: "16px", color: "#4caf50", fontWeight: "700" },
-  deltaText: { fontSize: "12px", color: "#555" },
-  desktopOnly: {},
 }

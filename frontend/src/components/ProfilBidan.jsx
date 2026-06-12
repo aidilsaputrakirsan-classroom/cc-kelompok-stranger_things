@@ -1,264 +1,459 @@
 import { useState } from "react";
 
-/* ── Constants (sama dengan KelolaJadwalBidan) ── */
-const TEAL_DARK  = "#085041";
-const TEAL_MID   = "#1D9E75";
-const TEAL_LIGHT = "#E1F5EE";
-const TEAL_TEXT  = "#0F6E56";
+/* ─── Design tokens (sama dengan KelolaJadwalBidan) ─── */
+const C = {
+  forest:        "#063D30",
+  forestMid:     "#085041",
+  teal:          "#10B981",
+  tealLight:     "#D1FAE5",
+  tealMid:       "#6EE7B7",
+  tealSoft:      "#ECFDF5",
+  pageBg:        "#F0FAF6",
+  surface:       "#FFFFFF",
+  surfaceAlt:    "#F8FFFE",
+  border:        "#E2F0EB",
+  borderStrong:  "#C4DDD5",
+  textPrimary:   "#0C1F1A",
+  textSecondary: "#3D6657",
+  textMuted:     "#7BA898",
+  amber:         "#F59E0B",
+  amberLight:    "#FEF3C7",
+  rose:          "#F43F5E",
+  roseLight:     "#FFE4E6",
+  blue:          "#3B82F6",
+  blueLight:     "#DBEAFE",
+  green:         "#16A34A",
+  greenLight:    "#DCFCE7",
+  sidebarBg:     "#052E24",
+  sidebarHover:  "#0A4034",
+};
+
+const T = {
+  hero:     { fontSize: "22px",   fontWeight: "700", lineHeight: "1.25", letterSpacing: "-0.3px" },
+  h2:       { fontSize: "15px",   fontWeight: "700", letterSpacing: "-0.1px" },
+  label:    { fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase" },
+  body:     { fontSize: "13.5px", fontWeight: "400", lineHeight: "1.6" },
+  bodyMed:  { fontSize: "13.5px", fontWeight: "600" },
+  small:    { fontSize: "12px",   fontWeight: "400", lineHeight: "1.5" },
+  smallMed: { fontSize: "12px",   fontWeight: "600" },
+  xs:       { fontSize: "11px",   fontWeight: "500" },
+};
 
 /* ── Icons ── */
-function HomeIcon()     { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>; }
-function CalendarIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>; }
-function PersonIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>; }
-function ProfileIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>; }
-function BellIcon()     { return <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>; }
-function LogoutIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>; }
-function ShieldIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>; }
-function ChevronDown()  { return <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>; }
-function EditIcon()     { return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>; }
-function CameraIcon()   { return <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>; }
-function LockIcon()     { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>; }
-function DeviceIcon()   { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></svg>; }
-function ActivityIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>; }
-function ChevronRightIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="#bbb"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>; }
-function CheckIcon()    { return <svg width="11" height="11" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>; }
+const HomeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const CalendarIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const UsersIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const LogoutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/>
+  </svg>
+);
+const EditIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const LockIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+);
+const DeviceIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+  </svg>
+);
+const ActivityIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  </svg>
+);
+const ChevronRightIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+const CheckIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
 
-function ProfilBidan({ user, onLogout, onNavigate }) {
-  const [activeNav, setActiveNav] = useState("Profil");
-  const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({
-    namaLengkap:  "Aisyah",
-    peran:        "Bidan",
-    email:        "aisyah@puskesmas.go.id",
-    telepon:      "0812 3456 7890",
-    tanggalLahir: "15/03/1992",
-    jenisKelamin: "Perempuan",
-    alamat:       "Jl. Sehat No. 12, Kecamatan Sukajadi, Kota Bandung, Jawa Barat",
-    tentang:      "Bidan di Puskesmas Sehat. Berkomitmen membantu kesehatan ibu dan anak.",
-  });
-  const [saved, setSaved] = useState({ ...form });
+/* ── Helpers ── */
+function getInitials(name = "") {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
 
-  const navItems = [
-    { label: "Beranda",       icon: HomeIcon,     page: "dashboardBidan"    },
-    { label: "Kelola Jadwal", icon: CalendarIcon, page: "kelolaJadwalBidan" },
-    { label: "Data Anak",     icon: PersonIcon,   page: "dataAnakBidan"     },
-    { label: "Profil",        icon: ProfileIcon,  page: "profilBidan"       },
-  ];
+function formatTanggalPanjang(raw = "") {
+  if (!raw) return "-";
+  const d = new Date(raw);
+  if (isNaN(d)) return raw;
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
 
-  const handleSave   = () => { setSaved({ ...form }); setIsEditing(false); };
-  const handleCancel = () => { setForm({ ...saved }); setIsEditing(false); };
-  const handleNav    = (label, page) => { setActiveNav(label); onNavigate && onNavigate(page); };
+function resolveRole(u) {
+  const raw = u.peran || u.role || "";
+  if (raw === "midwife") return "Bidan";
+  if (raw === "doctor")  return "Dokter";
+  if (raw === "nurse")   return "Perawat";
+  if (raw === "admin")   return "Admin";
+  return raw || "Bidan";
+}
 
-  /* ── Reusable Field ── */
-  const Field = ({ label, value, onChange, type = "text", readOnly = false, fullWidth = false, isSelect = false, options = [], isTextarea = false }) => (
-    <div style={{ ...fs.field, ...(fullWidth ? fs.fieldFull : {}) }}>
-      <label style={fs.label}>{label}</label>
-      {isTextarea ? (
-        <div style={{ position: "relative" }}>
-          <textarea
-            style={{ ...fs.input, ...fs.textarea, ...(readOnly ? fs.inputReadOnly : {}) }}
-            value={value} onChange={onChange} readOnly={readOnly} maxLength={200} rows={4}
-          />
-          <span style={fs.charCount}>{value.length}/200</span>
-        </div>
-      ) : isSelect ? (
+/* ── Input style ── */
+const inputBase = {
+  padding: "9px 12px",
+  borderRadius: "9px",
+  border: `1px solid ${C.border}`,
+  background: C.surfaceAlt,
+  fontSize: "13px",
+  color: C.textPrimary,
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box",
+  fontFamily: "inherit",
+};
+const inputReadOnly = {
+  ...inputBase,
+  background: C.pageBg,
+  border: `1px solid ${C.border}`,
+  color: C.textSecondary,
+  cursor: "default",
+};
+
+/* ── Field component ── */
+function Field({ label, value, onChange, type = "text", readOnly = false, fullWidth = false, isSelect = false, options = [] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "5px", ...(fullWidth ? { gridColumn: "1 / -1" } : {}) }}>
+      <label style={{ ...T.label, color: C.textMuted }}>{label}</label>
+      {isSelect ? (
         <div style={{ position: "relative" }}>
           <select
-            style={{ ...fs.input, ...(readOnly ? fs.inputReadOnly : {}), appearance: "none", paddingRight: "32px" }}
+            style={{ ...(readOnly ? inputReadOnly : inputBase), appearance: "none", paddingRight: "28px" }}
             value={value} onChange={onChange} disabled={readOnly}
           >
             {options.map((o) => <option key={o}>{o}</option>)}
           </select>
-          {!readOnly && <span style={fs.selectArrow}>▾</span>}
+          {!readOnly && (
+            <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: C.textMuted, pointerEvents: "none", fontSize: "10px" }}>▾</span>
+          )}
         </div>
       ) : (
         <input
           type={type}
-          style={{ ...fs.input, ...(readOnly ? fs.inputReadOnly : {}) }}
+          style={readOnly ? inputReadOnly : inputBase}
           value={value} onChange={onChange} readOnly={readOnly}
         />
       )}
     </div>
   );
+}
+
+/* ── Section card header ── */
+function CardHeader({ icon, title, action }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "14px 20px",
+      borderBottom: `1px solid ${C.border}`,
+      background: C.surfaceAlt,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {icon}
+        </div>
+        <span style={{ ...T.h2, color: C.textPrimary }}>{title}</span>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/* ── Main Component ── */
+function ProfilBidan({ user = {}, onLogout, onNavigate, onUpdateUser }) {
+  const [activeNav, setActiveNav] = useState("Profil");
+  const [isEditing, setIsEditing] = useState(false);
+
+  const buildForm = (u) => ({
+    namaLengkap: u.namaLengkap || u.name       || "",
+    peran:       resolveRole(u),
+    email:       u.email                        || "",
+    strNumber:   u.strNumber || u.str_number    || "",
+  });
+
+  const [form, setForm] = useState(() => buildForm(user));
+  const [saved, setSaved] = useState(() => buildForm(user));
+
+  const navItems = [
+    { label: "Beranda",       icon: HomeIcon,     page: "dashboardBidan"    },
+    { label: "Kelola Jadwal", icon: CalendarIcon, page: "kelolaJadwalBidan" },
+    { label: "Data Anak",     icon: UsersIcon,    page: "dataAnakBidan"     },
+    { label: "Profil",        icon: UserIcon,     page: "profilBidan"       },
+  ];
+
+  const handleSave   = () => { setSaved({ ...form }); setIsEditing(false); onUpdateUser && onUpdateUser({ ...user, ...form }); };
+  const handleCancel = () => { setForm({ ...saved }); setIsEditing(false); };
+  const handleNav    = (label, page) => { setActiveNav(label); onNavigate && onNavigate(page); };
+
+  const initials      = getInitials(saved.namaLengkap || user.name || "");
+  const bergabungLabel = formatTanggalPanjang(user.bergabungSejak || user.created_at || "");
+  const faskes        = user.faskes || user.clinic_name || "Puskesmas";
+  const username      = user.username || (saved.email ? saved.email.split("@")[0] : "-");
+  const terakhirLogin = user.last_login_at
+    ? formatTanggalPanjang(user.last_login_at)
+    : (user.terakhirLogin ? formatTanggalPanjang(user.terakhirLogin) : "-");
 
   return (
-    <div style={s.root}>
-      {/* ── SIDEBAR ── */}
-      <aside style={s.sidebar}>
-        <div style={s.logoArea}>
-          <div style={s.logoIcon}><ShieldIcon /></div>
-          <span style={s.logoText}>Imunisasi</span>
+    <div style={{ display: "flex", minHeight: "100vh", background: C.pageBg, fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif", fontSize: "13.5px", color: C.textPrimary }}>
+
+      {/* ── SIDEBAR (identik dengan KelolaJadwalBidan) ── */}
+      <aside style={{ width: "208px", flexShrink: 0, background: C.sidebarBg, display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" }}>
+        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: C.teal, display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+              <ShieldIcon />
+            </div>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: "700", color: "white", letterSpacing: "-0.2px" }}>Imunisasi</div>
+              <div style={{ fontSize: "10px", color: C.tealMid, letterSpacing: "0.04em", marginTop: "1px" }}>DASHBOARD BIDAN</div>
+            </div>
+          </div>
         </div>
-        <nav style={s.nav}>
-          {navItems.map(({ label, icon: Icon, page }) => (
-            <button key={label}
-              style={{ ...s.navBtn, ...(activeNav === label ? s.navBtnActive : {}) }}
-              onClick={() => handleNav(label, page)}
-            >
-              <span style={{ ...s.navIcon, ...(activeNav === label ? s.navIconActive : {}) }}><Icon /></span>
-              <span>{label}</span>
-            </button>
-          ))}
+
+        <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: "2px" }}>
+          {navItems.map(({ label, icon: Icon, page }) => {
+            const isActive = activeNav === label;
+            return (
+              <button key={label}
+                style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "9px", border: "none", cursor: "pointer", width: "100%", fontSize: "13px", fontWeight: isActive ? "600" : "400", background: isActive ? C.teal : "transparent", color: isActive ? "white" : "rgba(255,255,255,0.55)", transition: "all 0.15s", textAlign: "left" }}
+                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = C.sidebarHover; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; } }}
+                onClick={() => handleNav(label, page)}
+              >
+                <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}><Icon /></span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
         </nav>
-        <div style={s.sidebarBottom}>
-          <button style={s.logoutBtn} onClick={() => onLogout && onLogout()}>
-            <span style={s.logoutIcon}><LogoutIcon /></span>
-            <span>Keluar</span>
+
+        <div style={{ padding: "12px 10px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button
+            style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "9px", border: "none", cursor: "pointer", width: "100%", fontSize: "13px", fontWeight: "400", background: "transparent", color: "rgba(255,255,255,0.4)", transition: "all 0.15s", textAlign: "left" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,63,94,0.12)"; e.currentTarget.style.color = "#FDA4AF"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+            onClick={() => onLogout && onLogout()}
+          >
+            <LogoutIcon /><span>Keluar</span>
           </button>
         </div>
       </aside>
 
       {/* ── CONTENT ── */}
-      <div style={s.content}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+
         {/* Topbar */}
-        <header style={s.topbar}>
-          <div />
-          <div style={s.topbarRight}>
-            <div style={s.bellWrap}><BellIcon /><span style={s.bellBadge}>3</span></div>
-            <div style={s.topbarUser}>
-              <div style={s.topbarAvatar}>BD</div>
-              <span style={s.topbarName}>{user?.name || "Bidan"}</span>
-              <ChevronDown />
+        <header style={{ height: "56px", background: C.surface, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", flexShrink: 0, boxShadow: "0 1px 0 rgba(6,61,48,0.04)" }}>
+          <span style={{ ...T.label, color: C.textMuted }}>Profil</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: C.textSecondary, display: "flex", alignItems: "center" }}>
+              <BellIcon />
+              <span style={{ position: "absolute", top: "4px", right: "4px", width: "7px", height: "7px", borderRadius: "50%", background: C.rose, border: "1.5px solid white" }} />
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "5px 12px 5px 5px", background: C.tealSoft, borderRadius: "40px", border: `1px solid ${C.border}` }}>
+              <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.forestMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "11px", fontWeight: "700" }}>
+                {initials}
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: C.textPrimary }}>{saved.namaLengkap || user.name || "Bidan"}</span>
             </div>
           </div>
         </header>
 
         {/* Main */}
-        <main style={s.main}>
+        <main style={{ flex: 1, padding: "28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", maxWidth: "1100px", width: "100%" }}>
+
           {/* Page heading */}
-          <div style={s.pageHeading}>
-            <div>
-              <h1 style={s.pageTitle}>Profil saya</h1>
-              <p style={s.pageSubtitle}>Kelola informasi akun dan preferensi Anda</p>
+          <div>
+            <h1 style={{ ...T.hero, color: C.textPrimary, margin: "0 0 4px" }}>Profil saya</h1>
+            <p style={{ ...T.small, color: C.textMuted, margin: 0 }}>Kelola informasi akun dan preferensi Anda</p>
+          </div>
+
+          {/* Avatar hero card */}
+          <div style={{
+            background: C.surface, borderRadius: "14px",
+            border: `1px solid ${C.border}`,
+            boxShadow: "0 1px 4px rgba(6,61,48,0.05)",
+            overflow: "hidden",
+          }}>
+            <div style={{ background: `linear-gradient(135deg, ${C.forest}, ${C.forestMid})`, padding: "24px 24px 20px", display: "flex", alignItems: "center", gap: "20px" }}>
+              {/* Avatar */}
+              <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.tealMid})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "20px", fontWeight: "700", flexShrink: 0, border: "3px solid rgba(255,255,255,0.2)" }}>
+                {initials}
+              </div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "white", marginBottom: "6px" }}>{saved.namaLengkap || "-"}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                  <span style={{ ...T.xs, background: "rgba(255,255,255,0.15)", color: C.tealLight, padding: "3px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <UserIcon /> {saved.peran}
+                  </span>
+                  <span style={{ ...T.xs, color: "rgba(255,255,255,0.55)" }}>·</span>
+                  <span style={{ ...T.xs, color: "rgba(255,255,255,0.55)" }}>{faskes}</span>
+                </div>
+              </div>
+            </div>
+            {/* Quick stats */}
+            <div style={{ display: "flex", borderTop: `1px solid ${C.border}` }}>
+              {[
+                { label: "Username", value: username },
+                { label: "Bergabung", value: bergabungLabel !== "-" ? bergabungLabel : "—" },
+                { label: "Terakhir login", value: terakhirLogin !== "-" ? terakhirLogin : "—" },
+              ].map(({ label, value }, i, arr) => (
+                <div key={label} style={{ flex: 1, padding: "14px 20px", borderRight: i < arr.length - 1 ? `1px solid ${C.border}` : "none" }}>
+                  <div style={{ ...T.label, color: C.textMuted, marginBottom: "3px" }}>{label}</div>
+                  <div style={{ ...T.smallMed, color: C.textPrimary }}>{value}</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div style={s.twoCol}>
-            {/* ── LEFT COLUMN ── */}
-            <div style={s.leftCol}>
+          {/* Two-col layout */}
+          <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
 
-              {/* Avatar card */}
-              <div style={s.avatarCard}>
-                <div style={s.avatarCircle}>
-                  <div style={s.avatarInner}><PersonIcon /></div>
-                  <button style={s.cameraBtn}><CameraIcon /></button>
-                </div>
-                <div style={s.avatarInfo}>
-                  <div style={s.avatarName}>{saved.namaLengkap}</div>
-                  <div style={s.avatarRoleBadge}>
-                    <ProfileIcon />
-                    <span>{saved.peran}</span>
-                  </div>
-                  <div style={s.avatarSub}>Petugas Kesehatan · Puskesmas Sehat</div>
-                </div>
-                <button style={s.editFotoBtn}>
-                  <EditIcon />
-                  Edit foto
-                </button>
-              </div>
+            {/* ── LEFT: Informasi pribadi ── */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ background: C.surface, borderRadius: "14px", border: `1px solid ${C.border}`, boxShadow: "0 1px 4px rgba(6,61,48,0.05)", overflow: "hidden" }}>
+                <CardHeader
+                  icon={<UserIcon />}
+                  title="Informasi pribadi"
+                  action={
+                    !isEditing ? (
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        style={{ display: "flex", alignItems: "center", gap: "6px", background: C.tealLight, color: C.forestMid, border: "none", borderRadius: "8px", padding: "6px 14px", ...T.smallMed, cursor: "pointer" }}
+                      >
+                        <EditIcon /> Edit
+                      </button>
+                    ) : (
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={handleCancel}
+                          style={{ background: C.border, color: C.textSecondary, border: "none", borderRadius: "8px", padding: "6px 14px", ...T.smallMed, cursor: "pointer" }}
+                        >Batal</button>
+                        <button
+                          onClick={handleSave}
+                          style={{ background: C.forest, color: C.tealMid, border: "none", borderRadius: "8px", padding: "6px 16px", ...T.smallMed, cursor: "pointer" }}
+                        >Simpan</button>
+                      </div>
+                    )
+                  }
+                />
 
-              {/* Personal info card */}
-              <div style={s.infoCard}>
-                <div style={s.cardHeader}>
-                  <div style={s.cardTitle}>
-                    <div style={s.cardTitleIcon}><PersonIcon /></div>
-                    <span style={s.cardTitleText}>Informasi pribadi</span>
-                  </div>
-                  {!isEditing ? (
-                    <button style={s.editBtn} onClick={() => setIsEditing(true)}>
-                      <EditIcon /> Edit
-                    </button>
-                  ) : (
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <button style={s.cancelBtn} onClick={handleCancel}>Batal</button>
-                      <button style={s.saveBtn} onClick={handleSave}>Simpan</button>
-                    </div>
-                  )}
-                </div>
-
-                <div style={fs.formGrid}>
+                <div style={{ padding: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                   <Field label="Nama lengkap" value={form.namaLengkap}
-                    onChange={(e) => setForm({ ...form, namaLengkap: e.target.value })} readOnly={!isEditing} />
+                    onChange={e => setForm({ ...form, namaLengkap: e.target.value })} readOnly={!isEditing} />
                   <Field label="Peran" value={form.peran}
-                    onChange={(e) => setForm({ ...form, peran: e.target.value })} readOnly={!isEditing}
+                    onChange={e => setForm({ ...form, peran: e.target.value })} readOnly={!isEditing}
                     isSelect options={["Bidan", "Dokter", "Perawat", "Admin"]} />
                   <Field label="Email" value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })} readOnly={!isEditing} type="email" />
-                  <Field label="Nomor telepon" value={form.telepon}
-                    onChange={(e) => setForm({ ...form, telepon: e.target.value })} readOnly={!isEditing} />
-                  <Field label="Tanggal lahir" value={form.tanggalLahir}
-                    onChange={(e) => setForm({ ...form, tanggalLahir: e.target.value })} readOnly={!isEditing} />
-                  <Field label="Jenis kelamin" value={form.jenisKelamin}
-                    onChange={(e) => setForm({ ...form, jenisKelamin: e.target.value })} readOnly={!isEditing}
-                    isSelect options={["Perempuan", "Laki-laki"]} />
-                  <Field label="Alamat" value={form.alamat}
-                    onChange={(e) => setForm({ ...form, alamat: e.target.value })} readOnly={!isEditing} fullWidth />
-                  <Field label="Tentang saya" value={form.tentang}
-                    onChange={(e) => setForm({ ...form, tentang: e.target.value })} readOnly={!isEditing} fullWidth isTextarea />
+                    onChange={e => setForm({ ...form, email: e.target.value })} readOnly={!isEditing} type="email" fullWidth />
+                  {(form.strNumber || ["Bidan","Dokter","Perawat"].includes(saved.peran)) && (
+                    <Field label="Nomor STR / SIP" value={form.strNumber}
+                      onChange={e => setForm({ ...form, strNumber: e.target.value })} readOnly={!isEditing} fullWidth />
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* ── RIGHT COLUMN ── */}
-            <div style={s.rightCol}>
+            {/* ── RIGHT ── */}
+            <div style={{ width: "260px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
 
-              {/* Account info card */}
-              <div style={s.sideCard}>
-                <div style={s.cardHeader}>
-                  <div style={s.cardTitle}>
-                    <div style={s.cardTitleIcon}><ProfileIcon /></div>
-                    <span style={s.cardTitleText}>Informasi akun</span>
-                  </div>
-                </div>
-
-                {[
-                  { label: "Username",        value: "aisyah.bidan" },
-                  { label: "Email",           value: "aisyah@puskesmas.go.id", verified: true },
-                  { label: "Bergabung sejak", value: "12 Januari 2024" },
-                  { label: "Terakhir login",  value: "29 Juli 2025, 08:45 WIB", active: true },
-                ].map((row, idx, arr) => (
-                  <div key={idx}>
-                    <div style={s.accountRow}>
-                      <span style={s.accountLabel}>{row.label}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                        <span style={s.accountValue}>{row.value}</span>
-                        {row.verified && (
-                          <span style={s.verifiedBadge}><CheckIcon /> Terverifikasi</span>
-                        )}
-                        {row.active && (
-                          <span style={s.activeBadge}>● Aktif</span>
-                        )}
+              {/* Informasi akun */}
+              <div style={{ background: C.surface, borderRadius: "14px", border: `1px solid ${C.border}`, boxShadow: "0 1px 4px rgba(6,61,48,0.05)", overflow: "hidden" }}>
+                <CardHeader icon={<ShieldIcon />} title="Informasi akun" />
+                <div style={{ padding: "4px 0" }}>
+                  {[
+                    { label: "Username",       value: username,       extra: null },
+                    { label: "Email",          value: saved.email,    verified: !!saved.email },
+                    { label: "Bergabung",      value: bergabungLabel },
+                    { label: "Terakhir login", value: terakhirLogin,  active: terakhirLogin !== "-" },
+                  ].map((row, idx, arr) => (
+                    <div key={idx}>
+                      <div style={{ padding: "10px 20px" }}>
+                        <div style={{ ...T.label, color: C.textMuted, marginBottom: "3px" }}>{row.label}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
+                          <span style={{ ...T.smallMed, color: C.textPrimary }}>{row.value || "—"}</span>
+                          {row.verified && (
+                            <span style={{ ...T.xs, background: C.greenLight, color: C.green, padding: "2px 8px", borderRadius: "20px", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                              <CheckIcon /> Terverifikasi
+                            </span>
+                          )}
+                          {row.active && (
+                            <span style={{ ...T.xs, color: C.teal }}>● Aktif</span>
+                          )}
+                        </div>
                       </div>
+                      {idx < arr.length - 1 && <div style={{ height: "1px", background: C.border, margin: "0 20px" }} />}
                     </div>
-                    {idx < arr.length - 1 && <div style={s.divider} />}
-                  </div>
-                ))}
-              </div>
-
-              {/* Security card */}
-              <div style={s.sideCard}>
-                <div style={s.cardHeader}>
-                  <div style={s.cardTitle}>
-                    <div style={s.cardTitleIcon}><ShieldIcon /></div>
-                    <span style={s.cardTitleText}>Keamanan akun</span>
-                  </div>
+                  ))}
                 </div>
-
-                {[
-                  { icon: LockIcon,     title: "Ubah kata sandi",   sub: "Perbarui kata sandi akun Anda" },
-                  { icon: DeviceIcon,   title: "Kelola perangkat",  sub: "Lihat perangkat yang terhubung" },
-                  { icon: ActivityIcon, title: "Aktivitas akun",    sub: "Riwayat aktivitas login akun Anda" },
-                ].map(({ icon: Icon, title, sub }, idx) => (
-                  <button key={idx} style={s.securityRow}>
-                    <div style={s.securityIconWrap}><Icon /></div>
-                    <div style={s.securityText}>
-                      <div style={s.securityTitle}>{title}</div>
-                      <div style={s.securitySub}>{sub}</div>
-                    </div>
-                    <ChevronRightIcon />
-                  </button>
-                ))}
               </div>
+
+              {/* Keamanan akun */}
+              <div style={{ background: C.surface, borderRadius: "14px", border: `1px solid ${C.border}`, boxShadow: "0 1px 4px rgba(6,61,48,0.05)", overflow: "hidden" }}>
+                <CardHeader icon={<LockIcon />} title="Keamanan akun" />
+                <div style={{ padding: "4px 0" }}>
+                  {[
+                    { icon: LockIcon,     title: "Ubah kata sandi",  sub: "Perbarui kata sandi akun Anda" },
+                    { icon: DeviceIcon,   title: "Kelola perangkat", sub: "Lihat perangkat yang terhubung" },
+                    { icon: ActivityIcon, title: "Aktivitas akun",   sub: "Riwayat aktivitas login" },
+                  ].map(({ icon: Icon, title, sub }, idx, arr) => (
+                    <button key={idx}
+                      style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", padding: "12px 20px", background: "none", border: "none", borderBottom: idx < arr.length - 1 ? `1px solid ${C.border}` : "none", cursor: "pointer", textAlign: "left" }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.surfaceAlt}
+                      onMouseLeave={e => e.currentTarget.style.background = "none"}
+                    >
+                      <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: C.tealLight, color: C.teal, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ ...T.smallMed, color: C.textPrimary }}>{title}</div>
+                        <div style={{ ...T.xs, color: C.textMuted, marginTop: "1px" }}>{sub}</div>
+                      </div>
+                      <span style={{ color: C.textMuted }}><ChevronRightIcon /></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         </main>
@@ -266,95 +461,5 @@ function ProfilBidan({ user, onLogout, onNavigate }) {
     </div>
   );
 }
-
-/* ── Styles (mengikuti KelolaJadwalBidan) ── */
-const s = {
-  root:          { display: "flex", minHeight: "100vh", background: "#f5f7f6", fontFamily: "'Segoe UI', sans-serif", fontSize: "13.5px" },
-
-  /* Sidebar */
-  sidebar:       { width: "196px", background: "white", borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column", padding: "1.1rem 0", flexShrink: 0 },
-  logoArea:      { display: "flex", alignItems: "center", gap: "8px", padding: "0 1rem 1.25rem" },
-  logoIcon:      { width: "28px", height: "28px", borderRadius: "7px", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT },
-  logoText:      { fontSize: "15px", fontWeight: "700", color: TEAL_TEXT },
-  nav:           { display: "flex", flexDirection: "column", gap: "1px", padding: "0 0.6rem", flex: 1 },
-  navBtn:        { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#888", fontSize: "12.5px", cursor: "pointer", textAlign: "left", width: "100%" },
-  navBtnActive:  { background: TEAL_LIGHT, color: TEAL_TEXT, fontWeight: "600" },
-  navIcon:       { color: "#bbb", display: "flex", alignItems: "center", flexShrink: 0 },
-  navIconActive: { color: TEAL_TEXT },
-  sidebarBottom: { padding: "0.75rem 0.6rem 0", borderTop: "1px solid #f5f5f5", marginTop: "auto" },
-  logoutBtn:     { display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "7px", border: "none", background: "transparent", color: "#A32D2D", fontSize: "12.5px", cursor: "pointer", width: "100%" },
-  logoutIcon:    { color: "#A32D2D", display: "flex", alignItems: "center" },
-
-  /* Content */
-  content:       { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-  topbar:        { height: "48px", background: "white", borderBottom: "1px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1.5rem", flexShrink: 0 },
-  topbarRight:   { display: "flex", alignItems: "center", gap: "14px" },
-  bellWrap:      { position: "relative", cursor: "pointer", display: "flex", alignItems: "center", color: "#555" },
-  bellBadge:     { position: "absolute", top: "-4px", right: "-5px", background: TEAL_MID, color: "white", fontSize: "9px", fontWeight: "700", width: "13px", height: "13px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  topbarUser:    { display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" },
-  topbarAvatar:  { width: "28px", height: "28px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT, fontSize: "11px", fontWeight: "600" },
-  topbarName:    { fontSize: "12.5px", fontWeight: "600", color: "#333" },
-
-  main:          { flex: 1, padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem", overflowY: "auto" },
-  pageHeading:   { display: "flex", alignItems: "center", gap: "10px" },
-  pageTitle:     { margin: "0 0 1px", fontSize: "17px", fontWeight: "700", color: "#1a1a2e" },
-  pageSubtitle:  { margin: 0, fontSize: "11.5px", color: "#888" },
-
-  twoCol:        { display: "flex", gap: "1rem", alignItems: "flex-start" },
-  leftCol:       { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.85rem" },
-  rightCol:      { width: "240px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.85rem" },
-
-  /* Avatar card */
-  avatarCard:    { background: TEAL_LIGHT, borderRadius: "12px", padding: "1.1rem", display: "flex", alignItems: "center", gap: "1rem" },
-  avatarCircle:  { width: "56px", height: "56px", borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0 },
-  avatarInner:   { width: "40px", height: "40px", borderRadius: "50%", background: TEAL_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", color: TEAL_TEXT },
-  cameraBtn:     { position: "absolute", bottom: "1px", right: "1px", width: "20px", height: "20px", borderRadius: "50%", background: TEAL_DARK, border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" },
-  avatarInfo:    { flex: 1 },
-  avatarName:    { fontWeight: "700", fontSize: "14px", color: "#1a1a2e", marginBottom: "4px" },
-  avatarRoleBadge: { display: "inline-flex", alignItems: "center", gap: "4px", background: "white", color: TEAL_TEXT, fontWeight: "600", fontSize: "11.5px", padding: "2px 10px", borderRadius: "20px", marginBottom: "4px" },
-  avatarSub:     { fontSize: "11.5px", color: TEAL_TEXT },
-  editFotoBtn:   { display: "flex", alignItems: "center", gap: "5px", background: "white", color: TEAL_TEXT, border: `1px solid ${TEAL_TEXT}`, borderRadius: "7px", padding: "6px 12px", fontWeight: "600", fontSize: "12px", cursor: "pointer", flexShrink: 0 },
-
-  /* Cards (sama dengan jadwal card) */
-  infoCard:      { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1rem 1.1rem" },
-  sideCard:      { background: "white", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "1rem 1.1rem" },
-  cardHeader:    { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.9rem", paddingBottom: "0.7rem", borderBottom: "1px solid #f5f5f5" },
-  cardTitle:     { display: "flex", alignItems: "center", gap: "7px" },
-  cardTitleIcon: { width: "24px", height: "24px", borderRadius: "6px", background: TEAL_LIGHT, color: TEAL_TEXT, display: "flex", alignItems: "center", justifyContent: "center" },
-  cardTitleText: { fontSize: "13px", fontWeight: "700", color: "#1a1a2e" },
-
-  /* Buttons */
-  editBtn:       { display: "flex", alignItems: "center", gap: "5px", background: TEAL_LIGHT, color: TEAL_TEXT, border: "none", borderRadius: "7px", padding: "5px 12px", fontWeight: "600", fontSize: "12px", cursor: "pointer" },
-  cancelBtn:     { background: "#f5f5f5", color: "#555", border: "none", borderRadius: "7px", padding: "5px 12px", fontWeight: "600", fontSize: "12px", cursor: "pointer" },
-  saveBtn:       { background: TEAL_DARK, color: "#9FE1CB", border: "none", borderRadius: "7px", padding: "5px 14px", fontWeight: "600", fontSize: "12px", cursor: "pointer" },
-
-  /* Account info */
-  accountRow:    { padding: "8px 0", display: "flex", flexDirection: "column", gap: "3px" },
-  divider:       { height: "1px", background: "#f5f5f5" },
-  accountLabel:  { fontSize: "11px", color: "#aaa", fontWeight: "500" },
-  accountValue:  { fontSize: "12.5px", color: "#1a1a2e", fontWeight: "600" },
-  verifiedBadge: { display: "inline-flex", alignItems: "center", gap: "3px", background: "#E2EFDA", color: "#3B6D11", fontSize: "10px", fontWeight: "700", padding: "2px 7px", borderRadius: "20px" },
-  activeBadge:   { fontSize: "11px", color: "#3B6D11", fontWeight: "700" },
-
-  /* Security */
-  securityRow:      { display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "8px 0", background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", textAlign: "left" },
-  securityIconWrap: { width: "30px", height: "30px", borderRadius: "7px", background: TEAL_LIGHT, color: TEAL_TEXT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  securityText:     { flex: 1 },
-  securityTitle:    { fontWeight: "600", fontSize: "12.5px", color: "#1a1a2e" },
-  securitySub:      { fontSize: "11.5px", color: "#aaa", marginTop: "1px" },
-};
-
-/* ── Form Styles ── */
-const fs = {
-  formGrid:     { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem" },
-  field:        { display: "flex", flexDirection: "column", gap: "4px" },
-  fieldFull:    { gridColumn: "1 / -1" },
-  label:        { fontSize: "11.5px", fontWeight: "600", color: "#555" },
-  input:        { padding: "7px 10px", borderRadius: "7px", border: "1px solid #eee", background: "white", fontSize: "12.5px", color: "#333", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "inherit" },
-  inputReadOnly:{ background: "#fafafa", border: "1px solid #f5f5f5", color: "#666", cursor: "default" },
-  textarea:     { resize: "none", lineHeight: 1.6, paddingBottom: "20px" },
-  charCount:    { position: "absolute", bottom: "8px", right: "10px", fontSize: "10px", color: "#ccc" },
-  selectArrow:  { position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "#bbb", pointerEvents: "none", fontSize: "11px" },
-};
 
 export default ProfilBidan;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import LoginPage from "./components/LoginPage";
 import SplashPage from "./components/SplashPage";
 import JadwalImunisasi from "./components/JadwalImunisasi";
@@ -19,7 +19,8 @@ import StatusPage from "./pages/StatusPage";
 import img1 from "../image/image-size-modul5/edu1.png";
 import img2 from "../image/image-size-modul5/edu2.png";
 import img3 from "../image/image-size-modul5/edu3.png";
-import useTheme from "./hooks/useTheme";
+import { ThemeProvider } from "./hooks/ThemeContext";
+import { useTheme } from "./hooks/ThemeContext";
 import {
   checkHealth,
   login,
@@ -664,7 +665,7 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, serviceDown }
           </div>
         </div>
 
-        {/* ── EduHealth — horizontal grid ── */}
+        {/* EduHealth */}
         <div>
           <h3
             style={{
@@ -702,7 +703,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, serviceDown }
                   e.currentTarget.style.boxShadow = shadow;
                 }}
               >
-                {/* Image area */}
                 <div
                   style={{
                     position: "relative",
@@ -729,7 +729,6 @@ function HomePage({ user, onLogout, activePage, onNavigate, theme, serviceDown }
                     {article.tag}
                   </span>
                 </div>
-                {/* Body */}
                 <div style={{ padding: `${tokens.space[3]} ${tokens.space[4]}` }}>
                   <p
                     style={{
@@ -913,9 +912,21 @@ function App() {
         />
       )}
       {activePage === "about" && (
-        <AboutPage onBack={() => setActivePage("home")} theme={theme} />
+        <AboutPage
+          onBack={() => setActivePage("home")}
+          activePage={activePage}
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+          theme={theme}
+        />
       )}
-      {activePage === "status" && <StatusPage />}
+      {activePage === "status" && (
+        <StatusPage
+          activePage={activePage}
+          setActivePage={setActivePage}
+          onLogout={handleLogout}
+        />
+      )}
       {activePage === "dashboardBidan" && (
         <DashboardBidan
           user={user}
@@ -948,4 +959,13 @@ function App() {
   );
 }
 
-export default App;
+// ── AppWrapper: bungkus App dengan ThemeProvider ──
+function AppWrapper() {
+  return (
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
+}
+
+export default AppWrapper;
