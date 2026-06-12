@@ -1,4 +1,4 @@
-# ☁️ Cloud App — Kelompok Stranger Things
+# ☁️ Cloud App — Bye Bye Virus [Kelompok Stranger Things ]
 
 > Aplikasi cloud-native untuk manajemen inventory, dibangun dengan arsitektur
 > microservices sebagai proyek mata kuliah Komputasi Awan — Institut Teknologi
