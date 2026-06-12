@@ -65,3 +65,19 @@ class ImmunizationLog(Base):
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class PuskesmasSchedule(Base):
+    """Model untuk tabel 'puskesmas_schedules' - Jadwal pelayanan imunisasi yang dibuat bidan"""
+    __tablename__ = "puskesmas_schedules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    midwife_id = Column(Integer, nullable=False, index=True)  # User ID bidan yang membuat
+    vaccine_id = Column(Integer, ForeignKey("vaccine_types.id"), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
+    time_start = Column(String(10), nullable=False)
+    time_end = Column(String(10), nullable=False)
+    location = Column(String(200), nullable=False)
+    quota = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

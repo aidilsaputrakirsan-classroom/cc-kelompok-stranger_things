@@ -42,13 +42,13 @@ def update_schema():
         if "users" in inspector.get_table_names():
             columns = [c["name"] for c in inspector.get_columns("users")]
             if "role" not in columns:
-                print("[INFO] Adding role column to users table...")
+                logger.info("Adding role column to users table...")
                 with engine.connect() as conn:
                     conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'parent';"))
                     conn.commit()
-                    print("[OK] role column added")
+                    logger.info("role column added")
     except Exception as e:
-        print(f"[WARN] Schema update attempted: {e}")
+        logger.warning(f"Schema update attempted: {e}")
 
 update_schema()
 

@@ -5,7 +5,6 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost";
 
 export function setToken(token) {
   localStorage.setItem("authToken", token);
-  console.log("🔐 Token saved to localStorage");
 }
 
 export function getToken() {
@@ -14,7 +13,6 @@ export function getToken() {
 
 export function clearToken() {
   localStorage.removeItem("authToken");
-  console.log("🗑️ Token cleared from localStorage");
 }
 
 function authHeaders() {
@@ -68,7 +66,6 @@ async function handleResponse(response) {
 // ==================== AUTH API ====================
 
 export async function register(userData) {
-  console.log("📝 Registering user:", userData.email);
   // Backend menerima: name, email, password, role
   const registerData = {
     name: userData.fullName,
@@ -85,17 +82,12 @@ export async function register(userData) {
 }
 
 export async function login(email, password) {
-  console.log("🔐 Logging in:", email);
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
   const data = await handleResponse(response);
-  console.log("✅ Full login response:", data);
-  console.log("✅ access_token field:", data.access_token);
-  console.log("✅ token_type field:", data.token_type);
-  console.log("✅ user field:", data.user);
 
   if (!data.access_token) {
     console.error("❌ ERROR: access_token is undefined!");
@@ -104,14 +96,9 @@ export async function login(email, password) {
   }
 
   setToken(data.access_token);
-  console.log(
-    "✅ Token saved to localStorage:",
-    data.access_token.substring(0, 20) + "...",
-  );
   return data;
 }
 export async function getMe() {
-  console.log("👤 Fetching current user");
   const response = await fetch(`${API_URL}/auth/me`, {
     headers: authHeaders(),
   });
@@ -121,7 +108,6 @@ export async function getMe() {
 // ==================== ITEMS API ====================
 
 export async function fetchItems(search = "", skip = 0, limit = 20) {
-  console.log("📋 Fetching items with search:", search);
   const params = new URLSearchParams();
   if (search) params.append("search", search);
   params.append("skip", skip);
@@ -134,7 +120,6 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
 }
 
 export async function createItem(itemData) {
-  console.log("➕ Creating item:", itemData.name);
   const response = await fetch(`${API_URL}/items`, {
     method: "POST",
     headers: {
@@ -147,7 +132,6 @@ export async function createItem(itemData) {
 }
 
 export async function updateItem(id, itemData) {
-  console.log("✏️ Updating item:", id);
   const response = await fetch(`${API_URL}/items/${id}`, {
     method: "PUT",
     headers: {
@@ -160,7 +144,6 @@ export async function updateItem(id, itemData) {
 }
 
 export async function deleteItem(id) {
-  console.log("🗑️ Deleting item:", id);
   const response = await fetch(`${API_URL}/items/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
@@ -169,11 +152,9 @@ export async function deleteItem(id) {
 }
 
 export async function checkHealth() {
-  console.log("💚 Checking health");
   try {
     const response = await fetch(`${API_URL}/health`);
     const data = await response.json();
-    console.log("💚 Health check:", data.status);
     return data.status === "healthy";
   } catch {
     console.error("❌ Health check failed");
@@ -184,7 +165,6 @@ export async function checkHealth() {
 // ==================== CHILDREN API ====================
 
 export async function fetchChildren() {
-  console.log("👶 Fetching children");
   const response = await fetch(`${API_URL}/children`, {
     headers: authHeaders(),
   });
@@ -194,7 +174,6 @@ export async function fetchChildren() {
 }
 
 export async function createChild(childData) {
-  console.log("➕ Creating child:", childData.name);
   const response = await fetch(`${API_URL}/children`, {
     method: "POST",
     headers: {
@@ -204,12 +183,10 @@ export async function createChild(childData) {
     body: JSON.stringify(childData),
   });
   const result = await handleResponse(response);
-  console.log("✅ Child created successfully:", result);
   return result;
 }
 
 export async function updateChild(id, childData) {
-  console.log("✏️ Updating child:", id);
   const response = await fetch(`${API_URL}/children/${id}`, {
     method: "PUT",
     headers: {
@@ -222,7 +199,6 @@ export async function updateChild(id, childData) {
 }
 
 export async function deleteChild(id) {
-  console.log("🗑️ Deleting child:", id);
   const response = await fetch(`${API_URL}/children/${id}`, {
     method: "DELETE",
     headers: {
@@ -236,7 +212,6 @@ export async function deleteChild(id) {
 // ==================== VACCINE API ====================
 
 export async function fetchVaccineTypes() {
-  console.log("💉 Fetching vaccine types");
   const response = await fetch(`${API_URL}/vaccines`, {
     headers: authHeaders(), // kalau butuh token
   });
@@ -246,13 +221,6 @@ export async function fetchVaccineTypes() {
 // ==================== IMMUNIZATION API ====================
 
 export async function createImmunization(data) {
-  console.log(
-    "💉 Creating immunization for child:",
-    data.child_id,
-    "vaccine:",
-    data.vaccine_id,
-  );
-
   const response = await fetch(
     `${API_URL}/children/${data.child_id}/immunization`,
     {
@@ -270,15 +238,12 @@ export async function createImmunization(data) {
   );
 
   const result = await handleResponse(response);
-  console.log("✅ Immunization created successfully:", result);
   return result;
 }
 
 // ====================FECTH IMMUNIZATION API ====================
 
 export async function fetchImmunizations(childId) {
-  console.log("📅 Fetching immunizations for child:", childId);
-
   const response = await fetch(`${API_URL}/children/${childId}/immunization`, {
     headers: authHeaders(),
   });
@@ -289,7 +254,6 @@ export async function fetchImmunizations(childId) {
 }
 
 export async function updateImmunization(logId, data) {
-  console.log("✏️ Updating immunization log:", logId);
   const response = await fetch(`${API_URL}/immunization/${logId}`, {
     method: "PUT",
     headers: {
@@ -297,6 +261,48 @@ export async function updateImmunization(logId, data) {
       ...authHeaders(),
     },
     body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+// ==================== SCHEDULE API ====================
+
+export async function fetchSchedules() {
+  const response = await fetch(`${API_URL}/schedules`, {
+    headers: authHeaders(),
+  });
+  const data = await handleResponse(response);
+  return data.schedules || data || [];
+}
+
+export async function createSchedule(data) {
+  const response = await fetch(`${API_URL}/schedules`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateSchedule(id, data) {
+  const response = await fetch(`${API_URL}/schedules/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteSchedule(id) {
+  const response = await fetch(`${API_URL}/schedules/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
   });
   return handleResponse(response);
 }
