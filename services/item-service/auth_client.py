@@ -117,16 +117,26 @@ async def _call_auth_service(
     )
 
 
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+# OAuth2 scheme for Swagger UI
+oauth2_scheme = HTTPBearer(
+    auto_error=True,
+    description="Masukkan token JWT Anda di sini. Harap pastikan token tidak kosong."
+)
+
 async def verify_token_with_auth_service(
     request: Request,
-    authorization: str = Header(...),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
 ) -> dict:
     """
     FastAPI Dependency: Verifikasi token via Auth Service.
     Dengan retry logic, proper error handling, dan Correlation ID.
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+        
+    authorization = f"Bearer {credentials.credentials}"
 
     correlation_id = getattr(request.state, "correlation_id", None)
     return await _call_auth_service(authorization, correlation_id)

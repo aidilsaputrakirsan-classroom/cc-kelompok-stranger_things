@@ -5,6 +5,7 @@ import {
   fetchVaccineTypes,
   createImmunization,
   updateImmunization,
+  fetchSchedules,
 } from "../services/api";
 
 const defaultVaccines = [
@@ -123,6 +124,8 @@ export default function DetailJadwal({
   const [immunizations, setImmunizations] = useState([]);
   const [vaccines, setVaccines] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [puskesmasSchedules, setPuskesmasSchedules] = useState([]);
+  const [selectedPuskesmasScheduleId, setSelectedPuskesmasScheduleId] = useState("");
   const [newSchedule, setNewSchedule] = useState({
     vaccine_id: "",
     scheduled_date: "",
@@ -154,13 +157,15 @@ export default function DetailJadwal({
 
     const load = async () => {
       try {
-        const [imunData, vacData] = await Promise.all([
+        const [imunData, vacData, schedulesData] = await Promise.all([
           fetchImmunizations(child.id),
           fetchVaccineTypes().catch(() => null),
+          fetchSchedules().catch(() => []),
         ]);
         const vacs =
           !vacData || vacData.length === 0 ? defaultVaccines : vacData;
         setVaccines(vacs);
+        setPuskesmasSchedules(schedulesData || []);
 
         const mappedImun = (imunData || []).map((imun) => {
           const vac = vacs.find((v) => v.id === imun.vaccine_id);
@@ -204,6 +209,7 @@ export default function DetailJadwal({
       });
       showNotif("Jadwal imunisasi berhasil ditambahkan!", "success");
       setNewSchedule({ vaccine_id: "", scheduled_date: "" });
+      setSelectedPuskesmasScheduleId("");
       reloadData();
     } catch (err) {
       showNotif("Gagal menambahkan imunisasi: " + err.message, "error");
@@ -395,7 +401,7 @@ export default function DetailJadwal({
                       color: "#444",
                     }}
                   >
-                    Jenis Vaksin
+                    Pilih Jadwal dari Bidan (Opsional)
                   </label>
                   <select
                     style={{
@@ -404,7 +410,54 @@ export default function DetailJadwal({
                       borderRadius: "10px",
                       border: "1px solid #e0e0e0",
                     }}
+                    value={selectedPuskesmasScheduleId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedPuskesmasScheduleId(id);
+                      if (id) {
+                        const sched = puskesmasSchedules.find(s => s.id === Number(id));
+                        if (sched) {
+                          setNewSchedule({
+                            vaccine_id: sched.vaccine_id,
+                            scheduled_date: sched.date,
+                          });
+                        }
+                      }
+                    }}
+                  >
+                    <option value="">-- Buat jadwal kustom --</option>
+                    {puskesmasSchedules.map((s) => {
+                      const vac = vaccines.find(v => v.id === s.vaccine_id);
+                      return (
+                        <option key={s.id} value={s.id}>
+                          {s.date} - {vac?.name || `Vaksin ${s.vaccine_id}`} ({s.location})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      marginBottom: "8px",
+                      color: "#444",
+                    }}
+                  >
+                    Jenis Vaksin
+                  </label>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "10px",
+                      border: "1px solid #e0e0e0",
+                      background: selectedPuskesmasScheduleId ? "#f5f5f5" : "white",
+                    }}
                     value={newSchedule.vaccine_id}
+                    disabled={!!selectedPuskesmasScheduleId}
                     onChange={(e) =>
                       setNewSchedule({
                         ...newSchedule,
@@ -439,8 +492,10 @@ export default function DetailJadwal({
                       padding: "10px",
                       borderRadius: "10px",
                       border: "1px solid #e0e0e0",
+                      background: selectedPuskesmasScheduleId ? "#f5f5f5" : "white",
                     }}
                     value={newSchedule.scheduled_date}
+                    disabled={!!selectedPuskesmasScheduleId}
                     onChange={(e) =>
                       setNewSchedule({
                         ...newSchedule,

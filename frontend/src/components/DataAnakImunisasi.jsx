@@ -156,7 +156,7 @@ function DataAnakImunisasi({ user, onLogout, onNavigate }) {
   const isMobile = useIsMobile();
   const [activeNav, setActiveNav]     = useState("Data Anak");
   const [search, setSearch]           = useState("");
-  const [children, setChildren]       = useState(SAMPLE_CHILDREN);
+  const [children, setChildren]       = useState([]);
   const [loading, setLoading]         = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 

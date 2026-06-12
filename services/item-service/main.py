@@ -4,17 +4,20 @@ Berkomunikasi dengan Auth Service untuk verifikasi token.
 """
 import os
 import logging  # ← TAMBAHKAN INI
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from database import engine, get_db, Base
-from models import Item, Child, ImmunizationLog
+from models import Item, Child, ImmunizationLog, PuskesmasSchedule
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse,
     ChildCreate, ChildResponse, ChildListResponse,
-    ImmunizationLogCreate, ImmunizationLogResponse, ImmunizationListResponse
+    ImmunizationLogCreate, ImmunizationLogResponse, ImmunizationListResponse,
+    PuskesmasScheduleCreate, PuskesmasScheduleUpdate, PuskesmasScheduleResponse, PuskesmasScheduleListResponse
 )
 from auth_client import verify_token_with_auth_service
 from auth_client import auth_circuit  # Import circuit breaker instance
@@ -69,7 +72,7 @@ def init_default_vaccines():
         db.commit()
     except Exception as e:
         db.rollback()
-        print(f"[WARN] Failed to initialize vaccines: {e}")
+        logger.error(f"Failed to initialize vaccines: {e}")
     finally:
         db.close()
 
@@ -79,7 +82,36 @@ app = FastAPI(
     title="Item Service",
     description="Inventory microservice — CRUD items with auth via Auth Service",
     version="2.0.0",
+    docs_url=None,  # Disable default docs to use custom below
 )
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html(req: Request):
+    html_response = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+    )
+    html = html_response.body.decode("utf-8")
+    custom_js = """
+    <script>
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.innerText === "Authorize" && e.target.tagName === "BUTTON") {
+            var authContainer = e.target.closest(".auth-container");
+            if (authContainer) {
+                var input = authContainer.querySelector("input[type=text], input[type=password]");
+                if (input && !input.value.trim()) {
+                    alert("Login anda ditolak! Harap masukkan token JWT Anda!");
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        }
+    }, true);
+    </script>
+    """
+    html = html.replace("</body>", f"{custom_js}</body>")
+    return HTMLResponse(html)
 
 # CORS
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
@@ -110,9 +142,7 @@ async def health_check():
         db.execute(text("SELECT 1"))
         db.close()
     except Exception as e:
-        import traceback
-        print(f"HEALTHCHECK DB ERROR: {e}")
-        traceback.print_exc()
+        logger.exception(f"HEALTHCHECK DB ERROR: {e}")
         db_status = "disconnected"
 
     # Menentukan status kesehatan sistem keseluruhan
@@ -474,3 +504,81 @@ async def update_immunization(
     db.commit()
     db.refresh(immunization)
     return immunization
+
+
+# ==================== PUSKESMAS SCHEDULE ENDPOINTS ====================
+
+@app.post("/schedules", status_code=201, response_model=PuskesmasScheduleResponse)
+async def create_schedule(
+    schedule_data: PuskesmasScheduleCreate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Buat jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat membuat jadwal pelayanan.")
+    
+    db_schedule = PuskesmasSchedule(
+        midwife_id=user["user_id"],
+        vaccine_id=schedule_data.vaccine_id,
+        date=schedule_data.date,
+        time_start=schedule_data.time_start,
+        time_end=schedule_data.time_end,
+        location=schedule_data.location,
+        quota=schedule_data.quota
+    )
+    db.add(db_schedule)
+    db.commit()
+    db.refresh(db_schedule)
+    return db_schedule
+
+
+@app.get("/schedules", response_model=PuskesmasScheduleListResponse)
+async def get_schedules(
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Ambil daftar jadwal pelayanan (Bidan & Parent)."""
+    schedules = db.query(PuskesmasSchedule).all()
+    return PuskesmasScheduleListResponse(total=len(schedules), schedules=schedules)
+
+
+@app.put("/schedules/{schedule_id}", response_model=PuskesmasScheduleResponse)
+async def update_schedule(
+    schedule_id: int,
+    schedule_data: PuskesmasScheduleUpdate,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Update jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat mengedit jadwal pelayanan.")
+    
+    schedule = db.query(PuskesmasSchedule).filter(PuskesmasSchedule.id == schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Jadwal tidak ditemukan")
+        
+    for field, value in schedule_data.model_dump(exclude_unset=True).items():
+        setattr(schedule, field, value)
+        
+    db.commit()
+    db.refresh(schedule)
+    return schedule
+
+
+@app.delete("/schedules/{schedule_id}", status_code=204)
+async def delete_schedule(
+    schedule_id: int,
+    user: dict = Depends(verify_token_with_auth_service),
+    db: Session = Depends(get_db),
+):
+    """Hapus jadwal pelayanan puskesmas (Hanya Bidan)."""
+    if user.get("role") != "midwife":
+        raise HTTPException(status_code=403, detail="Hanya bidan yang dapat menghapus jadwal pelayanan.")
+        
+    schedule = db.query(PuskesmasSchedule).filter(PuskesmasSchedule.id == schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Jadwal tidak ditemukan")
+        
+    db.delete(schedule)
+    db.commit()

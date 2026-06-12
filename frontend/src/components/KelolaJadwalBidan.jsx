@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { fetchSchedules, createSchedule, updateSchedule, deleteSchedule } from "../services/api";
 
 /* ── Responsive Hook ── */
 function useIsMobile() {
@@ -132,14 +133,12 @@ const statusConfig = {
 function JadwalModal({ mode, initialData, onClose, onSave, isMobile }) {
   const [form, setForm] = useState(
     initialData
-      ? { ...initialData, vaccineInput: initialData.vaccines.join(", ") }
-      : { date: "", timeStart: "08:00", timeEnd: "14:00", vaccineInput: "", status: "tersedia", slotTotal: 15, slotUsed: 0, keterangan: "" }
+      ? { ...initialData }
+      : { date: "", time_start: "08:00", time_end: "14:00", vaccine_id: 1, location: "Puskesmas", quota: 15 }
   );
 
   const handleSave = () => {
-    const vaccines = form.vaccineInput.split(",").map((v) => v.trim()).filter(Boolean);
-    const { vaccineInput, ...rest } = form;
-    onSave({ ...rest, vaccines });
+    onSave(form);
   };
 
   const overlayStyle = {
@@ -205,53 +204,35 @@ function JadwalModal({ mode, initialData, onClose, onSave, isMobile }) {
           <div style={{ display: "flex", gap: "12px" }}>
             <div style={{ flex: 1 }}>
               <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Jam mulai</label>
-              <input type="time" style={inputStyle} value={form.timeStart}
-                onChange={(e) => setForm({ ...form, timeStart: e.target.value })} />
+              <input type="time" style={inputStyle} value={form.time_start}
+                onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Jam selesai</label>
-              <input type="time" style={inputStyle} value={form.timeEnd}
-                onChange={(e) => setForm({ ...form, timeEnd: e.target.value })} />
+              <input type="time" style={inputStyle} value={form.time_end}
+                onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
             </div>
           </div>
 
           <div>
             <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>
-              Jenis imunisasi (pisahkan dengan koma)
+              ID Vaksin
             </label>
-            <input type="text" style={inputStyle} placeholder="contoh: DPT, Polio, BCG"
-              value={form.vaccineInput}
-              onChange={(e) => setForm({ ...form, vaccineInput: e.target.value })} />
-          </div>
-
-          <div style={{ display: "flex", gap: "12px" }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Total slot</label>
-              <input type="number" style={inputStyle} value={form.slotTotal} min={1}
-                onChange={(e) => setForm({ ...form, slotTotal: Number(e.target.value) })} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Slot terpakai</label>
-              <input type="number" style={inputStyle} value={form.slotUsed} min={0}
-                onChange={(e) => setForm({ ...form, slotUsed: Number(e.target.value) })} />
-            </div>
+            <input type="number" style={inputStyle} placeholder="contoh: 1"
+              value={form.vaccine_id}
+              onChange={(e) => setForm({ ...form, vaccine_id: Number(e.target.value) })} />
           </div>
 
           <div>
-            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Status</label>
-            <select style={inputStyle} value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}>
-              <option value="tersedia">Tersedia</option>
-              <option value="penuh">Penuh</option>
-              <option value="nonaktif">Nonaktif</option>
-            </select>
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Lokasi</label>
+            <input type="text" style={inputStyle} value={form.location} placeholder="contoh: Posyandu"
+              onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </div>
 
           <div>
-            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Keterangan</label>
-            <input type="text" style={inputStyle} placeholder="Contoh: Imunisasi lanjutan"
-              value={form.keterangan}
-              onChange={(e) => setForm({ ...form, keterangan: e.target.value })} />
+            <label style={{ ...T.label, color: C.textMuted, display: "block", marginBottom: "6px" }}>Total Kuota</label>
+            <input type="number" style={inputStyle} value={form.quota} min={1}
+              onChange={(e) => setForm({ ...form, quota: Number(e.target.value) })} />
           </div>
         </div>
 
@@ -322,12 +303,21 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
   const [filterStatus, setFilterStatus] = useState("semua");
   const [filterDate, setFilterDate] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [jadwalList, setJadwalList] = useState([
-    { id: 1, date: "2025-07-29", timeStart: "08:00", timeEnd: "14:00", vaccines: ["DPT", "Polio"], status: "tersedia", slotTotal: 15, slotUsed: 12, keterangan: "Imunisasi lanjutan" },
-    { id: 2, date: "2025-07-30", timeStart: "09:00", timeEnd: "13:00", vaccines: ["BCG"], status: "penuh", slotTotal: 10, slotUsed: 10, keterangan: "" },
-  ]);
+  const [jadwalList, setJadwalList] = useState([]);
   const [modal, setModal] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await fetchSchedules();
+        setJadwalList(data);
+      } catch (err) {
+        console.error("Failed to fetch schedules", err);
+      }
+    }
+    load();
+  }, []);
 
   const displayName = user?.name || "Bidan";
   const initials = displayName.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "BD";
@@ -345,18 +335,29 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
     return matchStatus && matchDate;
   });
 
-  const handleSave = (data) => {
-    if (modal.mode === "add") {
-      setJadwalList((prev) => [...prev, { ...data, id: Date.now() }]);
-    } else {
-      setJadwalList((prev) => prev.map((j) => j.id === modal.data.id ? { ...data, id: j.id } : j));
+  const handleSave = async (data) => {
+    try {
+      if (modal.mode === "add") {
+        const newJadwal = await createSchedule(data);
+        setJadwalList((prev) => [...prev, newJadwal]);
+      } else {
+        const updated = await updateSchedule(modal.data.id, data);
+        setJadwalList((prev) => prev.map((j) => j.id === modal.data.id ? updated : j));
+      }
+      setModal(null);
+    } catch (err) {
+      alert("Gagal menyimpan jadwal: " + err.message);
     }
-    setModal(null);
   };
 
-  const handleDelete = (id) => {
-    setJadwalList((prev) => prev.filter((j) => j.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id) => {
+    try {
+      await deleteSchedule(id);
+      setJadwalList((prev) => prev.filter((j) => j.id !== id));
+      setDeleteConfirm(null);
+    } catch (err) {
+      alert("Gagal menghapus jadwal: " + err.message);
+    }
   };
 
   const handleToggleStatus = (id) => {
@@ -384,9 +385,11 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
 
   /* ── Shared card renderer ── */
   const renderCard = (j) => {
-    const badge    = statusConfig[j.status] || statusConfig.tersedia;
-    const slotSisa = j.slotTotal - j.slotUsed;
-    const slotPct  = Math.round((j.slotUsed / j.slotTotal) * 100);
+    // Determine status purely conceptually or assume "tersedia" for now
+    const status = j.quota > 0 ? "tersedia" : "penuh";
+    const badge    = statusConfig[status] || statusConfig.tersedia;
+    const slotSisa = j.quota; // Assuming quota is remaining slot for now
+    const slotPct  = Math.round((1 - j.quota / (j.quota || 1)) * 100);
 
     return (
       <div key={j.id} style={{
@@ -429,22 +432,17 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
           {/* Waktu */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0 }}>Waktu</span>
-            <span style={{ ...T.small, color: C.textPrimary }}>{j.timeStart} – {j.timeEnd}</span>
+            <span style={{ ...T.small, color: C.textPrimary }}>{j.time_start} – {j.time_end}</span>
           </div>
 
           {/* Imunisasi */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
             <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0, paddingTop: "2px" }}>Imunisasi</span>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", flex: 1 }}>
-              {j.vaccines.length > 0
-                ? j.vaccines.map((v) => (
-                  <span key={v} style={{
-                    ...T.xs, background: C.blueSoft, color: C.blue,
-                    padding: "3px 10px", borderRadius: "20px",
-                  }}>{v}</span>
-                ))
-                : <span style={{ ...T.small, color: C.textMuted }}>—</span>
-              }
+              <span style={{
+                ...T.xs, background: C.blueSoft, color: C.blue,
+                padding: "3px 10px", borderRadius: "20px",
+              }}>ID: {j.vaccine_id}</span>
             </div>
           </div>
 
@@ -453,26 +451,16 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
             <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0, paddingTop: "2px" }}>Slot</span>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                <span style={{ ...T.small, color: C.textPrimary }}>{j.slotUsed}/{j.slotTotal}</span>
-                <span style={{ ...T.xs, color: C.textMuted }}>{slotSisa} tersisa</span>
-              </div>
-              <div style={{ height: "4px", background: C.border, borderRadius: "4px", overflow: "hidden" }}>
-                <div style={{
-                  height: "100%", borderRadius: "4px",
-                  width: `${slotPct}%`,
-                  background: slotPct >= 100 ? C.amber : C.teal,
-                }} />
+                <span style={{ ...T.small, color: C.textPrimary }}>Kuota: {j.quota}</span>
               </div>
             </div>
           </div>
 
-          {/* Keterangan */}
-          {j.keterangan && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
-              <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0 }}>Keterangan</span>
-              <span style={{ ...T.small, color: C.textSecondary, flex: 1 }}>{j.keterangan}</span>
-            </div>
-          )}
+          {/* Lokasi */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+            <span style={{ ...T.label, color: C.textMuted, width: "80px", flexShrink: 0 }}>Lokasi</span>
+            <span style={{ ...T.small, color: C.textSecondary, flex: 1 }}>{j.location}</span>
+          </div>
         </div>
 
         {/* Card actions */}
@@ -482,17 +470,6 @@ function KelolaJadwalBidan({ user, onLogout, onNavigate }) {
           borderTop: `1px solid ${C.border}`,
           background: C.surfaceAlt,
         }}>
-          <button
-            style={{
-              border: "none", borderRadius: "8px", padding: "6px 14px",
-              ...T.xs, cursor: "pointer",
-              background: j.status === "nonaktif" ? C.tealLight : C.border,
-              color: j.status === "nonaktif" ? C.teal : C.textMuted,
-            }}
-            onClick={() => handleToggleStatus(j.id)}
-          >
-            {j.status === "nonaktif" ? "Aktifkan" : "Nonaktifkan"}
-          </button>
           <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
             <button
               title="Edit"
