@@ -5,7 +5,7 @@
 | Environment | Gateway URL |
 |-------------|-------------|
 | Local Development | http://localhost |
-| Production | https://[your-app].up.railway.app |
+| Production | https://cc-kelompok-strangerthings.akhzafachrozy.my.id/ |
 
 ## Authentication
 
@@ -36,43 +36,51 @@ Semua error menggunakan format yang konsisten:
 | 429 | Rate limited |
 | 503 | Service unavailable |
 
-## Auth Service Endpoints
+# Auth Service Endpoints
 
-### POST /auth/register
-- **Rate limit**: 5 req/s
-- **Body**: `{"email": "str", "password": "str (min 8, 1 uppercase, 1 digit)", "name": "str"}`
-- **Response 201**: `{"id": int, "email": "str", "name": "str"}`
+## POST /auth/register
+- Rate limit: 5 req/s
+- Body: {"email": "str", "password": "str (min 8, 1 uppercase, 1 digit)", "name": "str"}
+- Response 201: {"id": int, "email": "str", "name": "str"}
 
-### POST /auth/login
-- **Rate limit**: 5 req/s
-- **Body**: `{"email": "str", "password": "str"}`
-- **Response 200**: `{"access_token": "str", "token_type": "bearer"}`
+## POST /auth/login
+- Rate limit: 5 req/s
+- Body: {"email": "str", "password": "str"}
+- Response 200: {"access_token": "str", "token_type": "bearer"}
 
-### GET /auth/verify
-- **Internal**: Dipanggil oleh service lain, bukan frontend
-- **Header**: `Authorization: Bearer <token>`
-- **Response 200**: `{"user_id": int, "email": "str", "name": "str"}`
+## GET /auth/verify
+- Internal: Dipanggil oleh service lain, bukan frontend
+- Header: Authorization: Bearer <token>
+- Response 200: {"user_id": int, "email": "str", "name": "str"}
 
-## Item Service Endpoints
+# Item Service Endpoints
 
-### GET /items?search=&skip=0&limit=20
-- **Auth**: Required
-- **Response 200**: `{"total": int, "items": [ItemResponse]}`
+## GET /health
+- Health check
+- Response 200: {"status": "healthy", "service": "item-service", "version": "2.1.0", "dependencies": {"auth-service": {"status": "available"}, "database": {"status": "connected"}}}
 
-### POST /items
-- **Auth**: Required
-- **Body**: `{"name": "str", "description": "str?", "price": float, "quantity": int?}`
-- **Response 201**: ItemResponse
+## GET /metrics
+- Service metrics (request count, error rate, latency)
+- Response 200: JSON dengan fields uptime_seconds, total_requests, total_errors, error_rate_percent, latency, status_codes
 
-### GET /items/{id}
-- **Auth**: Required
-- **Response 200**: ItemResponse
+## GET /children
+- Auth: Required
+- Response 200: ChildListResponse
 
-### PUT /items/{id}
-- **Auth**: Required
-- **Body**: Partial update (any field from ItemCreate)
-- **Response 200**: ItemResponse
+## POST /children
+- Auth: Required
+- Body: ChildCreate
+- Response 201: ChildResponse
 
-### DELETE /items/{id}
-- **Auth**: Required
-- **Response 204**: No content
+## GET /children/{child_id}
+- Auth: Required
+- Response 200: ChildResponse
+
+## PUT /children/{child_id}
+- Auth: Required
+- Body: ChildCreate (partial)
+- Response 200: ChildResponse
+
+## DELETE /children/{child_id}
+- Auth: Required
+- Response 204: No content
