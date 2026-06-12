@@ -63,7 +63,7 @@ flowchart TD
 ### Prerequisites
 - Docker & Docker Compose
 - Git
-
+  
 ### Run Locally
 
 ```bash
@@ -122,12 +122,6 @@ npm run dev
 |---|---|---|---|
 | GET | `/health` | Health check item-service | ❌ |
 | GET | `/metrics` | Menampilkan metrics item-service | ❌ |
-| POST | `/items` | Menambahkan item baru | ✅ |
-| GET | `/items` | Menampilkan daftar item | ✅ |
-| GET | `/items/stats` | Menampilkan statistik item | ✅ |
-| GET | `/items/{item_id}` | Menampilkan detail item berdasarkan ID | ✅ |
-| PUT | `/items/{item_id}` | Memperbarui item berdasarkan ID | ✅ |
-| DELETE | `/items/{item_id}` | Menghapus item berdasarkan ID | ✅ |
 | POST | `/children` | Menambahkan data anak | ✅ |
 | GET | `/children` | Menampilkan daftar anak milik user | ✅ |
 | GET | `/children/{child_id}` | Menampilkan detail data anak | ✅ |
@@ -176,13 +170,6 @@ npm run dev
 - [Operations Guide](docs/operations-guide.md)
 - [API Contract](docs/api-contract.md)
 - [Release Notes](docs/release-notes-m3.md)
-- [Dokumentasi hasil testing semua endpoint via Swagger](docs/api-test-results.md)
-- [Dokumentasi UI testing](docs/ui-test-results.md)
-- [Dokumentasi Auth testing](docs/auth-test-results.md)
-- [Docker Cheatsheet](docs/docker-cheatsheet.md)
-- [Setup Guide](docs/setup-guide.md)
-- [Testing Guide](docs/testing-guide.md)
-- [Production Test](docs/production-test.md)
 - [Git Workflow](docs/git-workflow.md)
 
 ## 📅 Roadmap
@@ -204,14 +191,42 @@ npm run dev
 
 Berikut perintah dasar Docker Compose yang digunakan:
 
+### Menjalankan & Menghentikan Service
 | Command | Keterangan |
 |---------|------------|
 | `docker compose up` | Menjalankan semua service |
 | `docker compose up -d` | Menjalankan di background (detached) |
 | `docker compose down` | Menghentikan dan menghapus container |
-| `docker compose logs` | Menampilkan log semua service |
-| `docker compose ps` | Menampilkan status container |
+| `docker compose start` | Menyalakan container yang sudah ada |
+| `docker compose stop` | Menghentikan container tanpa menghapusnya |
+| `docker compose restart` | Restart container tertentu atau semua container |
+
+### Build & Update Image
+| Command | Keterangan |
+|---------|------------|
+| `docker compose build` | Membuat / rebuild image tanpa menjalankan container |
 | `docker compose up -d --build` | Build ulang image lalu menjalankan service |
+| `docker compose pull` | Mengambil image terbaru dari registry sebelum run |
+
+### Mengecek Status & Log
+| Command | Keterangan |
+|---------|------------|
+| `docker compose ps` | Menampilkan status container |
+| `docker compose logs` | Menampilkan log semua service |
+| `docker compose logs -f <service>` | Menampilkan log service secara realtime (follow) |
+| `docker compose top` | Menampilkan proses yang berjalan di container |
+
+### Menjalankan Command di Container
+| Command | Keterangan |
+|---------|------------|
+| `docker compose exec <service> <command>` | Menjalankan command di dalam container service tertentu |
+| `docker compose run <service> <command>` | Menjalankan container sekali untuk command tertentu (tidak persist) |
+
+### Lain-lain
+| Command | Keterangan |
+|---------|------------|
+| `docker compose rm` | Menghapus container yang sudah berhenti |
+| `docker compose config` | Menampilkan konfigurasi Compose setelah merge dan parsing |
 
 ## 📦 Modul Aplikasi
 
