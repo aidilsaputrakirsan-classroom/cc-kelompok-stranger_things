@@ -5,181 +5,77 @@
 
 ```mermaid
 flowchart TD
-    USER["User / Browser"] --> GW["API Gateway / Nginx :80"]
-
-    GW --> FE["Frontend :3000"]
-    GW --> AUTH["Auth Service :8001"]
-    GW --> BACKEND["Backend Service :8000"]
-    GW --> ITEM["Item Service :8002"]
-
-    AUTH --> AUTHDB[("auth-db :5434")]
-    BACKEND --> DB[("db :5432")]
-    ITEM --> ITEMDB[("item-db :5433")]
+    USER["👤 User"] --> GW["🚪 API Gateway<br/>Nginx"]
+    GW -->|"/auth/*"| AUTH["🔐 Auth Service<br/>FastAPI :8001"]
+    GW -->|"/items/*"| ITEM["📦 Item Service<br/>FastAPI :8002"]
+    GW -->|"/"| FE["⚛️ Frontend<br/>React :3000"]
+    AUTH --> ADB[("auth_db<br/>PostgreSQL")]
+    ITEM --> IDB[("item_db<br/>PostgreSQL")]
+    ITEM -.->|"HTTP /verify"| AUTH
 ```
 
 ---
 
-## 2. Services & Ports
+## 2. Daftar Services & Ports
 
-| Service | Port | Description |
-|---|---:|---|
-| gateway | 80 | API Gateway / Reverse Proxy |
-| frontend | 3000 | Frontend React Application |
-| backend | 8000 | Main Backend API |
-| auth-service | 8001 | Authentication Service |
-| item-service | 8002 | Item Microservice |
-| db | 5432 | Main PostgreSQL Database |
-| item-db | 5433 | Item Service Database |
-| auth-db | 5434 | Authentication Database |
+| Service       | Port | Database             | Deskripsi                          |
+|---------------|------|--------------------|-----------------------------------|
+| Auth Service  | 8001 | auth_db (PostgreSQL 16) | Register, login, verify token      |
+| Item Service  | 8002 | item_db (PostgreSQL 16) | CRUD item & children, stats        |
+| Frontend      | 3000 | -                  | React SPA                          |
+| API Gateway   | 80   | -                  | Reverse proxy & routing            |
+| Auth DB       | 5434 | -                  | Database Auth Service              |
+| Item DB       | 5433 | -                  | Database Item Service              |
 
 ---
 
 ## 3. API Contract
 
-Base URL utama:
+### Auth Service (`/auth`)
 
-```text
-http://localhost
-```
+| Method | Endpoint       | Request Body                                         | Response                                                |
+|--------|----------------|-----------------------------------------------------|--------------------------------------------------------|
+| POST   | /auth/register | `{ "email": "str", "password": "str", "name": "str", "role": "str" }` | 201 `{ "id": int, "email": "str", "name": "str", "role": "str" }` |
+| POST   | /auth/login    | `{ "email": "str", "password": "str" }`            | 200 `{ "access_token": "str", "token_type": "bearer", "user": {...} }` |
+| GET    | /auth/verify   | Header: Authorization: Bearer `<token>`            | 200 `{ "user_id": int, "email": "str", "name": "str" }` |
+| GET    | /auth/health   | -                                                   | 200 `{ "status": "healthy" }`                           |
+| GET    | /auth/metrics  | -                                                   | JSON metrics                                           |
 
----
+### Item Service (`/items` & `/children`)
 
-### 3.1 Auth Service
-
-#### POST /auth/register
-
-Digunakan untuk registrasi user baru.
-
-URL:
-
-```text
-http://localhost/auth/register
-```
-
-#### Request
-
-```json
-{
-  "email": "user@example.com",
-  "password": "Pass123",
-  "name": "User"
-}
-```
-
-#### Response
-
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "User",
-  "role": "parent"
-}
-```
+| Method | Endpoint         | Auth     | Request Body       | Response                                   |
+|--------|-----------------|----------|------------------|--------------------------------------------|
+| GET    | /items          | Required | -                 | 200 `{ "total": int, "items": [...] }`    |
+| POST   | /items          | Required | ItemCreate JSON   | 201 ItemResponse                           |
+| GET    | /items/{id}     | Required | -                 | 200 ItemResponse                           |
+| PUT    | /items/{id}     | Required | Partial Item JSON | 200 ItemResponse                           |
+| DELETE | /items/{id}     | Required | -                 | 204 No content                             |
+| GET    | /children       | Required | -                 | 200 `{ "total": int, "children": [...] }` |
+| POST   | /children       | Required | ChildCreate JSON  | 201 ChildResponse                          |
+| GET    | /children/{id}  | Required | -                 | 200 ChildResponse                           |
 
 ---
 
-#### POST /auth/login
+## 4. Menjalankan Lokal
 
-Digunakan untuk login dan mendapatkan JWT token.
+### Prasyarat
 
-URL:
+- Docker & Docker Compose
+- Python 3.12 (backend) & Node.js (frontend)
+- `.env` file sesuai contoh `.env.example`
 
-```text
-http://localhost/auth/login
-```
-
-#### Request
-
-```json
-{
-  "email": "user@example.com",
-  "password": "Pass123"
-}
-```
-
-#### Response
-
-```json
-{
-  "access_token": "jwt_token",
-  "token_type": "bearer"
-}
-```
-
----
-
-### 3.2 Children Endpoint
-
-#### POST /children
-
-Digunakan untuk menambahkan data anak.
-
-Endpoint ini membutuhkan JWT token.
-
-URL:
-
-```text
-http://localhost/children
-```
-
-#### Header
-
-```text
-Authorization: Bearer TOKEN
-```
-
-#### Request
-
-```json
-{
-  "name": "mark",
-  "birth_date": "2023-05-10",
-  "gender": "male"
-}
-```
-
-#### Response
-
-```json
-{
-  "id": 1,
-  "parent_id": 3,
-  "name": "mark",
-  "birth_date": "2023-05-10",
-  "gender": "male",
-  "is_active": true
-}
-```
-
----
-
-## 4. Running Locally
-
-Menjalankan semua service:
+### Backend & Services
 
 ```bash
-docker compose up --build -d
-```
+# Jalankan semua service
+docker compose up -d
 
-Melihat daftar container:
-
-```bash
+# Cek status container
 docker compose ps
+
+# Lihat logs
+docker compose logs -f auth-service item-service
 ```
-
-Melihat log semua service:
-
-```bash
-docker compose logs -f
-```
-
-Menghentikan semua service:
-
-```bash
-docker compose down
-```
-
 ---
 
 ## 5. Testing Antar Service
@@ -195,7 +91,7 @@ $body = @{
   name = "Test Baru"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Method POST -Uri "http://localhost/auth/register" -ContentType "application/json" -Body $body
+Invoke-RestMethod -Method POST -Uri "http://localhost:8001/register" -ContentType "application/json" -Body $body
 ```
 
 ---
@@ -208,7 +104,7 @@ $login = @{
   password = "Pass123"
 } | ConvertTo-Json
 
-$response = Invoke-RestMethod -Method POST -Uri "http://localhost/auth/login" -ContentType "application/json" -Body $login
+$response = Invoke-RestMethod -Method POST -Uri "http://localhost:8001/login" -ContentType "application/json" -Body $login
 ```
 
 ---
@@ -231,9 +127,9 @@ $child = @{
   gender = "male"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Method POST -Uri "http://localhost/children" `
+Invoke-RestMethod -Method POST -Uri "http://localhost:8002/children" `
 -ContentType "application/json" `
--Headers @{Authorization="Bearer $TOKEN"} `
+-Headers @{ Authorization = "Bearer $TOKEN" } `
 -Body $child
 ```
 
@@ -266,6 +162,7 @@ Melihat log auth-service:
 
 ```bash
 docker compose logs auth-service
+docker compose logs -f auth-service
 ```
 
 Melihat log backend:
@@ -278,12 +175,14 @@ Melihat log item-service:
 
 ```bash
 docker compose logs item-service
+docker compose logs -f item-service
 ```
 
 Melihat log gateway:
 
 ```bash
 docker compose logs gateway
+docker compose logs -f gateway
 ```
 
 Melihat semua service:
