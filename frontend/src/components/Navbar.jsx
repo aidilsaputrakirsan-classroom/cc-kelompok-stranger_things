@@ -95,7 +95,7 @@ export default function Navbar({ activePage, setActivePage, onLogout }) {
     <nav style={navStyle}>
       {/* Logo */}
       <span style={logoStyle} onClick={() => setActivePage?.("home")}>
-        ByeBye<span style={{ color: "#e91e8c" }}>Virus</span>
+        ByeBye<span style={{ color: "#e91e8c" }}>Viruss</span>
       </span>
 
       {/* Nav Links - tengah */}
